@@ -24,30 +24,30 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadCards = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const loadCards = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const response = await fetch("/api/cards", { cache: "no-store" });
-        const result: { cards?: CreditCard[]; error?: string } =
-          await response.json();
+      const response = await fetch("/api/cards", { cache: "no-store" });
+      const result: { cards?: CreditCard[]; error?: string } =
+        await response.json();
 
-        if (!response.ok) {
-          throw new Error(result.error ?? "Failed to fetch cards");
-        }
-
-        setCards(result.cards ?? []);
-      } catch (fetchError) {
-        const message =
-          fetchError instanceof Error ? fetchError.message : "Unexpected error";
-        setError(message);
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error(result.error ?? "Failed to fetch cards");
       }
-    };
 
+      setCards(result.cards ?? []);
+    } catch (fetchError) {
+      const message =
+        fetchError instanceof Error ? fetchError.message : "Unexpected error";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     void loadCards();
   }, []);
 
@@ -66,9 +66,18 @@ export default function Home() {
     <main className="min-h-screen bg-zinc-50 px-4 py-10 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 sm:px-6">
       <div className="mx-auto w-full max-w-6xl">
         <div className="mb-8 flex flex-col gap-4">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Credit Cards
-          </h1>
+          <div className="flex items-center justify-between gap-4">
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              Credit Cards
+            </h1>
+            <button
+              type="button"
+              onClick={() => void loadCards()}
+              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            >
+              Refresh cards
+            </button>
+          </div>
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
             Search and compare cards by bank, rewards, and best use case.
           </p>
