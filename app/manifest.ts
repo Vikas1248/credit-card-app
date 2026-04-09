@@ -2,9 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Credit Card App",
-    short_name: "Card App",
-    description: "Search and compare credit cards by rewards and fees.",
+    name: "Cardwise",
+    short_name: "Cardwise",
+    description:
+      "Match credit cards to your spend, compare products, and browse rewards.",
     start_url: "/",
     display: "standalone",
     background_color: "#fafafa",
