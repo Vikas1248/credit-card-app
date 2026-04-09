@@ -10,6 +10,14 @@ from typing import Any
 
 
 INPUT_DIR = Path("cleaned_cards")
+BANK_FROM_FOLDER = {
+    "amex": "American Express",
+    "american_express": "American Express",
+    "icici": "ICICI",
+    "sbi": "SBI",
+    "axis": "Axis",
+    "hdfc": "HDFC",
+}
 
 
 def setup_logger() -> None:
@@ -55,14 +63,23 @@ def supabase_request(
         return
 
 
-def build_payload(cleaned_card: dict[str, Any]) -> dict[str, Any]:
+def infer_bank_from_path(file_path: Path) -> str:
+    parent_name = file_path.parent.name.lower()
+    return BANK_FROM_FOLDER.get(parent_name, "Unknown")
+
+
+def build_payload(cleaned_card: dict[str, Any], source_file: Path) -> dict[str, Any]:
     reward_type = normalize(cleaned_card.get("reward_type")).lower()
     if reward_type not in {"cashback", "points"}:
         reward_type = "points"
 
+    bank = normalize(cleaned_card.get("bank"))
+    if bank in {"N/A", "Unknown"}:
+        bank = infer_bank_from_path(source_file)
+
     return {
         "card_name": normalize(cleaned_card.get("card_name")),
-        "bank": normalize(cleaned_card.get("bank")),
+        "bank": bank,
         "network": "Visa",
         "joining_fee": 0,
         "annual_fee": parse_fee_to_int(normalize(cleaned_card.get("annual_fee"))),
@@ -133,7 +150,7 @@ def main() -> int:
         logging.error("Input folder not found: %s", INPUT_DIR.resolve())
         return 1
 
-    files = sorted(INPUT_DIR.glob("*.json"))
+    files = sorted(INPUT_DIR.glob("**/*.json"))
     if not files:
         logging.warning("No JSON files found in %s", INPUT_DIR.resolve())
         return 0
@@ -146,7 +163,7 @@ def main() -> int:
             with file_path.open("r", encoding="utf-8") as file:
                 cleaned_card = json.load(file)
 
-            payload = build_payload(cleaned_card)
+            payload = build_payload(cleaned_card, file_path)
             upsert_card(supabase_url, supabase_key, payload)
             logging.info("Uploaded to Supabase cards: %s", payload["card_name"])
             success += 1

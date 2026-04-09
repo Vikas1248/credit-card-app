@@ -12,6 +12,14 @@ OPENAI_API_URL = "https://api.openai.com/v1/chat/completions"
 MODEL = "gpt-4o-mini"
 INPUT_DIR = Path("cards")
 OUTPUT_DIR = Path("cleaned_cards")
+BANK_FROM_FOLDER = {
+    "amex": "American Express",
+    "american_express": "American Express",
+    "icici": "ICICI",
+    "sbi": "SBI",
+    "axis": "Axis",
+    "hdfc": "HDFC",
+}
 
 
 def setup_logger() -> None:
@@ -93,7 +101,14 @@ def call_openai(api_key: str, raw_text: str, fallback_name: str) -> dict[str, An
         return json.loads(content)
 
 
-def clean_card(extracted: dict[str, Any], fallback_name: str) -> dict[str, str]:
+def infer_bank_from_path(file_path: Path) -> str:
+    parent_name = file_path.parent.name.lower()
+    return BANK_FROM_FOLDER.get(parent_name, "Unknown")
+
+
+def clean_card(
+    extracted: dict[str, Any], fallback_name: str, fallback_bank: str
+) -> dict[str, str]:
     reward_type = normalize(extracted.get("reward_type")).lower()
     if reward_type not in {"cashback", "points"}:
         reward_type = "N/A"
@@ -115,7 +130,7 @@ def clean_card(extracted: dict[str, Any], fallback_name: str) -> dict[str, str]:
 
     # Guardrails for consistency.
     if cleaned["bank"] == "N/A":
-        cleaned["bank"] = "Unknown"
+        cleaned["bank"] = fallback_bank
     for field in (
         "annual_fee",
         "reward_rate",
@@ -135,11 +150,13 @@ def process_file(file_path: Path, api_key: str) -> bool:
 
         raw_text = normalize(payload.get("full_text_content"))
         fallback_name = normalize(payload.get("card_name"))
+        fallback_bank = infer_bank_from_path(file_path)
         extracted = call_openai(api_key, raw_text, fallback_name)
-        cleaned = clean_card(extracted, fallback_name)
+        cleaned = clean_card(extracted, fallback_name, fallback_bank)
 
-        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-        out_path = OUTPUT_DIR / file_path.name
+        relative_path = file_path.relative_to(INPUT_DIR)
+        out_path = OUTPUT_DIR / relative_path
+        out_path.parent.mkdir(parents=True, exist_ok=True)
         with out_path.open("w", encoding="utf-8") as file:
             json.dump(cleaned, file, indent=2, ensure_ascii=False)
 
@@ -171,7 +188,7 @@ def main() -> int:
         logging.error("Input folder not found: %s", INPUT_DIR.resolve())
         return 1
 
-    files = sorted(INPUT_DIR.glob("*.json"))
+    files = sorted(INPUT_DIR.glob("**/*.json"))
     if not files:
         logging.warning("No JSON files found in %s", INPUT_DIR.resolve())
         return 0
