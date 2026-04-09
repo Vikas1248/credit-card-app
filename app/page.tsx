@@ -18,11 +18,37 @@ type CreditCard = {
   last_updated: string;
 };
 
+type Recommendation = {
+  id: string;
+  card_name: string;
+  bank: string;
+  network: "Visa" | "Mastercard";
+  annual_fee: number;
+  reward_type: "cashback" | "points";
+  reward_rate: string | null;
+  lounge_access: string | null;
+  best_for: string | null;
+  reward_score: number;
+  eligibility_score: number;
+  final_score: number;
+};
+
 export default function Home() {
   const [cards, setCards] = useState<CreditCard[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [salary, setSalary] = useState("1200000");
+  const [categories, setCategories] = useState("travel, shopping");
+  const [prefRewardType, setPrefRewardType] = useState<"cashback" | "points">(
+    "points"
+  );
+  const [loungeRequired, setLoungeRequired] = useState(true);
+  const [recommendationLoading, setRecommendationLoading] = useState(false);
+  const [recommendationError, setRecommendationError] = useState<string | null>(
+    null
+  );
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
 
   const loadCards = async () => {
     try {
@@ -50,6 +76,48 @@ export default function Home() {
   useEffect(() => {
     void loadCards();
   }, []);
+
+  const loadRecommendations = async () => {
+    try {
+      setRecommendationLoading(true);
+      setRecommendationError(null);
+
+      const parsedSalary = Number(salary);
+      if (!Number.isFinite(parsedSalary) || parsedSalary <= 0) {
+        throw new Error("Please enter a valid salary.");
+      }
+
+      const response = await fetch("/api/recommend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          salary: parsedSalary,
+          spending_categories: categories
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean),
+          preferences: {
+            preferred_reward_type: prefRewardType,
+            lounge_required: loungeRequired,
+          },
+        }),
+      });
+
+      const result: { recommendations?: Recommendation[]; error?: string } =
+        await response.json();
+      if (!response.ok) {
+        throw new Error(result.error ?? "Failed to fetch recommendations.");
+      }
+
+      setRecommendations(result.recommendations ?? []);
+    } catch (fetchError) {
+      const message =
+        fetchError instanceof Error ? fetchError.message : "Unexpected error";
+      setRecommendationError(message);
+    } finally {
+      setRecommendationLoading(false);
+    }
+  };
 
   const filteredCards = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -89,6 +157,85 @@ export default function Home() {
             className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm shadow-sm outline-none ring-blue-500 transition focus:ring-2 dark:border-zinc-800 dark:bg-zinc-900"
           />
         </div>
+
+        <section className="mb-10 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <h2 className="text-xl font-semibold">Recommended for you</h2>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            Enter your profile to get top 3 credit card recommendations.
+          </p>
+
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <input
+              type="number"
+              value={salary}
+              onChange={(event) => setSalary(event.target.value)}
+              placeholder="Annual salary"
+              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none ring-blue-500 focus:ring-2 dark:border-zinc-700 dark:bg-zinc-950"
+            />
+            <input
+              type="text"
+              value={categories}
+              onChange={(event) => setCategories(event.target.value)}
+              placeholder="Categories (comma separated)"
+              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none ring-blue-500 focus:ring-2 dark:border-zinc-700 dark:bg-zinc-950"
+            />
+            <select
+              value={prefRewardType}
+              onChange={(event) =>
+                setPrefRewardType(event.target.value as "cashback" | "points")
+              }
+              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none ring-blue-500 focus:ring-2 dark:border-zinc-700 dark:bg-zinc-950"
+            >
+              <option value="points">Points</option>
+              <option value="cashback">Cashback</option>
+            </select>
+            <label className="flex items-center gap-2 rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">
+              <input
+                type="checkbox"
+                checked={loungeRequired}
+                onChange={(event) => setLoungeRequired(event.target.checked)}
+              />
+              Lounge required
+            </label>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => void loadRecommendations()}
+            className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+          >
+            {recommendationLoading ? "Getting recommendations..." : "Recommend top 3"}
+          </button>
+
+          {recommendationError ? (
+            <p className="mt-3 text-sm text-red-600 dark:text-red-400">
+              {recommendationError}
+            </p>
+          ) : null}
+
+          {recommendations.length > 0 ? (
+            <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3">
+              {recommendations.map((card, index) => (
+                <article
+                  key={card.id}
+                  className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700"
+                >
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                    #{index + 1}
+                  </p>
+                  <h3 className="mt-1 font-semibold">{card.card_name}</h3>
+                  <p className="mt-1 text-sm">{card.bank}</p>
+                  <p className="mt-2 text-sm">Annual fee: Rs. {card.annual_fee}</p>
+                  <p className="text-sm">Reward rate: {card.reward_rate ?? "N/A"}</p>
+                  <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                    Score: {card.final_score} (reward {card.reward_score} +
+                    eligibility {card.eligibility_score})
+                  </p>
+                </article>
+              ))}
+            </div>
+          ) : null}
+        </section>
 
         {loading ? (
           <p className="text-sm text-zinc-600 dark:text-zinc-400">

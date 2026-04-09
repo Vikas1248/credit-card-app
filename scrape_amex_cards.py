@@ -49,65 +49,39 @@ def scrape_cards() -> list[dict[str, str]]:
         try:
             scroll_until_complete(page)
 
-            # Try to find card-like containers and extract visible text.
-            card_nodes = page.locator("article, section, div").filter(
-                has=page.locator("h1, h2, h3, h4")
+            page_text = clean_text(page.locator("body").inner_text(timeout=10000))
+
+            # Capture card names from visible page text (works even when cards are in carousels/lists).
+            name_pattern = re.compile(
+                r"American Express(?:[®™]|\s|[A-Za-z]){1,80}?(?:Credit Card|Card)",
+                re.IGNORECASE,
             )
+            matches = name_pattern.findall(page_text)
+            normalized_names: list[str] = []
 
-            seen: set[str] = set()
-            total = card_nodes.count()
-
-            for index in range(total):
-                node = card_nodes.nth(index)
-                text_content = clean_text(node.inner_text(timeout=5000))
-                if not text_content or len(text_content) < 40:
+            for raw_name in matches:
+                name = clean_text(raw_name)
+                if not name.lower().startswith("american express"):
                     continue
-
-                heading = node.locator("h1, h2, h3, h4").first
-                card_name = clean_text(heading.inner_text(timeout=3000)) if heading.count() else ""
-
-                if not card_name:
+                if name.lower() in {"american express card", "american express® card"}:
                     continue
+                if name not in normalized_names:
+                    normalized_names.append(name)
 
-                key = f"{card_name}|{text_content[:120]}"
-                if key in seen:
+            for card_name in normalized_names:
+                # Capture a nearby text window as full card context.
+                idx = page_text.lower().find(card_name.lower())
+                if idx == -1:
                     continue
-                seen.add(key)
-
+                start = max(0, idx - 80)
+                end = min(len(page_text), idx + 520)
+                snippet = clean_text(page_text[start:end])
                 cards.append(
                     {
                         "card_name": card_name,
-                        "full_text_content": text_content,
+                        "full_text_content": snippet,
                     }
                 )
-
-            # Fallback: if strict container parsing fails, parse heading blocks.
-            if not cards:
-                headings = page.locator("h1, h2, h3, h4")
-                heading_count = headings.count()
-
-                for i in range(heading_count):
-                    heading_text = clean_text(headings.nth(i).inner_text(timeout=3000))
-                    if not heading_text:
-                        continue
-
-                    parent_text = clean_text(
-                        headings.nth(i).locator("xpath=ancestor::*[self::article or self::section or self::div][1]").inner_text(timeout=5000)
-                    )
-                    if len(parent_text) < 40:
-                        continue
-
-                    key = f"{heading_text}|{parent_text[:120]}"
-                    if key in seen:
-                        continue
-                    seen.add(key)
-
-                    cards.append(
-                        {
-                            "card_name": heading_text,
-                            "full_text_content": parent_text,
-                        }
-                    )
 
             return cards
         finally:
