@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   description:
     "Match cards to your monthly spend, compare two products side by side, and browse rewards in one place.",
   manifest: "/manifest.webmanifest",
+  other: {
+    "verify-admitad": "367a3e7727",
+  },
 };
 
 export const viewport: Viewport = {
