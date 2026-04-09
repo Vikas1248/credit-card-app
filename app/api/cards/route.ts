@@ -14,6 +14,10 @@ type CardRow = {
   best_for: string | null;
   key_benefits: string | null;
   last_updated: string;
+  dining_reward: number | null;
+  travel_reward: number | null;
+  shopping_reward: number | null;
+  fuel_reward: number | null;
 };
 
 export async function GET(request: Request) {
@@ -29,12 +33,12 @@ export async function GET(request: Request) {
     const limit = Number(searchParams.get("limit") ?? "50");
     const offset = Number(searchParams.get("offset") ?? "0");
 
-    const safeLimit = Number.isFinite(limit) ? Math.min(Math.max(limit, 1), 100) : 50;
+    const safeLimit = Number.isFinite(limit) ? Math.min(Math.max(limit, 1), 200) : 50;
     const safeOffset = Number.isFinite(offset) ? Math.max(offset, 0) : 0;
     let query = supabase
       .from("credit_cards")
       .select(
-        "id, card_name, bank, network, joining_fee, annual_fee, reward_type, reward_rate, lounge_access, best_for, key_benefits, last_updated"
+        "id, card_name, bank, network, joining_fee, annual_fee, reward_type, reward_rate, lounge_access, best_for, key_benefits, last_updated, dining_reward, travel_reward, shopping_reward, fuel_reward"
       )
       .order("annual_fee", { ascending: true })
       .order("card_name", { ascending: true })

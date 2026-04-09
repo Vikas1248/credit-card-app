@@ -47,8 +47,8 @@ next-env.d.ts
 __pycache__/
 *.pyc
 
-# generated card data
-cards/
-cleaned_cards/
+# generated card data (root only; do not use `cards/` — it ignores app/api/cards)
+/cards/
+/cleaned_cards/
 amex_raw_latest.json
 amex_structured_cards.json

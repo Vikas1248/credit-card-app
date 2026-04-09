@@ -12,6 +12,11 @@ create table if not exists public.credit_cards (
   lounge_access text,
   best_for text,
   key_benefits text,
+  -- Category reward rates as % of spend in that category (e.g. 5 = 5%). NULL if unknown.
+  dining_reward double precision,
+  travel_reward double precision,
+  shopping_reward double precision,
+  fuel_reward double precision,
   last_updated timestamp not null default now()
 );
 
@@ -29,6 +34,15 @@ create trigger trg_credit_cards_last_updated
 before update on public.credit_cards
 for each row
 execute function public.set_last_updated_timestamp();
+
+comment on column public.credit_cards.dining_reward is
+  'Estimated reward on dining spend as a percentage of spend (e.g. 5 means 5%). NULL if not set.';
+comment on column public.credit_cards.travel_reward is
+  'Estimated reward on travel spend as a percentage of spend. NULL if not set.';
+comment on column public.credit_cards.shopping_reward is
+  'Estimated reward on shopping spend as a percentage of spend. NULL if not set.';
+comment on column public.credit_cards.fuel_reward is
+  'Estimated reward on fuel spend as a percentage of spend. NULL if not set.';
 
 insert into public.credit_cards (
   card_name,
