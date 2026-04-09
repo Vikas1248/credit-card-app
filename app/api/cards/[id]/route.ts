@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { dbQuery } from "@/lib/db";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 type CardRow = {
   id: string;
@@ -23,33 +23,24 @@ type RouteContext = {
 export async function GET(_request: Request, context: RouteContext) {
   try {
     const { id } = await context.params;
-    const rows = await dbQuery<CardRow>(
-      `
-      SELECT
-        id,
-        card_name,
-        bank,
-        network,
-        joining_fee,
-        annual_fee,
-        reward_type,
-        reward_rate,
-        lounge_access,
-        best_for,
-        key_benefits,
-        last_updated
-      FROM credit_cards
-      WHERE id = $1
-      LIMIT 1
-      `,
-      [id]
-    );
+    const supabase = getSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("credit_cards")
+      .select(
+        "id, card_name, bank, network, joining_fee, annual_fee, reward_type, reward_rate, lounge_access, best_for, key_benefits, last_updated"
+      )
+      .eq("id", id)
+      .maybeSingle();
 
-    if (rows.length === 0) {
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ card: rows[0] }, { status: 200 });
+    return NextResponse.json({ card: data as CardRow }, { status: 200 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected error";
     return NextResponse.json({ error: message }, { status: 500 });

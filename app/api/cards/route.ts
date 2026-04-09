@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { dbQuery } from "@/lib/db";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 type CardRow = {
   id: string;
@@ -18,6 +18,7 @@ type CardRow = {
 
 export async function GET(request: Request) {
   try {
+    const supabase = getSupabaseServerClient();
     const { searchParams } = new URL(request.url);
     const q = searchParams.get("q")?.trim();
     const bank = searchParams.get("bank")?.trim();
@@ -28,74 +29,38 @@ export async function GET(request: Request) {
     const limit = Number(searchParams.get("limit") ?? "50");
     const offset = Number(searchParams.get("offset") ?? "0");
 
-    const whereClauses: string[] = [];
-    const params: unknown[] = [];
-
-    if (q) {
-      params.push(`%${q}%`);
-      const i = params.length;
-      whereClauses.push(
-        `(card_name ILIKE $${i} OR bank ILIKE $${i} OR coalesce(best_for, '') ILIKE $${i})`
-      );
-    }
-    if (bank) {
-      params.push(bank);
-      whereClauses.push(`bank = $${params.length}`);
-    }
-    if (network) {
-      params.push(network);
-      whereClauses.push(`network = $${params.length}`);
-    }
-    if (rewardType) {
-      params.push(rewardType);
-      whereClauses.push(`reward_type = $${params.length}`);
-    }
-    if (maxAnnualFee && !Number.isNaN(Number(maxAnnualFee))) {
-      params.push(Number(maxAnnualFee));
-      whereClauses.push(`annual_fee <= $${params.length}`);
-    }
-    if (minJoiningFee && !Number.isNaN(Number(minJoiningFee))) {
-      params.push(Number(minJoiningFee));
-      whereClauses.push(`joining_fee >= $${params.length}`);
-    }
-
     const safeLimit = Number.isFinite(limit) ? Math.min(Math.max(limit, 1), 100) : 50;
     const safeOffset = Number.isFinite(offset) ? Math.max(offset, 0) : 0;
+    let query = supabase
+      .from("credit_cards")
+      .select(
+        "id, card_name, bank, network, joining_fee, annual_fee, reward_type, reward_rate, lounge_access, best_for, key_benefits, last_updated"
+      )
+      .order("annual_fee", { ascending: true })
+      .order("card_name", { ascending: true })
+      .range(safeOffset, safeOffset + safeLimit - 1);
 
-    params.push(safeLimit);
-    const limitParam = params.length;
-    params.push(safeOffset);
-    const offsetParam = params.length;
+    if (q) {
+      query = query.or(
+        `card_name.ilike.%${q}%,bank.ilike.%${q}%,best_for.ilike.%${q}%`
+      );
+    }
+    if (bank) query = query.eq("bank", bank);
+    if (network) query = query.eq("network", network);
+    if (rewardType) query = query.eq("reward_type", rewardType);
+    if (maxAnnualFee && !Number.isNaN(Number(maxAnnualFee))) {
+      query = query.lte("annual_fee", Number(maxAnnualFee));
+    }
+    if (minJoiningFee && !Number.isNaN(Number(minJoiningFee))) {
+      query = query.gte("joining_fee", Number(minJoiningFee));
+    }
 
-    const whereSql = whereClauses.length
-      ? `WHERE ${whereClauses.join(" AND ")}`
-      : "";
+    const { data, error } = await query;
+    if (error) {
+      throw new Error(error.message);
+    }
 
-    const rows = await dbQuery<CardRow>(
-      `
-      SELECT
-        id,
-        card_name,
-        bank,
-        network,
-        joining_fee,
-        annual_fee,
-        reward_type,
-        reward_rate,
-        lounge_access,
-        best_for,
-        key_benefits,
-        last_updated
-      FROM credit_cards
-      ${whereSql}
-      ORDER BY annual_fee ASC, card_name ASC
-      LIMIT $${limitParam}
-      OFFSET $${offsetParam}
-      `,
-      params
-    );
-
-    return NextResponse.json({ cards: rows }, { status: 200 });
+    return NextResponse.json({ cards: (data ?? []) as CardRow[] }, { status: 200 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected error";
     return NextResponse.json({ error: message }, { status: 500 });
