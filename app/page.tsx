@@ -58,6 +58,13 @@ const CATEGORY_LABELS: { key: keyof RewardBreakdown; label: string }[] = [
   { key: "fuel", label: "Fuel" },
 ];
 
+type FeaturedGroup = {
+  id: "best-overall" | "cashback" | "travel" | "lifetime-free";
+  title: string;
+  subtitle: string;
+  cards: CreditCard[];
+};
+
 function formatInr(value: number): string {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -70,6 +77,38 @@ function formatInr(value: number): string {
 function formatPct(value: number | null | undefined): string {
   if (value == null || !Number.isFinite(value)) return "—";
   return `${value}%`;
+}
+
+function topCategoryReward(card: CreditCard): {
+  category: keyof RewardBreakdown;
+  value: number;
+} | null {
+  const entries: Array<[keyof RewardBreakdown, number | null]> = [
+    ["dining", card.dining_reward],
+    ["travel", card.travel_reward],
+    ["shopping", card.shopping_reward],
+    ["fuel", card.fuel_reward],
+  ];
+  const valid = entries.filter(
+    ([, value]) => typeof value === "number" && Number.isFinite(value) && value > 0
+  ) as Array<[keyof RewardBreakdown, number]>;
+  if (valid.length === 0) return null;
+  valid.sort((a, b) => b[1] - a[1]);
+  return { category: valid[0][0], value: valid[0][1] };
+}
+
+function categoryLabel(key: keyof RewardBreakdown): string {
+  return CATEGORY_LABELS.find((c) => c.key === key)?.label ?? key;
+}
+
+function cardPreviewClass(index: number): string {
+  const palettes = [
+    "from-indigo-500 via-violet-500 to-purple-600",
+    "from-emerald-500 via-teal-500 to-cyan-600",
+    "from-amber-500 via-orange-500 to-rose-500",
+    "from-sky-500 via-blue-500 to-indigo-600",
+  ];
+  return palettes[index % palettes.length];
 }
 
 function cardRates(card: CreditCard) {
@@ -105,6 +144,19 @@ const btnGhost =
 
 const sectionShell =
   "rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60 sm:p-8";
+
+/** In-page section titles (distinct from sticky page header). */
+const sectionTitleClass =
+  "border-l-4 border-teal-500 pl-3 text-lg font-bold tracking-tight text-teal-900 dark:border-teal-400 dark:text-teal-200 sm:text-xl";
+
+const headerInputClass =
+  "w-full rounded-xl border border-slate-600 bg-slate-800/90 py-2.5 pl-10 pr-3 text-sm text-slate-100 shadow-inner outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/35";
+
+const headerNavLinkClass =
+  "shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white";
+
+const headerBtnClass =
+  "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-600 bg-slate-800 px-4 text-sm font-medium text-slate-100 shadow-sm transition hover:bg-slate-700 disabled:opacity-50";
 
 function Spinner({ className }: { className?: string }) {
   return (
@@ -144,24 +196,24 @@ function SiteHeader({
   loadingCards: boolean;
 }) {
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 shadow-sm backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/90">
+    <header className="sticky top-0 z-50 border-b border-slate-800 bg-slate-900 shadow-md dark:border-slate-800 dark:bg-slate-950">
       <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6">
         <div className="flex flex-wrap items-center gap-3 sm:gap-4">
           <Link
             href="/"
-            className="flex shrink-0 items-center gap-2.5 rounded-xl pr-2 text-zinc-900 dark:text-zinc-100"
+            className="flex shrink-0 items-center gap-2.5 rounded-xl pr-2 text-white"
           >
             <span
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 text-sm font-bold text-white shadow-md shadow-blue-600/25"
+              className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white shadow-lg shadow-indigo-900/40"
               aria-hidden
             >
               C
             </span>
             <div className="leading-tight">
-              <span className="block text-sm font-bold tracking-tight">
+              <span className="block text-sm font-bold tracking-tight text-white">
                 Cardwise
               </span>
-              <span className="hidden text-[11px] font-medium text-zinc-500 sm:block dark:text-zinc-400">
+              <span className="hidden text-[11px] font-medium text-slate-400 sm:block">
                 Credit card intelligence
               </span>
             </div>
@@ -173,23 +225,20 @@ function SiteHeader({
           >
             {(
               [
+                ["#discover", "Discover"],
                 ["#browse", "Browse"],
                 ["#match", "Match spend"],
                 ["#compare", "Compare"],
               ] as const
             ).map(([href, label]) => (
-              <a
-                key={href}
-                href={href}
-                className="shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-              >
+              <a key={href} href={href} className={headerNavLinkClass}>
                 {label}
               </a>
             ))}
           </nav>
 
           <div className="relative min-w-0 flex-1 basis-[200px]">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
               <svg
                 className="h-4 w-4"
                 fill="none"
@@ -210,7 +259,7 @@ function SiteHeader({
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Search cards or banks…"
-              className={`${inputClass} pl-10`}
+              className={headerInputClass}
               aria-label="Search cards"
             />
           </div>
@@ -219,18 +268,18 @@ function SiteHeader({
             type="button"
             onClick={() => void onRefresh()}
             disabled={loadingCards}
-            className={btnGhost}
+            className={headerBtnClass}
             title="Reload card list from server"
           >
             {loadingCards ? (
               <>
-                <Spinner />
+                <Spinner className="h-4 w-4 text-slate-200" />
                 <span className="hidden sm:inline">Syncing</span>
               </>
             ) : (
               <>
                 <svg
-                  className="h-4 w-4"
+                  className="h-4 w-4 text-slate-200"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -386,6 +435,65 @@ export default function Home() {
     [cards]
   );
 
+  const featuredGroups = useMemo<FeaturedGroup[]>(() => {
+    const byAnnualFee = [...cards].sort((a, b) => a.annual_fee - b.annual_fee);
+    const byTopRate = [...cards].sort((a, b) => {
+      const aTop = topCategoryReward(a)?.value ?? 0;
+      const bTop = topCategoryReward(b)?.value ?? 0;
+      return bTop - aTop;
+    });
+
+    const bestOverall = [...cards]
+      .sort((a, b) => {
+        const aScore = (topCategoryReward(a)?.value ?? 0) * 10 - a.annual_fee / 1000;
+        const bScore = (topCategoryReward(b)?.value ?? 0) * 10 - b.annual_fee / 1000;
+        return bScore - aScore;
+      })
+      .slice(0, 8);
+
+    const cashback = [...cards]
+      .filter((c) => c.reward_type === "cashback")
+      .sort((a, b) => (topCategoryReward(b)?.value ?? 0) - (topCategoryReward(a)?.value ?? 0))
+      .slice(0, 8);
+
+    const travel = [...cards]
+      .filter((c) => {
+        const text = `${c.best_for ?? ""} ${c.reward_rate ?? ""} ${c.key_benefits ?? ""}`.toLowerCase();
+        return text.includes("travel") || text.includes("lounge");
+      })
+      .sort((a, b) => (topCategoryReward(b)?.value ?? 0) - (topCategoryReward(a)?.value ?? 0))
+      .slice(0, 8);
+
+    const lifetimeFree = byAnnualFee.filter((c) => c.annual_fee === 0).slice(0, 8);
+
+    return [
+      {
+        id: "best-overall",
+        title: "Best overall",
+        subtitle: "Balanced reward + fee value",
+        cards: bestOverall.length > 0 ? bestOverall : byTopRate.slice(0, 8),
+      },
+      {
+        id: "cashback",
+        title: "Cashback cards",
+        subtitle: "High cash return cards",
+        cards: cashback.length > 0 ? cashback : byTopRate.slice(0, 8),
+      },
+      {
+        id: "travel",
+        title: "Travel cards",
+        subtitle: "Lounge and travel oriented picks",
+        cards: travel.length > 0 ? travel : byTopRate.slice(0, 8),
+      },
+      {
+        id: "lifetime-free",
+        title: "Lifetime free cards",
+        subtitle: "No annual fee picks",
+        cards: lifetimeFree.length > 0 ? lifetimeFree : byAnnualFee.slice(0, 8),
+      },
+    ];
+  }, [cards]);
+
   const parsedSpendForCompare = useMemo(() => {
     const dining = Number(spendDining);
     const travel = Number(spendTravel);
@@ -462,10 +570,92 @@ export default function Home() {
         </div>
 
         <div className="space-y-10 sm:space-y-12">
+          <section id="discover" className={`scroll-mt-24 ${sectionShell}`}>
+            <div className="flex flex-col gap-2 border-b border-zinc-100 pb-5 dark:border-zinc-800 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className={sectionTitleClass}>Featured discovery</h2>
+                <p className="mt-1 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
+                  Swipe through curated groups to quickly discover strong options
+                  before running your personalized spend match.
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                Quick explore
+              </span>
+            </div>
+
+            <div className="mt-6 space-y-7">
+              {featuredGroups.map((group) => (
+                <div key={group.id}>
+                  <div className="mb-3 flex items-end justify-between gap-3">
+                    <div>
+                      <h3 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+                        {group.title}
+                      </h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        {group.subtitle}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [scrollbar-width:thin]">
+                    {group.cards.map((card, idx) => {
+                      const topReward = topCategoryReward(card);
+                      const usp = card.best_for ?? card.key_benefits ?? "Great everyday value";
+                      const rewardHighlight = topReward
+                        ? `${formatPct(topReward.value)} on ${categoryLabel(topReward.category)}`
+                        : card.reward_rate ?? "Rewards vary by spend category";
+
+                      return (
+                        <article
+                          key={`${group.id}-${card.id}`}
+                          className="w-[280px] shrink-0 snap-start rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-950"
+                        >
+                          <div
+                            className={`relative h-36 overflow-hidden rounded-t-2xl bg-gradient-to-br ${cardPreviewClass(idx)}`}
+                          >
+                            <div className="absolute inset-0 bg-black/10" />
+                            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/20 blur-xl" />
+                            <div className="absolute bottom-3 left-3 right-3 rounded-lg bg-white/20 px-3 py-2 text-white backdrop-blur-sm">
+                              <p className="line-clamp-1 text-sm font-semibold tracking-tight">
+                                {card.card_name}
+                              </p>
+                              <p className="text-[11px] text-white/85">{card.bank}</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3 p-4">
+                            <p className="line-clamp-2 text-sm text-zinc-700 dark:text-zinc-300">
+                              <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                                USP:{" "}
+                              </span>
+                              {usp}
+                            </p>
+
+                            <p className="rounded-lg bg-emerald-50 px-2.5 py-2 text-xs font-medium text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
+                              Key reward: {rewardHighlight}
+                            </p>
+
+                            <Link
+                              href={`/card/${card.id}`}
+                              className="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 dark:hover:bg-blue-500"
+                            >
+                              View Details
+                            </Link>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
           <section id="match" className={`scroll-mt-24 ${sectionShell}`}>
             <div className="flex flex-col gap-2 border-b border-zinc-100 pb-5 dark:border-zinc-800 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h2 className="text-lg font-bold sm:text-xl">Match my spend</h2>
+                <h2 className={sectionTitleClass}>Match my spend</h2>
                 <p className="mt-1 max-w-xl text-sm text-zinc-600 dark:text-zinc-400">
                   Average monthly spend per category (INR). We rank by estimated
                   yearly rewards from your profile.
@@ -694,7 +884,7 @@ export default function Home() {
           <section id="compare" className={`scroll-mt-24 ${sectionShell}`}>
             <div className="flex flex-col gap-2 border-b border-zinc-100 pb-5 dark:border-zinc-800 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h2 className="text-lg font-bold sm:text-xl">Compare two cards</h2>
+                <h2 className={sectionTitleClass}>Compare two cards</h2>
                 <p className="mt-1 max-w-xl text-sm text-zinc-600 dark:text-zinc-400">
                   Same monthly category totals as Match my spend. Choose two
                   products to see fees, reward rates, and estimated returns
@@ -902,7 +1092,7 @@ export default function Home() {
         <section id="browse" className={`scroll-mt-24 ${sectionShell}`}>
           <div className="flex flex-col gap-3 border-b border-zinc-100 pb-5 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-lg font-bold sm:text-xl">Browse catalog</h2>
+              <h2 className={sectionTitleClass}>Browse catalog</h2>
               <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
                 Filter with the search field in the header. {filteredCards.length}{" "}
                 {filteredCards.length === 1 ? "card" : "cards"}
