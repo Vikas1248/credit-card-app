@@ -48,9 +48,12 @@ Return ONLY valid JSON in this exact format:
 }}
 
 Rules:
-- Keep values concise and factual.
-- If missing, return "N/A".
-- Do not include markdown or explanations.
+- STRICTLY use only facts present in RAW TEXT.
+- Do not guess, infer, or hallucinate unavailable values.
+- If any field is unclear, return "N/A".
+- reward_type must be exactly one of: "cashback", "points", "N/A".
+- annual_fee should preserve original human-readable currency text if present.
+- Return JSON object only. No markdown, comments, or extra keys.
 
 RAW TEXT:
 {raw_text}
@@ -65,7 +68,11 @@ def call_openai(api_key: str, raw_text: str) -> dict[str, Any]:
         "messages": [
             {
                 "role": "system",
-                "content": "You extract structured credit card fields and return JSON only.",
+                "content": (
+                    "You are a strict financial information extractor. "
+                    "Output valid JSON with exactly requested keys. "
+                    "Never fabricate missing details."
+                ),
             },
             {
                 "role": "user",
