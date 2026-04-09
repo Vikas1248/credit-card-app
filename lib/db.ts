@@ -16,20 +16,19 @@ function getConnectionString(): string {
   return fromEnv;
 }
 
-const pool =
-  globalThis.__pgPool__ ??
-  new Pool({
-    connectionString: getConnectionString(),
-  });
-
-if (process.env.NODE_ENV !== "production") {
-  globalThis.__pgPool__ = pool;
+function getPool(): Pool {
+  if (!globalThis.__pgPool__) {
+    globalThis.__pgPool__ = new Pool({
+      connectionString: getConnectionString(),
+    });
+  }
+  return globalThis.__pgPool__;
 }
 
 export async function dbQuery<T extends QueryResultRow = QueryResultRow>(
   text: string,
   values: unknown[] = []
 ): Promise<T[]> {
-  const result = await pool.query<T>(text, values);
+  const result = await getPool().query<T>(text, values);
   return result.rows;
 }
