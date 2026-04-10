@@ -1,7 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AxisApplyLink } from "@/components/axis-apply-link";
 import { CreditCardThumbFill } from "@/components/credit-card-thumb";
+import { isAxisBankCard } from "@/lib/cards/axisApply";
 import type { CardNetwork } from "@/lib/types/card";
 
 type CardDetailsPageProps = {
@@ -114,6 +116,16 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
               {card.network}
             </span>
           </div>
+
+          {isAxisBankCard(card.bank) ? (
+            <div className="mb-6 flex flex-col gap-2">
+              <AxisApplyLink className="sm:self-start" />
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Opens Axis Bank in a new tab (referral). Cardwise is not the
+                lender; terms are set by the bank.
+              </p>
+            </div>
+          ) : null}
 
           <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
             <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">

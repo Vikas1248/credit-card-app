@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { AxisApplyLink } from "@/components/axis-apply-link";
 import { CreditCardThumbFill } from "@/components/credit-card-thumb";
+import { isAxisBankCard } from "@/lib/cards/axisApply";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { rewardCalculator } from "@/lib/recommend/rewardCalculator";
 import type { CardNetwork } from "@/lib/types/card";
@@ -652,12 +654,17 @@ export default function Home() {
                               Key reward: {rewardHighlight}
                             </p>
 
-                            <Link
-                              href={`/card/${card.id}`}
-                              className="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 dark:hover:bg-blue-500"
-                            >
-                              View Details
-                            </Link>
+                            <div className="flex flex-col gap-2">
+                              {isAxisBankCard(card.bank) ? (
+                                <AxisApplyLink fullWidth />
+                              ) : null}
+                              <Link
+                                href={`/card/${card.id}`}
+                                className="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 dark:hover:bg-blue-500"
+                              >
+                                View Details
+                              </Link>
+                            </div>
                           </div>
                         </article>
                       );
@@ -883,20 +890,25 @@ export default function Home() {
                         </table>
                       </div>
 
-                      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
-                        <p className="text-xs text-zinc-500">
-                          Fee {formatInr(card.annual_fee)} ·{" "}
-                          {card.reward_type === "cashback"
-                            ? "Cashback"
-                            : "Points"}{" "}
-                          · {card.reward_rate ?? "—"}
-                        </p>
-                        <Link
-                          href={`/card/${card.id}`}
-                          className="text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400"
-                        >
-                          Full details →
-                        </Link>
+                      <div className="mt-4 flex flex-col gap-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-xs text-zinc-500">
+                            Fee {formatInr(card.annual_fee)} ·{" "}
+                            {card.reward_type === "cashback"
+                              ? "Cashback"
+                              : "Points"}{" "}
+                            · {card.reward_rate ?? "—"}
+                          </p>
+                          <Link
+                            href={`/card/${card.id}`}
+                            className="text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400"
+                          >
+                            Full details →
+                          </Link>
+                        </div>
+                        {isAxisBankCard(card.bank) ? (
+                          <AxisApplyLink fullWidth size="sm" />
+                        ) : null}
                       </div>
                       </div>
                     </article>
@@ -1008,6 +1020,9 @@ export default function Home() {
                       <span className="mt-0.5 block text-xs font-normal text-zinc-500">
                         {compareLeft.bank}
                       </span>
+                      {isAxisBankCard(compareLeft.bank) ? (
+                        <AxisApplyLink size="sm" className="mt-2" />
+                      ) : null}
                     </th>
                     <th className="px-4 py-3 font-semibold text-zinc-700 dark:text-zinc-200">
                       <Link
@@ -1019,6 +1034,9 @@ export default function Home() {
                       <span className="mt-0.5 block text-xs font-normal text-zinc-500">
                         {compareRight.bank}
                       </span>
+                      {isAxisBankCard(compareRight.bank) ? (
+                        <AxisApplyLink size="sm" className="mt-2" />
+                      ) : null}
                     </th>
                   </tr>
                 </thead>
@@ -1207,12 +1225,17 @@ export default function Home() {
                     </div>
                   </dl>
 
-                  <Link
-                    href={`/card/${card.id}`}
-                    className={`${btnPrimary} mt-auto w-full text-center no-underline`}
-                  >
-                    View details
-                  </Link>
+                  <div className="mt-auto flex flex-col gap-2">
+                    {isAxisBankCard(card.bank) ? (
+                      <AxisApplyLink fullWidth />
+                    ) : null}
+                    <Link
+                      href={`/card/${card.id}`}
+                      className={`${btnPrimary} w-full text-center no-underline`}
+                    >
+                      View details
+                    </Link>
+                  </div>
                   </div>
                 </article>
               ))}
