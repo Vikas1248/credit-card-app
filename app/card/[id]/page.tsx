@@ -91,6 +91,7 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
         <article className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900/80">
           <div className="relative aspect-[8/5] w-full border-b border-zinc-200 bg-zinc-900 dark:border-zinc-800">
             <CreditCardThumbFill
+              bank={card.bank}
               className="object-cover object-center"
               priority
               sizes="(max-width: 768px) 100vw, 42rem"

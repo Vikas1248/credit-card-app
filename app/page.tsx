@@ -622,9 +622,12 @@ export default function Home() {
                           className="w-[280px] shrink-0 snap-start rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-950"
                         >
                           <div className="relative h-36 overflow-hidden rounded-t-2xl bg-zinc-900">
-                            <CreditCardThumbFill className="object-cover object-center" />
+                            <CreditCardThumbFill
+                              bank={card.bank}
+                              className="object-cover object-center"
+                            />
                             <div
-                              className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${cardPreviewClass(idx)} opacity-35 mix-blend-soft-light`}
+                              className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${cardPreviewClass(idx)} ${card.bank.toLowerCase().includes("axis") ? "opacity-15" : "opacity-35"} mix-blend-soft-light`}
                               aria-hidden
                             />
                             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
@@ -766,6 +769,7 @@ export default function Home() {
                     >
                       <div className="relative aspect-[8/5] w-full shrink-0 border-b border-zinc-100 bg-zinc-900 dark:border-zinc-800">
                         <CreditCardThumbFill
+                          bank={card.bank}
                           className="object-cover object-center"
                           sizes="(max-width: 1024px) 100vw, 33vw"
                         />
@@ -1152,6 +1156,7 @@ export default function Home() {
                 >
                   <div className="relative aspect-[8/5] w-full shrink-0 border-b border-zinc-100 bg-zinc-900 dark:border-zinc-800">
                     <CreditCardThumbFill
+                      bank={card.bank}
                       className="object-cover object-center transition duration-300 group-hover:scale-[1.02]"
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
