@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { CreditCardThumbFill } from "@/components/credit-card-thumb";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { rewardCalculator } from "@/lib/recommend/rewardCalculator";
 import type { CardNetwork } from "@/lib/types/card";
@@ -620,11 +621,14 @@ export default function Home() {
                           key={`${group.id}-${card.id}`}
                           className="w-[280px] shrink-0 snap-start rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-950"
                         >
-                          <div
-                            className={`relative h-36 overflow-hidden rounded-t-2xl bg-gradient-to-br ${cardPreviewClass(idx)}`}
-                          >
-                            <div className="absolute inset-0 bg-black/10" />
-                            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/20 blur-xl" />
+                          <div className="relative h-36 overflow-hidden rounded-t-2xl bg-zinc-900">
+                            <CreditCardThumbFill className="object-cover object-center" />
+                            <div
+                              className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${cardPreviewClass(idx)} opacity-35 mix-blend-soft-light`}
+                              aria-hidden
+                            />
+                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                            <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/15 blur-xl" />
                             <div className="absolute bottom-3 left-3 right-3 rounded-lg bg-white/20 px-3 py-2 text-white backdrop-blur-sm">
                               <p className="line-clamp-1 text-sm font-semibold tracking-tight">
                                 {card.card_name}
@@ -754,12 +758,19 @@ export default function Home() {
                   return (
                     <article
                       key={card.id}
-                      className={`flex flex-col rounded-2xl border bg-white p-5 shadow-sm transition dark:bg-zinc-950 ${
+                      className={`flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition dark:bg-zinc-950 ${
                         isBest
                           ? "border-emerald-500 ring-2 ring-emerald-500/25 dark:border-emerald-500"
                           : "border-zinc-200 dark:border-zinc-700"
                       }`}
                     >
+                      <div className="relative aspect-[8/5] w-full shrink-0 border-b border-zinc-100 bg-zinc-900 dark:border-zinc-800">
+                        <CreditCardThumbFill
+                          className="object-cover object-center"
+                          sizes="(max-width: 1024px) 100vw, 33vw"
+                        />
+                      </div>
+                      <div className="flex flex-col p-5">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                           #{index + 1}
@@ -882,6 +893,7 @@ export default function Home() {
                         >
                           Full details →
                         </Link>
+                      </div>
                       </div>
                     </article>
                   );
@@ -1136,8 +1148,15 @@ export default function Home() {
               {filteredCards.map((card) => (
                 <article
                   key={card.id}
-                  className="group flex h-full flex-col rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-zinc-300 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-950 dark:hover:border-zinc-600"
+                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:border-zinc-300 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-950 dark:hover:border-zinc-600"
                 >
+                  <div className="relative aspect-[8/5] w-full shrink-0 border-b border-zinc-100 bg-zinc-900 dark:border-zinc-800">
+                    <CreditCardThumbFill
+                      className="object-cover object-center transition duration-300 group-hover:scale-[1.02]"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    />
+                  </div>
+                  <div className="flex flex-1 flex-col p-5">
                   <div className="flex items-start justify-between gap-3">
                     <h3 className="text-base font-semibold leading-snug tracking-tight">
                       <Link
@@ -1189,6 +1208,7 @@ export default function Home() {
                   >
                     View details
                   </Link>
+                  </div>
                 </article>
               ))}
             </div>

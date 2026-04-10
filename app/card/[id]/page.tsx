@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CreditCardThumbFill } from "@/components/credit-card-thumb";
 import type { CardNetwork } from "@/lib/types/card";
 
 type CardDetailsPageProps = {
@@ -87,7 +88,15 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
           <span aria-hidden>←</span> Back to catalog
         </Link>
 
-        <article className="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/80 sm:p-8">
+        <article className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900/80">
+          <div className="relative aspect-[8/5] w-full border-b border-zinc-200 bg-zinc-900 dark:border-zinc-800">
+            <CreditCardThumbFill
+              className="object-cover object-center"
+              priority
+              sizes="(max-width: 768px) 100vw, 42rem"
+            />
+          </div>
+          <div className="p-6 sm:p-8">
           <div className="mb-5 flex items-start justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
@@ -167,6 +176,7 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
               {card.key_benefits ?? "N/A"}
             </p>
           </section>
+          </div>
         </article>
       </div>
     </main>
