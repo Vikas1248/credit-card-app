@@ -11,15 +11,13 @@ export function parseCardNetworkParam(
 }
 
 /**
- * Catalog network constraint for list + recommend queries.
- * Defaults to Amex (this repo’s curated dataset). Set NEXT_PUBLIC_CARD_NETWORK=*
- * or `all` to disable filtering. Query param ?network= on /api/cards overrides
- * when the client sends it (see app/page.tsx).
+ * Optional catalog filter (Visa / Mastercard / Amex). When unset, empty, * or all,
+ * no network filter is applied — Amex, Axis, and other rows all show.
  */
 export function getOptionalCardNetworkFilter(): CardNetwork | null {
   const raw = process.env.NEXT_PUBLIC_CARD_NETWORK?.trim();
-  if (raw === "*" || raw === "all") {
+  if (!raw || raw === "*" || raw === "all") {
     return null;
   }
-  return parseCardNetworkParam(process.env.NEXT_PUBLIC_CARD_NETWORK) ?? "Amex";
+  return parseCardNetworkParam(process.env.NEXT_PUBLIC_CARD_NETWORK);
 }

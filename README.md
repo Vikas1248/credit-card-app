@@ -15,7 +15,12 @@ Open [http://localhost:3000](http://localhost:3000). Configure Supabase and opti
 
 ## Card data
 
-Canonical bundled dataset for imports: `data/credit_cards_amex_refined.json`. Use `import_cards_to_supabase.py` and `upload_cards_to_gcs.py` with your environment variables when syncing to Supabase or GCS.
+Bundled datasets for imports:
+
+- `data/credit_cards_amex_refined.json`
+- `data/credit_cards_axis_refined.json`
+
+Use `import_cards_to_supabase.py` (optional `--purge-axis` before reloading Axis) and `upload_cards_to_gcs.py` with your environment variables when syncing to Supabase or GCS.
 
 ### Why do I see more cards than in my JSON?
 
@@ -31,7 +36,7 @@ With the service role key set:
 .venv/bin/python import_cards_to_supabase.py --purge-non-amex --input data/credit_cards_amex_refined.json
 ```
 
-**Option C — catalog filter (default)**  
-The app **defaults to `network = Amex`** for the home list and recommend flows so you only see Amex rows even if other networks still exist in Supabase. Set `NEXT_PUBLIC_CARD_NETWORK=*` or `all` in `.env.local` (and Vercel) to show **all** networks. The home page also sends `?network=Amex` on `/api/cards` so filtering works even when server env is missing.
+**Option C — catalog filter**  
+By default **no network filter** is applied (Amex, Axis Visa/Mastercard, etc. all show). Set `NEXT_PUBLIC_CARD_NETWORK` to `Visa`, `Mastercard`, or `Amex` to restrict the catalog, or `all` / `*` explicitly. The home page passes that value as `?network=` when set.
 
 If you imported the same Amex file twice, you can get duplicate rows—delete duplicates in Supabase or truncate and import once.
