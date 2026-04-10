@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { rewardCalculator } from "@/lib/recommend/rewardCalculator";
 import type { CardNetwork } from "@/lib/types/card";
 
@@ -353,7 +354,14 @@ export default function Home() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch("/api/cards?limit=200", { cache: "no-store" });
+      const params = new URLSearchParams({ limit: "200" });
+      const catalogNetwork = getOptionalCardNetworkFilter();
+      if (catalogNetwork) {
+        params.set("network", catalogNetwork);
+      }
+      const response = await fetch(`/api/cards?${params.toString()}`, {
+        cache: "no-store",
+      });
       const result: { cards?: CreditCard[]; error?: string } =
         await response.json();
 

@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
+import {
+  getOptionalCardNetworkFilter,
+  parseCardNetworkParam,
+} from "@/lib/cards/networkFilter";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { CardNetwork } from "@/lib/types/card";
 
@@ -28,7 +31,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const q = searchParams.get("q")?.trim();
     const bank = searchParams.get("bank")?.trim();
-    const network = searchParams.get("network")?.trim();
+    const networkParam = searchParams.get("network");
     const rewardType = searchParams.get("reward_type")?.trim();
     const maxAnnualFee = searchParams.get("max_annual_fee")?.trim();
     const minJoiningFee = searchParams.get("min_joining_fee")?.trim();
@@ -43,8 +46,7 @@ export async function GET(request: Request) {
         "id, card_name, bank, network, joining_fee, annual_fee, reward_type, reward_rate, lounge_access, best_for, key_benefits, last_updated, dining_reward, travel_reward, shopping_reward, fuel_reward"
       )
       .order("annual_fee", { ascending: true })
-      .order("card_name", { ascending: true })
-      .range(safeOffset, safeOffset + safeLimit - 1);
+      .order("card_name", { ascending: true });
 
     if (q) {
       query = query.or(
@@ -52,11 +54,11 @@ export async function GET(request: Request) {
       );
     }
     if (bank) query = query.eq("bank", bank);
-    const envNetwork = getOptionalCardNetworkFilter();
-    if (envNetwork) {
-      query = query.eq("network", envNetwork);
-    } else if (network) {
-      query = query.eq("network", network as CardNetwork);
+    // Query param wins so the client can force a filter even if server env is missing.
+    const effectiveNetwork =
+      parseCardNetworkParam(networkParam) ?? getOptionalCardNetworkFilter();
+    if (effectiveNetwork) {
+      query = query.eq("network", effectiveNetwork);
     }
     if (rewardType) query = query.eq("reward_type", rewardType);
     if (maxAnnualFee && !Number.isNaN(Number(maxAnnualFee))) {
@@ -65,6 +67,8 @@ export async function GET(request: Request) {
     if (minJoiningFee && !Number.isNaN(Number(minJoiningFee))) {
       query = query.gte("joining_fee", Number(minJoiningFee));
     }
+
+    query = query.range(safeOffset, safeOffset + safeLimit - 1);
 
     const { data, error } = await query;
     if (error) {

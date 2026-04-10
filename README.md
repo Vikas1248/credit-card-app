@@ -31,13 +31,7 @@ With the service role key set:
 .venv/bin/python import_cards_to_supabase.py --purge-non-amex --input data/credit_cards_amex_refined.json
 ```
 
-**Option C — hide non-Amex in the UI only**  
-Add to `.env.local` (and Vercel env for production):
-
-```bash
-NEXT_PUBLIC_CARD_NETWORK=Amex
-```
-
-This restricts list and recommend APIs to Amex; old rows remain in the DB until you delete them.
+**Option C — catalog filter (default)**  
+The app **defaults to `network = Amex`** for the home list and recommend flows so you only see Amex rows even if other networks still exist in Supabase. Set `NEXT_PUBLIC_CARD_NETWORK=*` or `all` in `.env.local` (and Vercel) to show **all** networks. The home page also sends `?network=Amex` on `/api/cards` so filtering works even when server env is missing.
 
 If you imported the same Amex file twice, you can get duplicate rows—delete duplicates in Supabase or truncate and import once.
