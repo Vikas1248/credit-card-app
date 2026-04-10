@@ -1,5 +1,6 @@
 import argparse
 import json
+import math
 import os
 import re
 import sys
@@ -25,7 +26,7 @@ def infer_bank(card_name: str) -> str:
     ]
     for bank in known_banks:
         if bank in name:
-            return bank.title()
+            return "American Express" if bank in ("american express", "amex") else bank.title()
     return "Unknown"
 
 
@@ -33,6 +34,8 @@ def infer_network(card_name: str, reward_rate: str) -> str:
     text = f"{card_name} {reward_rate}".lower()
     if "mastercard" in text:
         return "Mastercard"
+    if "american express" in card_name.lower() or "amex" in card_name.lower():
+        return "Amex"
     return "Visa"
 
 
@@ -43,16 +46,31 @@ def infer_reward_type(reward_rate: str) -> str:
     return "points"
 
 
-def parse_fee(value: str) -> int:
-    if not value or value.strip().lower() == "n/a":
+def parse_fee(value: str | int | float | None) -> int:
+    if value is None:
         return 0
-    digits = re.findall(r"\d+", value.replace(",", ""))
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return int(value)
+    if not str(value).strip() or str(value).strip().lower() == "n/a":
+        return 0
+    digits = re.findall(r"\d+", str(value).replace(",", ""))
     if not digits:
         return 0
     return int(digits[0])
 
 
-def read_cards(path: str) -> list[dict[str, str]]:
+def opt_float(card: dict[str, Any], key: str) -> float | None:
+    v = card.get(key)
+    if v is None:
+        return None
+    try:
+        f = float(v)
+        return f if math.isfinite(f) else None
+    except (TypeError, ValueError):
+        return None
+
+
+def read_cards(path: str) -> list[dict[str, Any]]:
     with open(path, "r", encoding="utf-8") as file:
         payload = json.load(file)
     cards = payload.get("cards", [])
@@ -61,29 +79,63 @@ def read_cards(path: str) -> list[dict[str, str]]:
     return [card for card in cards if isinstance(card, dict)]
 
 
-def map_to_db_rows(cards: list[dict[str, str]]) -> list[dict[str, Any]]:
+def map_to_db_rows(cards: list[dict[str, Any]]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for card in cards:
         card_name = str(card.get("card_name", "Unknown Card")).strip() or "Unknown Card"
         reward_rate = str(card.get("reward_rate", "N/A")).strip() or "N/A"
-        annual_fee_raw = str(card.get("annual_fee", "0")).strip()
+        annual_fee_raw = card.get("annual_fee", "0")
         lounge_access = str(card.get("lounge_access", "N/A")).strip() or "N/A"
         best_for = str(card.get("best_for", "N/A")).strip() or "N/A"
-
-        rows.append(
-            {
-                "card_name": card_name,
-                "bank": infer_bank(card_name),
-                "network": infer_network(card_name, reward_rate),
-                "joining_fee": 0,
-                "annual_fee": parse_fee(annual_fee_raw),
-                "reward_type": infer_reward_type(reward_rate),
-                "reward_rate": reward_rate,
-                "lounge_access": lounge_access,
-                "best_for": best_for,
-                "key_benefits": reward_rate,
-            }
+        key_benefits_raw = card.get("key_benefits")
+        key_benefits = (
+            str(key_benefits_raw).strip()
+            if key_benefits_raw is not None
+            else reward_rate
         )
+
+        bank = str(card.get("bank", "")).strip() or infer_bank(card_name)
+        network_raw = str(card.get("network", "")).strip()
+        if network_raw in ("Visa", "Mastercard", "Amex"):
+            network = network_raw
+        else:
+            network = infer_network(card_name, reward_rate)
+
+        rt = str(card.get("reward_type", "")).strip().lower()
+        if rt in ("cashback", "points"):
+            reward_type = rt
+        else:
+            reward_type = infer_reward_type(reward_rate)
+
+        jf = card.get("joining_fee")
+        if isinstance(jf, (int, float)) and not isinstance(jf, bool):
+            joining_fee = int(jf)
+        else:
+            joining_fee = parse_fee(jf) if jf is not None else 0
+
+        annual_fee = (
+            parse_fee(annual_fee_raw)
+            if not isinstance(annual_fee_raw, (int, float))
+            else int(annual_fee_raw)
+        )
+
+        row: dict[str, Any] = {
+            "card_name": card_name,
+            "bank": bank,
+            "network": network,
+            "joining_fee": joining_fee,
+            "annual_fee": annual_fee,
+            "reward_type": reward_type,
+            "reward_rate": reward_rate,
+            "lounge_access": lounge_access,
+            "best_for": best_for,
+            "key_benefits": key_benefits,
+        }
+        for col in ("dining_reward", "travel_reward", "shopping_reward", "fuel_reward"):
+            fv = opt_float(card, col)
+            if fv is not None:
+                row[col] = fv
+        rows.append(row)
     return rows
 
 
@@ -144,6 +196,11 @@ def main() -> int:
     except urllib.error.HTTPError as exc:
         error_body = exc.read().decode("utf-8", errors="ignore")
         print(f"Supabase HTTP error {exc.code}: {error_body}", file=sys.stderr)
+        if "credit_cards_network_check" in error_body or "23514" in error_body:
+            print(
+                "Hint: allow Amex in DB — run sql/extend_network_amex.sql in the Supabase SQL editor, then retry.",
+                file=sys.stderr,
+            )
         return 1
     except Exception as exc:  # noqa: BLE001
         print(f"Import error: {exc}", file=sys.stderr)

@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import type { CardNetwork } from "@/lib/types/card";
 
 type CardRow = {
   id: string;
   card_name: string;
   bank: string;
-  network: "Visa" | "Mastercard";
+  network: CardNetwork;
   joining_fee: number;
   annual_fee: number;
   reward_type: "cashback" | "points";

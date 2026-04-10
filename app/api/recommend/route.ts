@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import type { CardNetwork } from "@/lib/types/card";
 
 type RecommendRequest = {
   salary: number;
@@ -8,7 +9,7 @@ type RecommendRequest = {
     preferred_reward_type?: "cashback" | "points";
     lounge_required?: boolean;
     preferred_bank?: string;
-    preferred_network?: "Visa" | "Mastercard";
+    preferred_network?: CardNetwork;
     max_annual_fee?: number;
   };
 };
@@ -17,7 +18,7 @@ type RecommendedCard = {
   id: string;
   card_name: string;
   bank: string;
-  network: "Visa" | "Mastercard";
+  network: CardNetwork;
   annual_fee: number;
   reward_type: "cashback" | "points";
   reward_rate: string | null;

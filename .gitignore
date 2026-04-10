@@ -51,4 +51,3 @@ __pycache__/
 /cards/
 /cleaned_cards/
 amex_raw_latest.json
-amex_structured_cards.json

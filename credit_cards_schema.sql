@@ -4,7 +4,7 @@ create table if not exists public.credit_cards (
   id uuid primary key default gen_random_uuid(),
   card_name text not null,
   bank text not null,
-  network text not null check (network in ('Visa', 'Mastercard')),
+  network text not null check (network in ('Visa', 'Mastercard', 'Amex')),
   joining_fee int not null default 0,
   annual_fee int not null default 0,
   reward_type text not null check (reward_type in ('cashback', 'points')),

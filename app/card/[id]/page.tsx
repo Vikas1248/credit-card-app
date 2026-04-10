@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { CardNetwork } from "@/lib/types/card";
 
 type CardDetailsPageProps = {
   params: Promise<{ id: string }>;
@@ -10,7 +11,7 @@ type CreditCard = {
   id: string;
   card_name: string;
   bank: string;
-  network: "Visa" | "Mastercard";
+  network: CardNetwork;
   joining_fee: number;
   annual_fee: number;
   reward_type: "cashback" | "points";

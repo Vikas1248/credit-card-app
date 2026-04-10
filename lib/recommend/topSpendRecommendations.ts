@@ -3,6 +3,7 @@ import {
   rewardCalculator,
   type SpendByCategory,
 } from "@/lib/recommend/rewardCalculator";
+import type { CardNetwork } from "@/lib/types/card";
 
 const SELECT_FIELDS =
   "id, card_name, bank, network, annual_fee, reward_type, reward_rate, lounge_access, best_for, dining_reward, travel_reward, shopping_reward, fuel_reward";
@@ -11,7 +12,7 @@ type CreditCardRow = {
   id: string;
   card_name: string;
   bank: string;
-  network: "Visa" | "Mastercard";
+  network: CardNetwork;
   annual_fee: number;
   reward_type: "cashback" | "points";
   reward_rate: string | null;
@@ -27,7 +28,7 @@ export type SpendRecommendationRow = {
   id: string;
   card_name: string;
   bank: string;
-  network: "Visa" | "Mastercard";
+  network: CardNetwork;
   annual_fee: number;
   reward_type: "cashback" | "points";
   reward_rate: string | null;

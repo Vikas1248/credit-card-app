@@ -1,5 +1,6 @@
 import argparse
 import logging
+import os
 from pathlib import Path
 
 from google.cloud import storage
@@ -35,6 +36,18 @@ def upload_json_files(cards_dir: Path, bucket_name: str, prefix: str = "raw/") -
     return uploaded_count
 
 
+def upload_single_json(file_path: Path, bucket_name: str, prefix: str = "refined/") -> None:
+    if not file_path.is_file():
+        raise FileNotFoundError(f"JSON file not found: {file_path}")
+
+    client = storage.Client()
+    bucket = client.bucket(bucket_name)
+    object_name = f"{prefix.rstrip('/')}/{file_path.name}"
+    blob = bucket.blob(object_name)
+    blob.upload_from_filename(str(file_path), content_type="application/json")
+    logging.info("Uploaded %s -> gs://%s/%s", file_path.name, bucket_name, object_name)
+
+
 def main() -> int:
     setup_logger()
 
@@ -43,24 +56,41 @@ def main() -> int:
     )
     parser.add_argument(
         "--bucket",
-        required=True,
-        help="Target Google Cloud Storage bucket name.",
+        default=None,
+        help="Target GCS bucket name (default: GCS_CARDS_BUCKET env).",
     )
     parser.add_argument(
         "--cards-dir",
-        default="cards",
-        help="Local folder containing card JSON files (default: cards).",
+        default=None,
+        help="Local folder containing card JSON files (uploads all *.json).",
+    )
+    parser.add_argument(
+        "--file",
+        default=None,
+        help="Single JSON file to upload (e.g. data/credit_cards_amex_refined.json).",
     )
     parser.add_argument(
         "--prefix",
         default="raw/",
-        help="GCS object prefix/folder (default: raw/).",
+        help="GCS object prefix/folder (default: raw/ for --cards-dir, refined/ for --file).",
     )
     args = parser.parse_args()
+    bucket = args.bucket or os.environ.get("GCS_CARDS_BUCKET", "").strip()
+    if not bucket:
+        logging.error("Set --bucket or GCS_CARDS_BUCKET.")
+        return 1
 
     try:
+        if args.file:
+            prefix = args.prefix if args.prefix != "raw/" else "refined/"
+            upload_single_json(Path(args.file), bucket, prefix)
+            logging.info("Done. Uploaded 1 file.")
+            return 0
+        if not args.cards_dir:
+            logging.error("Provide --cards-dir or --file.")
+            return 1
         cards_dir = Path(args.cards_dir)
-        count = upload_json_files(cards_dir, args.bucket, args.prefix)
+        count = upload_json_files(cards_dir, bucket, args.prefix)
         logging.info("Done. Uploaded %d file(s).", count)
         return 0
     except Exception as exc:  # noqa: BLE001

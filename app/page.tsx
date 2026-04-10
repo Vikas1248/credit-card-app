@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { rewardCalculator } from "@/lib/recommend/rewardCalculator";
+import type { CardNetwork } from "@/lib/types/card";
 
 type CreditCard = {
   id: string;
   card_name: string;
   bank: string;
-  network: "Visa" | "Mastercard";
+  network: CardNetwork;
   joining_fee: number;
   annual_fee: number;
   reward_type: "cashback" | "points";
@@ -34,7 +35,7 @@ type SpendRecommendation = {
   id: string;
   card_name: string;
   bank: string;
-  network: "Visa" | "Mastercard";
+  network: CardNetwork;
   annual_fee: number;
   reward_type: "cashback" | "points";
   reward_rate: string | null;
