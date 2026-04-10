@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { CardNetwork } from "@/lib/types/card";
 
@@ -58,8 +59,13 @@ export async function POST(request: Request) {
         "id, card_name, bank, network, joining_fee, annual_fee, reward_type, reward_rate, lounge_access, best_for, key_benefits"
       );
 
+    const envNetwork = getOptionalCardNetworkFilter();
+    if (envNetwork) {
+      query = query.eq("network", envNetwork);
+    } else if (preferredNetwork) {
+      query = query.eq("network", preferredNetwork);
+    }
     if (preferredBank) query = query.eq("bank", preferredBank);
-    if (preferredNetwork) query = query.eq("network", preferredNetwork);
     if (maxAnnualFee !== null && !Number.isNaN(maxAnnualFee)) {
       query = query.lte("annual_fee", maxAnnualFee);
     }

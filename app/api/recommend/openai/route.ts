@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { CardNetwork } from "@/lib/types/card";
 
@@ -78,13 +79,18 @@ export async function POST(request: Request) {
     }
 
     const supabase = getSupabaseServerClient();
-    const { data: cards, error: cardsError } = await supabase
+    const envNetwork = getOptionalCardNetworkFilter();
+    let cardsQuery = supabase
       .from("credit_cards")
       .select(
         "id, card_name, bank, network, annual_fee, reward_type, reward_rate, lounge_access, best_for, key_benefits"
       )
       .order("annual_fee", { ascending: true })
       .limit(100);
+    if (envNetwork) {
+      cardsQuery = cardsQuery.eq("network", envNetwork);
+    }
+    const { data: cards, error: cardsError } = await cardsQuery;
 
     if (cardsError) {
       throw new Error(cardsError.message);

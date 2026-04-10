@@ -148,6 +148,22 @@ def insert_rows(supabase_url: str, supabase_key: str, rows: list[dict[str, Any]]
         return json.loads(body) if body else []
 
 
+def delete_non_amex_rows(supabase_url: str, supabase_key: str) -> None:
+    """Remove rows where network is not Amex (PostgREST neq). Service role recommended."""
+    base = supabase_url.rstrip("/")
+    endpoint = f"{base}/rest/v1/credit_cards?network=neq.Amex"
+    request = urllib.request.Request(
+        endpoint,
+        headers={
+            "apikey": supabase_key,
+            "Authorization": f"Bearer {supabase_key}",
+        },
+        method="DELETE",
+    )
+    with urllib.request.urlopen(request, timeout=120) as response:
+        response.read()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Import extracted credit card JSON into Supabase credit_cards table."
@@ -156,6 +172,11 @@ def main() -> int:
         "--input",
         required=True,
         help="Path to JSON file with shape: {\"cards\": [...]}",
+    )
+    parser.add_argument(
+        "--purge-non-amex",
+        action="store_true",
+        help="Before insert, DELETE rows where network is not Amex (or is null). Needs service role.",
     )
     args = parser.parse_args()
 
@@ -175,6 +196,10 @@ def main() -> int:
         return 1
 
     try:
+        if args.purge_non_amex:
+            delete_non_amex_rows(supabase_url, supabase_key)
+            print("Purged rows with network != Amex.", file=sys.stderr)
+
         cards = read_cards(args.input)
         rows = map_to_db_rows(cards)
         if not rows:

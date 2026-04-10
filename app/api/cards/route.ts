@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { CardNetwork } from "@/lib/types/card";
 
@@ -51,7 +52,12 @@ export async function GET(request: Request) {
       );
     }
     if (bank) query = query.eq("bank", bank);
-    if (network) query = query.eq("network", network);
+    const envNetwork = getOptionalCardNetworkFilter();
+    if (envNetwork) {
+      query = query.eq("network", envNetwork);
+    } else if (network) {
+      query = query.eq("network", network as CardNetwork);
+    }
     if (rewardType) query = query.eq("reward_type", rewardType);
     if (maxAnnualFee && !Number.isNaN(Number(maxAnnualFee))) {
       query = query.lte("annual_fee", Number(maxAnnualFee));

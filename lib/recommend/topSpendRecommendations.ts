@@ -1,3 +1,4 @@
+import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import {
   rewardCalculator,
@@ -85,7 +86,12 @@ export async function topSpendRecommendations(
   recommendations: SpendRecommendationRow[];
 }> {
   const supabase = getSupabaseServerClient();
-  const { data, error } = await supabase.from("credit_cards").select(SELECT_FIELDS);
+  const envNetwork = getOptionalCardNetworkFilter();
+  let q = supabase.from("credit_cards").select(SELECT_FIELDS);
+  if (envNetwork) {
+    q = q.eq("network", envNetwork);
+  }
+  const { data, error } = await q;
 
   if (error) {
     throw new Error(error.message);
