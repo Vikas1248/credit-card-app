@@ -12,21 +12,12 @@ from typing import Any
 def infer_bank(card_name: str) -> str:
     name = card_name.lower()
     known_banks = [
-        "hdfc",
-        "icici",
-        "sbi",
-        "axis",
-        "kotak",
-        "rbl",
-        "indusind",
-        "yes bank",
-        "standard chartered",
         "american express",
         "amex",
     ]
     for bank in known_banks:
         if bank in name:
-            return "American Express" if bank in ("american express", "amex") else bank.title()
+            return "American Express"
     return "Unknown"
 
 

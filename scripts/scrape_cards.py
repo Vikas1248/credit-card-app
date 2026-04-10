@@ -12,12 +12,6 @@ from playwright.sync_api import sync_playwright
 
 DEFAULT_URL = "https://www.americanexpress.com/in/credit-cards/all-cards/"
 OUTPUT_DIR = Path("cards")
-BANK_URLS = {
-    "hdfc": "https://www.hdfcbank.com/personal/pay/cards/credit-cards",
-    "icici": "https://www.icicibank.com/personal-banking/cards/credit-card",
-    "sbi": "https://www.sbicard.com/en/personal/credit-cards.page",
-    "axis": "https://www.axisbank.com/retail/cards/credit-card",
-}
 
 
 def setup_logger() -> None:
@@ -178,17 +172,12 @@ def save_cards(cards: list[dict[str, str]], output_dir: Path) -> int:
 def main() -> int:
     setup_logger()
     parser = argparse.ArgumentParser(
-        description="Scrape credit card data and save one JSON file per card."
+        description="Scrape Amex India card listings and save one JSON file per card."
     )
     parser.add_argument(
         "--url",
         default=DEFAULT_URL,
-        help=f"Page URL to scrape (default: {DEFAULT_URL})",
-    )
-    parser.add_argument(
-        "--bank",
-        choices=sorted(BANK_URLS.keys()),
-        help="Optional bank preset (hdfc/icici/sbi/axis). Overrides --url.",
+        help=f"Page URL to scrape (default: Amex India all-cards)",
     )
     parser.add_argument(
         "--output-dir",
@@ -198,7 +187,7 @@ def main() -> int:
     args = parser.parse_args()
 
     try:
-        target_url = BANK_URLS[args.bank] if args.bank else args.url
+        target_url = args.url
         cards = scrape_cards(target_url)
         if not cards:
             logging.error("No card data extracted from URL: %s", target_url)
