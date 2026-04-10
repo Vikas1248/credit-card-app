@@ -1,3 +1,4 @@
+import { areThirdPartyApisDisabled } from "@/lib/config/externalAccess";
 import type { SpendByCategory } from "@/lib/recommend/rewardCalculator";
 import {
   fetchSpendRecommendationExplanations,
@@ -23,7 +24,10 @@ export async function finalizeSpendRecommendations(
 ): Promise<Awaited<ReturnType<typeof topSpendRecommendations>>> {
   const payload = await topSpendRecommendations(monthlySpend, limit);
 
-  if (!process.env.OPENAI_API_KEY) {
+  if (
+    areThirdPartyApisDisabled() ||
+    !process.env.OPENAI_API_KEY
+  ) {
     return {
       ...payload,
       recommendations: withNullExplanations(payload.recommendations),

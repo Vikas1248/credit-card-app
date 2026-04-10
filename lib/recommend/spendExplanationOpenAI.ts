@@ -1,3 +1,4 @@
+import { areThirdPartyApisDisabled } from "@/lib/config/externalAccess";
 import type { SpendByCategory } from "@/lib/recommend/rewardCalculator";
 import type { SpendRecommendationRow } from "@/lib/recommend/topSpendRecommendations";
 
@@ -60,6 +61,9 @@ export async function fetchSpendRecommendationExplanations(
   monthlySpend: SpendByCategory,
   rows: SpendRecommendationRow[]
 ): Promise<Record<string, string>> {
+  if (areThirdPartyApisDisabled()) {
+    return {};
+  }
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new Error("OPENAI_API_KEY is not set.");

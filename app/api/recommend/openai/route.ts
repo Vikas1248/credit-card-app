@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
+import { areThirdPartyApisDisabled } from "@/lib/config/externalAccess";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { CardNetwork } from "@/lib/types/card";
 
@@ -72,6 +73,15 @@ Return ONLY valid JSON in this exact format:
 
 export async function POST(request: Request) {
   try {
+    if (areThirdPartyApisDisabled()) {
+      return NextResponse.json(
+        {
+          error:
+            "External API calls are disabled (DISABLE_EXTERNAL_API_CALLS).",
+        },
+        { status: 503 }
+      );
+    }
     const body = (await request.json()) as RecommendWithAiRequest;
     const validationError = validateBody(body);
     if (validationError) {
