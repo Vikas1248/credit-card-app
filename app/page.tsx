@@ -156,9 +156,6 @@ const headerInputClass =
 const headerNavLinkClass =
   "shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100";
 
-const headerBtnClass =
-  "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800";
-
 function Spinner({ className }: { className?: string }) {
   return (
     <svg
@@ -188,13 +185,9 @@ function Spinner({ className }: { className?: string }) {
 function SiteHeader({
   search,
   onSearchChange,
-  onRefresh,
-  loadingCards,
 }: {
   search: string;
   onSearchChange: (value: string) => void;
-  onRefresh: () => void;
-  loadingCards: boolean;
 }) {
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/85 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/90">
@@ -233,7 +226,10 @@ function SiteHeader({
             ))}
           </nav>
 
-          <div className="relative min-w-0 flex-1 sm:min-w-[240px]">
+          <div
+            id="search"
+            className="relative min-w-0 flex-1 scroll-mt-28 sm:min-w-[240px]"
+          >
             <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
               <svg
                 className="h-4 w-4"
@@ -259,39 +255,6 @@ function SiteHeader({
               aria-label="Search cards"
             />
           </div>
-
-          <button
-            type="button"
-            onClick={() => void onRefresh()}
-            disabled={loadingCards}
-            className={headerBtnClass}
-            title="Reload card list from server"
-          >
-            {loadingCards ? (
-              <>
-                <Spinner className="h-4 w-4 text-zinc-500" />
-                <span className="hidden sm:inline">Syncing</span>
-              </>
-            ) : (
-              <>
-                <svg
-                  className="h-4 w-4 text-zinc-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  aria-hidden
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
-                </svg>
-                <span className="hidden sm:inline">Refresh</span>
-              </>
-            )}
-          </button>
         </div>
       </div>
     </header>
@@ -553,12 +516,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <SiteHeader
-        search={search}
-        onSearchChange={setSearch}
-        onRefresh={loadCards}
-        loadingCards={loading}
-      />
+      <SiteHeader search={search} onSearchChange={setSearch} />
 
       <main className="mx-auto max-w-4xl px-4 py-14 sm:px-6 sm:py-20">
         <header className="mx-auto max-w-2xl text-center">
@@ -566,8 +524,8 @@ export default function Home() {
             Find a card for how you spend
           </h1>
           <p className="mt-5 text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-            Search the catalog, jump in by spend category, match monthly spend, or
-            compare two cards side by side.
+            Use the search bar at the top, jump in by spend category, match monthly
+            spend, or compare two cards side by side.
           </p>
         </header>
 
@@ -611,43 +569,6 @@ export default function Home() {
         </section>
 
         <div className="mt-16 space-y-20 sm:mt-20 sm:space-y-24">
-          <section id="search" className={`scroll-mt-28 ${sectionShell}`}>
-            <h2 className={sectionTitleClass}>Search</h2>
-            <p className="mt-2 max-w-xl text-sm text-zinc-600 dark:text-zinc-400">
-              Same search as the header — use whichever is easier. Results are in{" "}
-              <a href="#browse" className="font-medium text-blue-600 underline-offset-2 hover:underline dark:text-blue-400">
-                All cards
-              </a>{" "}
-              below.
-            </p>
-            <label className="relative mt-6 block">
-              <span className="sr-only">Search cards</span>
-              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  aria-hidden
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-5.2-5.2M11 18a7 7 0 100-14 7 7 0 000 14z"
-                  />
-                </svg>
-              </span>
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Type a card name or bank…"
-                className="w-full rounded-2xl border border-zinc-200 bg-zinc-50/80 py-4 pl-12 pr-4 text-base text-zinc-900 shadow-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/15 dark:border-zinc-600 dark:bg-zinc-900/60 dark:text-zinc-100 dark:focus:border-blue-500"
-              />
-            </label>
-          </section>
-
           <section
             id="featured"
             className="scroll-mt-28"
