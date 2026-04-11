@@ -217,8 +217,8 @@ function SiteHeader({
           >
             {(
               [
-                ["#featured", "Featured"],
                 ["#search", "Search"],
+                ["#featured", "Featured"],
                 ["#match", "Match spend"],
                 ["#compare", "Compare"],
                 ["#browse", "All cards"],
@@ -569,6 +569,43 @@ export default function Home() {
         </header>
 
         <div className="mt-16 space-y-20 sm:mt-20 sm:space-y-24">
+          <section id="search" className={`scroll-mt-28 ${sectionShell}`}>
+            <h2 className={sectionTitleClass}>Search</h2>
+            <p className="mt-2 max-w-xl text-sm text-zinc-600 dark:text-zinc-400">
+              Same search as the header — use whichever is easier. Results are in{" "}
+              <a href="#browse" className="font-medium text-blue-600 underline-offset-2 hover:underline dark:text-blue-400">
+                All cards
+              </a>{" "}
+              below.
+            </p>
+            <label className="relative mt-6 block">
+              <span className="sr-only">Search cards</span>
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  aria-hidden
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 21l-5.2-5.2M11 18a7 7 0 100-14 7 7 0 000 14z"
+                  />
+                </svg>
+              </span>
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Type a card name or bank…"
+                className="w-full rounded-2xl border border-zinc-200 bg-zinc-50/80 py-4 pl-12 pr-4 text-base text-zinc-900 shadow-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/15 dark:border-zinc-600 dark:bg-zinc-900/60 dark:text-zinc-100 dark:focus:border-blue-500"
+              />
+            </label>
+          </section>
+
           <section
             id="featured"
             className="scroll-mt-28"
@@ -646,43 +683,6 @@ export default function Home() {
                 })}
               </div>
             )}
-          </section>
-
-          <section id="search" className={`scroll-mt-28 ${sectionShell}`}>
-            <h2 className={sectionTitleClass}>Search</h2>
-            <p className="mt-2 max-w-xl text-sm text-zinc-600 dark:text-zinc-400">
-              Same search as the header — use whichever is easier. Results are in{" "}
-              <a href="#browse" className="font-medium text-blue-600 underline-offset-2 hover:underline dark:text-blue-400">
-                All cards
-              </a>{" "}
-              below.
-            </p>
-            <label className="relative mt-6 block">
-              <span className="sr-only">Search cards</span>
-              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  aria-hidden
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-5.2-5.2M11 18a7 7 0 100-14 7 7 0 000 14z"
-                  />
-                </svg>
-              </span>
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Type a card name or bank…"
-                className="w-full rounded-2xl border border-zinc-200 bg-zinc-50/80 py-4 pl-12 pr-4 text-base text-zinc-900 shadow-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/15 dark:border-zinc-600 dark:bg-zinc-900/60 dark:text-zinc-100 dark:focus:border-blue-500"
-              />
-            </label>
           </section>
 
           <section id="match" className={`scroll-mt-28 ${sectionShell}`}>
