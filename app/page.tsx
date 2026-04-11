@@ -8,8 +8,10 @@ import { SbiApplyLink } from "@/components/sbi-apply-link";
 import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
 import { isAxisBankCard } from "@/lib/cards/axisApply";
 import { isSbiCard } from "@/lib/cards/sbiApply";
+import { SpendCategoryIcon } from "@/components/spend-category-icons";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { rewardCalculator } from "@/lib/recommend/rewardCalculator";
+import { SPEND_CATEGORIES } from "@/lib/spendCategories";
 import type { CardNetwork } from "@/lib/types/card";
 
 type CreditCard = {
@@ -218,6 +220,7 @@ function SiteHeader({
             {(
               [
                 ["#search", "Search"],
+                ["#categories", "Categories"],
                 ["#featured", "Featured"],
                 ["#match", "Match spend"],
                 ["#compare", "Compare"],
@@ -563,10 +566,49 @@ export default function Home() {
             Find a card for how you spend
           </h1>
           <p className="mt-5 text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-            Search the catalog, match your monthly spend, or compare two cards side
-            by side.
+            Search the catalog, jump in by spend category, match monthly spend, or
+            compare two cards side by side.
           </p>
         </header>
+
+        <section
+          id="categories"
+          className="scroll-mt-28 mt-12 sm:mt-16"
+          aria-labelledby="categories-heading"
+        >
+          <h2
+            id="categories-heading"
+            className="text-center text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400"
+          >
+            Browse by category
+          </h2>
+          <p className="mx-auto mt-2 max-w-md text-center text-sm text-zinc-600 dark:text-zinc-400">
+            Tap a category to see cards ranked by that earn rate.
+          </p>
+          <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+            {SPEND_CATEGORIES.map((c) => (
+              <li key={c.slug}>
+                <Link
+                  href={`/category/${c.slug}`}
+                  className="group flex h-full flex-col items-center rounded-2xl border border-zinc-200/80 bg-white px-4 py-5 text-center shadow-sm transition hover:border-blue-300/80 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:hover:border-blue-700/50"
+                >
+                  <span
+                    className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600/10 text-blue-700 transition group-hover:bg-blue-600/15 dark:bg-blue-500/15 dark:text-blue-300"
+                    aria-hidden
+                  >
+                    <SpendCategoryIcon slug={c.slug} className="h-6 w-6" />
+                  </span>
+                  <span className="mt-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    {c.label}
+                  </span>
+                  <span className="mt-1 text-xs leading-snug text-zinc-500 dark:text-zinc-400">
+                    {c.tileHint}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
 
         <div className="mt-16 space-y-20 sm:mt-20 sm:space-y-24">
           <section id="search" className={`scroll-mt-28 ${sectionShell}`}>
