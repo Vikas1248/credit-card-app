@@ -306,6 +306,17 @@ export default function Home() {
   );
   const [compareIdA, setCompareIdA] = useState("");
   const [compareIdB, setCompareIdB] = useState("");
+  const [featuredFromAi, setFeaturedFromAi] = useState<
+    { card: CreditCard; tag: string }[] | null
+  >(null);
+  const [compareAi, setCompareAi] = useState<{
+    overview: string;
+    when_left_better: string;
+    when_right_better: string;
+    caveat: string;
+  } | null>(null);
+  const [compareAiLoading, setCompareAiLoading] = useState(false);
+  const [compareAiError, setCompareAiError] = useState<string | null>(null);
 
   const loadCards = async () => {
     try {
@@ -340,6 +351,44 @@ export default function Home() {
   useEffect(() => {
     void loadCards();
   }, []);
+
+  useEffect(() => {
+    if (cards.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const params = new URLSearchParams();
+        const n = getOptionalCardNetworkFilter();
+        if (n) params.set("network", n);
+        const res = await fetch(`/api/cards/featured-ai?${params}`, {
+          cache: "no-store",
+        });
+        const data: {
+          source?: string;
+          picks?: { card_id: string; tag: string }[];
+        } = await res.json();
+        if (cancelled) return;
+        if (data.source !== "ai" || !Array.isArray(data.picks)) {
+          setFeaturedFromAi([]);
+          return;
+        }
+        const items: { card: CreditCard; tag: string }[] = [];
+        for (const p of data.picks) {
+          if (typeof p.card_id !== "string" || typeof p.tag !== "string") {
+            continue;
+          }
+          const c = cards.find((x) => x.id === p.card_id);
+          if (c) items.push({ card: c, tag: p.tag });
+        }
+        setFeaturedFromAi(items.length >= 3 ? items : []);
+      } catch {
+        if (!cancelled) setFeaturedFromAi([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [cards]);
 
   const loadRecommendations = async () => {
     try {
@@ -528,6 +577,75 @@ export default function Home() {
     return { left, right };
   }, [parsedSpendForCompare, compareLeft, compareRight]);
 
+  useEffect(() => {
+    if (!compareLeft || !compareRight) {
+      setCompareAi(null);
+      setCompareAiLoading(false);
+      setCompareAiError(null);
+      return;
+    }
+    const ac = new AbortController();
+    (async () => {
+      setCompareAiLoading(true);
+      setCompareAiError(null);
+      try {
+        const body: Record<string, string | number> = {
+          cardIdA: compareLeft.id,
+          cardIdB: compareRight.id,
+        };
+        if (parsedSpendForCompare) {
+          body.dining = parsedSpendForCompare.dining;
+          body.travel = parsedSpendForCompare.travel;
+          body.shopping = parsedSpendForCompare.shopping;
+          body.fuel = parsedSpendForCompare.fuel;
+        }
+        const res = await fetch("/api/cards/compare-ai", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+          signal: ac.signal,
+        });
+        const data: {
+          comparison?: {
+            overview: string;
+            when_left_better: string;
+            when_right_better: string;
+            caveat: string;
+          };
+          error?: string;
+        } = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error ?? "Could not load AI comparison.");
+        }
+        if (data.comparison) setCompareAi(data.comparison);
+        else setCompareAi(null);
+      } catch (e) {
+        if (e instanceof Error && e.name === "AbortError") return;
+        setCompareAi(null);
+        setCompareAiError(
+          e instanceof Error ? e.message : "Could not load AI comparison."
+        );
+      } finally {
+        if (!ac.signal.aborted) setCompareAiLoading(false);
+      }
+    })();
+    return () => ac.abort();
+  }, [
+    compareLeft?.id,
+    compareRight?.id,
+    parsedSpendForCompare?.dining,
+    parsedSpendForCompare?.travel,
+    parsedSpendForCompare?.shopping,
+    parsedSpendForCompare?.fuel,
+  ]);
+
+  const displayFeaturedCarouselItems = useMemo(() => {
+    if (featuredFromAi && featuredFromAi.length >= 3) {
+      return featuredFromAi;
+    }
+    return featuredCarouselItems;
+  }, [featuredFromAi, featuredCarouselItems]);
+
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <SiteHeader search={search} onSearchChange={setSearch} />
@@ -597,7 +715,8 @@ export default function Home() {
                   Featured picks
                 </h2>
                 <p className={sectionLeadClass}>
-                  One highlight each from our categories — swipe for more (max 5).
+                  Curated carousel: with OpenAI enabled we refresh picks hourly from
+                  your catalog; otherwise one highlight per category (max 5).
                 </p>
               </div>
             </div>
@@ -610,9 +729,9 @@ export default function Home() {
                   />
                 ))}
               </div>
-            ) : featuredCarouselItems.length === 0 ? null : (
+            ) : displayFeaturedCarouselItems.length === 0 ? null : (
               <div className="mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-3 pt-1 [-ms-overflow-style:none] [scrollbar-width:thin] sm:gap-6 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-300 dark:[&::-webkit-scrollbar-thumb]:bg-zinc-600">
-                {featuredCarouselItems.map(({ card, tag }, idx) => {
+                {displayFeaturedCarouselItems.map(({ card, tag }, idx) => {
                   const topReward = topCategoryReward(card);
                   const rewardLine = topReward
                     ? `${formatPct(topReward.value)} ${categoryLabel(topReward.category)}`
@@ -668,8 +787,12 @@ export default function Home() {
               <div className="min-w-0 flex-1">
                 <h2 className={sectionTitleClass}>Match my spend</h2>
                 <p className={sectionLeadClass}>
-                  Enter average monthly spend (INR) per category. We rank cards by
-                  estimated yearly rewards.
+                  Enter average monthly spend (INR) per category. With{" "}
+                  <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-800">
+                    OPENAI_API_KEY
+                  </code>{" "}
+                  set, an AI picks and explains your top 3 from the best
+                  candidates; otherwise we use the numeric ranking only.
                 </p>
               </div>
             </div>
@@ -912,8 +1035,9 @@ export default function Home() {
               <div className="min-w-0 flex-1">
                 <h2 className={sectionTitleClass}>Compare two cards</h2>
                 <p className={sectionLeadClass}>
-                  Uses the same monthly spend as Match my spend. Pick two cards for
-                  fees, category rates, and estimated returns.
+                  Uses the same monthly spend as Match my spend when valid. The
+                  table is computed locally; with OpenAI configured, an AI summary
+                  loads below.
                 </p>
               </div>
             </div>
@@ -984,6 +1108,58 @@ export default function Home() {
                   Match my spend
                 </a>{" "}
                 to estimate comparison rewards.
+              </div>
+            ) : null}
+
+            {compareLeft && compareRight ? (
+              <div className="mt-6 rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-5 dark:border-indigo-900/40 dark:bg-indigo-950/25">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    AI comparison
+                  </h3>
+                  {compareAiLoading ? (
+                    <Spinner className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  ) : null}
+                </div>
+                {compareAiError ? (
+                  <p className="mt-2 text-sm text-amber-800 dark:text-amber-200/90">
+                    {compareAiError}
+                  </p>
+                ) : null}
+                {compareAi ? (
+                  <div className="mt-3 space-y-3 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+                    <p>{compareAi.overview}</p>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="rounded-lg bg-white/70 p-3 dark:bg-zinc-900/40">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                          When {compareLeft.card_name} fits better
+                        </p>
+                        <p className="mt-1">{compareAi.when_left_better}</p>
+                      </div>
+                      <div className="rounded-lg bg-white/70 p-3 dark:bg-zinc-900/40">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                          When {compareRight.card_name} fits better
+                        </p>
+                        <p className="mt-1">{compareAi.when_right_better}</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      {compareAi.caveat}
+                    </p>
+                  </div>
+                ) : !compareAiLoading && !compareAiError ? (
+                  <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+                    Add{" "}
+                    <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">
+                      OPENAI_API_KEY
+                    </code>{" "}
+                    (and do not set{" "}
+                    <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">
+                      DISABLE_EXTERNAL_API_CALLS
+                    </code>
+                    ) to generate this summary.
+                  </p>
+                ) : null}
               </div>
             ) : null}
 

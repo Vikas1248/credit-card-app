@@ -51,6 +51,8 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
   const [cards, setCards] = useState<CreditCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [aiParagraph, setAiParagraph] = useState<string | null>(null);
+  const [aiInsightError, setAiInsightError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -82,6 +84,46 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setAiInsightError(null);
+        const params = new URLSearchParams({ slug });
+        const catalogNetwork = getOptionalCardNetworkFilter();
+        if (catalogNetwork) params.set("network", catalogNetwork);
+        const res = await fetch(
+          `/api/cards/category-insight?${params.toString()}`,
+          { cache: "no-store" }
+        );
+        const data: {
+          source?: string;
+          paragraph?: string | null;
+          error?: string;
+        } = await res.json();
+        if (cancelled) return;
+        if (data.source === "ai" && typeof data.paragraph === "string") {
+          setAiParagraph(data.paragraph);
+        } else {
+          setAiParagraph(null);
+          if (data.source === "error" && data.error) {
+            setAiInsightError(data.error);
+          }
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setAiParagraph(null);
+          setAiInsightError(
+            e instanceof Error ? e.message : "Could not load AI insight."
+          );
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
 
   const sorted = useMemo(() => {
     return [...cards].sort((a, b) => compareCardsBySpendCategory(slug, a, b));
@@ -115,6 +157,16 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
               {meta.blurb} Sorted by listed {meta.label.toLowerCase()} reward %
               (highest first). Cards without data for this category appear last.
             </p>
+            {aiParagraph ? (
+              <p className="mt-4 max-w-2xl rounded-xl border border-indigo-200/70 bg-indigo-50/50 p-4 text-sm leading-relaxed text-zinc-700 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-zinc-300">
+                {aiParagraph}
+              </p>
+            ) : null}
+            {aiInsightError ? (
+              <p className="mt-2 text-sm text-amber-800 dark:text-amber-200/90">
+                {aiInsightError}
+              </p>
+            ) : null}
             {!loading && !error ? (
               <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-500">
                 {cards.length} {cards.length === 1 ? "card" : "cards"}

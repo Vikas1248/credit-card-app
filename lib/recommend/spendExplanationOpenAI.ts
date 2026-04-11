@@ -1,3 +1,4 @@
+import { openAiJsonCompletion } from "@/lib/ai/openaiClient";
 import { areThirdPartyApisDisabled } from "@/lib/config/externalAccess";
 import type { SpendByCategory } from "@/lib/recommend/rewardCalculator";
 import type { SpendRecommendationRow } from "@/lib/recommend/topSpendRecommendations";
@@ -72,44 +73,11 @@ export async function fetchSpendRecommendationExplanations(
     return {};
   }
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      temperature: 0.25,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content:
-            "You output strict JSON only. Keys: explanations (array of {card_id, explanation}).",
-        },
-        {
-          role: "user",
-          content: buildUserMessage(monthlySpend, rows),
-        },
-      ],
-    }),
-  });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`OpenAI API error: ${errText}`);
-  }
-
-  const llmResult = (await response.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  const content = llmResult.choices?.[0]?.message?.content;
-  if (!content) {
-    throw new Error("OpenAI returned empty response.");
-  }
-
-  const parsed = JSON.parse(content) as {
+  const parsed = (await openAiJsonCompletion(
+    "You output strict JSON only. Keys: explanations (array of {card_id, explanation}).",
+    buildUserMessage(monthlySpend, rows),
+    0.25
+  )) as {
     explanations?: OpenAIExplanationItem[];
   };
   const list = parsed.explanations ?? [];

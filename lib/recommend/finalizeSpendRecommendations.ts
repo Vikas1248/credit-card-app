@@ -1,9 +1,10 @@
-import { areThirdPartyApisDisabled } from "@/lib/config/externalAccess";
-import type { SpendByCategory } from "@/lib/recommend/rewardCalculator";
+import { isOpenAiConfigured } from "@/lib/ai/openaiClient";
+import { fetchAiSpendTopPicks } from "@/lib/recommend/aiSpendPicks";
 import {
   fetchSpendRecommendationExplanations,
   mergeSpendExplanations,
 } from "@/lib/recommend/spendExplanationOpenAI";
+import type { SpendByCategory } from "@/lib/recommend/rewardCalculator";
 import {
   topSpendRecommendations,
   type SpendRecommendationRow,
@@ -15,38 +16,65 @@ function withNullExplanations(
   return rows.map((r) => ({ ...r, explanation: null as string | null }));
 }
 
+const CANDIDATE_POOL = 40;
+
 /**
- * Ranks cards by spend, then enriches with OpenAI explanations when OPENAI_API_KEY is set.
+ * Ranks cards by spend model, then (when OpenAI is configured) lets the model
+ * pick the top 3 from the best ~40 with explanations. Falls back to pure math
+ * top 3 plus optional explanation pass when AI fails.
  */
 export async function finalizeSpendRecommendations(
   monthlySpend: SpendByCategory,
   limit = 3
 ): Promise<Awaited<ReturnType<typeof topSpendRecommendations>>> {
-  const payload = await topSpendRecommendations(monthlySpend, limit);
+  const pool = await topSpendRecommendations(
+    monthlySpend,
+    Math.max(limit, CANDIDATE_POOL)
+  );
 
-  if (
-    areThirdPartyApisDisabled() ||
-    !process.env.OPENAI_API_KEY
-  ) {
+  if (isOpenAiConfigured() && pool.recommendations.length >= limit) {
+    try {
+      const aiTop = await fetchAiSpendTopPicks(
+        monthlySpend,
+        pool.recommendations
+      );
+      if (aiTop && aiTop.length >= limit) {
+        return {
+          ...pool,
+          recommendations: aiTop.slice(0, limit),
+        };
+      }
+    } catch {
+      /* fall through to math + optional explanations */
+    }
+  }
+
+  const topN = pool.recommendations.slice(0, limit);
+  const payloadN = {
+    ...pool,
+    recommendations: topN,
+  };
+
+  if (!isOpenAiConfigured()) {
     return {
-      ...payload,
-      recommendations: withNullExplanations(payload.recommendations),
+      ...payloadN,
+      recommendations: withNullExplanations(payloadN.recommendations),
     };
   }
 
   try {
     const byId = await fetchSpendRecommendationExplanations(
       monthlySpend,
-      payload.recommendations
+      topN
     );
     return {
-      ...payload,
-      recommendations: mergeSpendExplanations(payload.recommendations, byId),
+      ...payloadN,
+      recommendations: mergeSpendExplanations(topN, byId),
     };
   } catch {
     return {
-      ...payload,
-      recommendations: withNullExplanations(payload.recommendations),
+      ...payloadN,
+      recommendations: withNullExplanations(topN),
     };
   }
 }
