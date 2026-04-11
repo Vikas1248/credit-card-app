@@ -78,7 +78,7 @@ async function computeCategoryOrder(
 const getCachedCategoryOrder = unstable_cache(
   async (slug: SpendCategorySlug, networkKey: string) =>
     computeCategoryOrder(slug, networkKey),
-  ["cardwise-category-order-ai-v1"],
+  ["credgenie-category-order-ai-v1"],
   { revalidate: 1800 }
 );
 

@@ -75,7 +75,7 @@ async function computeBrowseOrder(networkKey: string): Promise<string[]> {
 
 const getCachedBrowseOrder = unstable_cache(
   async (networkKey: string) => computeBrowseOrder(networkKey),
-  ["cardwise-browse-order-ai-v1"],
+  ["credgenie-browse-order-ai-v1"],
   { revalidate: 3600 }
 );
 

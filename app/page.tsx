@@ -12,6 +12,11 @@ import { SpendCategoryIcon } from "@/components/spend-category-icons";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import { rewardCalculator } from "@/lib/recommend/rewardCalculator";
+import {
+  SITE_ABOUT_DETAIL,
+  SITE_ABOUT_LEAD,
+  SITE_NAME,
+} from "@/lib/site";
 import { SPEND_CATEGORIES } from "@/lib/spendCategories";
 import type { CardNetwork } from "@/lib/types/card";
 
@@ -282,12 +287,12 @@ function SiteHeader({
             className="flex shrink-0 items-center gap-2.5 rounded-xl pr-2 text-zinc-900 dark:text-zinc-100"
           >
             <span
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-sm font-bold text-white shadow-md"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-xs font-bold leading-tight text-white shadow-md"
               aria-hidden
             >
-              C
+              CG
             </span>
-            <span className="text-sm font-bold tracking-tight">Cardwise</span>
+            <span className="text-sm font-bold tracking-tight">{SITE_NAME}</span>
           </Link>
 
           <nav
@@ -927,12 +932,17 @@ export default function Home() {
 
       <main className="mx-auto max-w-4xl px-4 py-14 sm:px-6 sm:py-20">
         <header className="mx-auto max-w-2xl text-center">
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-4xl">
-            Find a card for how you spend
+          <p className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+            {SITE_NAME}
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-4xl">
+            Find a credit card for how you spend
           </h1>
           <p className="mt-5 text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-            Use the search bar at the top, jump in by spend category, match monthly
-            spend, or compare two cards side by side.
+            {SITE_ABOUT_LEAD}
+          </p>
+          <p className="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+            {SITE_ABOUT_DETAIL}
           </p>
         </header>
 
@@ -1978,7 +1988,8 @@ export default function Home() {
         </div>
       </main>
       <footer className="border-t border-zinc-200/80 py-14 text-center text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-500">
-        Cardwise uses your data for estimates only. Not financial advice.
+        {SITE_NAME} uses your inputs for illustrative estimates only. Not
+        financial advice; not affiliated with banks or card networks.
       </footer>
     </div>
   );

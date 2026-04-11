@@ -1,6 +1,6 @@
-# Cardwise
+# CredGenie
 
-Next.js app to compare credit cards, match spend to rewards, and browse products. Data is loaded from Supabase (`credit_cards`).
+**CredGenie** is a Next.js app for Indian credit card discovery: filter and sort by fees and network, browse by spend category, match monthly spend to estimated rewards, compare two cards, and use optional AI rankings and copy when OpenAI is configured. Card data is loaded from Supabase (`credit_cards`).
 
 **Maintainer:** [@Vikas1248](https://github.com/Vikas1248) · [Repository](https://github.com/Vikas1248/credit-card-app)
 

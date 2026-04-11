@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { SITE_NAME } from "@/lib/site";
 import { SpendCategoryIcon } from "@/components/spend-category-icons";
 import { CategoryBrowseClient } from "@/components/category-browse-client";
 import {
@@ -19,11 +20,11 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const { slug: raw } = await params;
   if (!isSpendCategorySlug(raw)) {
-    return { title: "Category · Cardwise" };
+    return { title: `Category · ${SITE_NAME}` };
   }
   const { label, blurb } = spendCategoryBySlug(raw);
   return {
-    title: `${label} credit cards · Cardwise`,
+    title: `${label} credit cards · ${SITE_NAME}`,
     description: blurb,
   };
 }
@@ -47,12 +48,12 @@ export default async function CategoryPage({ params }: PageProps) {
             className="flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100"
           >
             <span
-              className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-xs font-bold text-white"
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-[10px] font-bold leading-tight text-white"
               aria-hidden
             >
-              C
+              CG
             </span>
-            Cardwise
+            {SITE_NAME}
           </Link>
           <nav
             className="flex flex-wrap gap-1 text-sm"

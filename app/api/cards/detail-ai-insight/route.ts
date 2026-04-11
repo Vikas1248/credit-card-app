@@ -31,7 +31,7 @@ async function computeInsight(cardId: string) {
 
 const getCachedInsight = unstable_cache(
   async (cardId: string) => computeInsight(cardId),
-  ["cardwise-detail-ai-v1"],
+  ["credgenie-detail-ai-v1"],
   { revalidate: 1800 }
 );
 

@@ -21,7 +21,7 @@ const getCachedFeaturedPicks = unstable_cache(
       networkKey === "all" ? null : parseCardNetworkParam(networkKey);
     return computeFeaturedCarouselPicks(network);
   },
-  ["cardwise-featured-ai-v1"],
+  ["credgenie-featured-ai-v1"],
   { revalidate: 3600 }
 );
 

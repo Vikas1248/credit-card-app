@@ -64,7 +64,7 @@ export async function computeFeaturedCarouselPicks(
   }));
 
   const user = `
-You curate a small "Featured picks" carousel for an Indian credit card comparison site.
+You curate a small "Featured picks" carousel for CredGenie, an Indian credit card discovery site.
 
 Cards (pick ONLY from card_id values below):
 ${JSON.stringify(brief, null, 2)}

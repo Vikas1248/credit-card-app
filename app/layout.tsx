@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
+import { SITE_DESCRIPTION, SITE_TITLE } from "@/lib/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Cardwise — Compare credit cards",
-  description:
-    "Match cards to your monthly spend, compare two products side by side, and browse rewards in one place.",
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
   manifest: "/manifest.webmanifest",
   other: {
     "verify-admitad": "367a3e7727",

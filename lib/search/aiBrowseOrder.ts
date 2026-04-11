@@ -12,7 +12,7 @@ export async function fetchAiBrowseOrder(
   const allowed = new Set(cards.map((c) => c.id));
 
   const user = `
-Order these Indian credit cards for a "browse all" list on a comparison site.
+Order these Indian credit cards for CredGenie's "browse all" list.
 Prioritize: mix of fee levels, reward types, and strong category stories — not alphabetical.
 
 Cards:

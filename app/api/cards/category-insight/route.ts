@@ -22,7 +22,7 @@ const getCachedCategoryInsight = unstable_cache(
       networkKey === "all" ? null : parseCardNetworkParam(networkKey);
     return computeCategoryPageInsight(slug, network);
   },
-  ["cardwise-category-insight-v1"],
+  ["credgenie-category-insight-v1"],
   { revalidate: 1800 }
 );
 

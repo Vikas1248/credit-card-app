@@ -194,7 +194,7 @@ def map_to_db_rows(cards: list[dict[str, Any]]) -> list[dict[str, Any]]:
             card.get("source_uri") or card.get("affiliate_link") or ""
         ).strip()
         if not source_uri:
-            source_uri = "urn:cardwise:imported"
+            source_uri = "urn:credgenie:imported"
 
         row: dict[str, Any] = {
             "card_name": card_name,

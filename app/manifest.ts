@@ -1,11 +1,11 @@
 import type { MetadataRoute } from "next";
+import { SITE_NAME, SITE_TAGLINE } from "@/lib/site";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Cardwise",
-    short_name: "Cardwise",
-    description:
-      "Match credit cards to your spend, compare products, and browse rewards.",
+    name: SITE_NAME,
+    short_name: SITE_NAME,
+    description: SITE_TAGLINE,
     start_url: "/",
     display: "standalone",
     background_color: "#fafafa",
