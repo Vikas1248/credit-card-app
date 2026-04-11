@@ -60,16 +60,18 @@ export function CardProgramDetails({ card }: { card: Props }) {
   return (
     <section
       className="mt-12 border-t border-zinc-100 pt-10 dark:border-zinc-800"
-      aria-labelledby="card-program-details-heading"
+      aria-labelledby="card-how-it-works-heading"
     >
       <h2
-        id="card-program-details-heading"
+        id="card-how-it-works-heading"
         className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
       >
-        Program details
+        How this card works
       </h2>
       <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-        Issuer wording and perks from our catalog (same layout as key details).
+        Reward rules, lounge access, and who it fits best—summarized from the
+        card information we show elsewhere on this page. Double-check anything
+        important with your bank.
       </p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

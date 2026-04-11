@@ -135,7 +135,8 @@ export function CardDetailKeySummary({ card }: { card: CardKeySummary }) {
         Key details
       </h2>
       <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-        Quick facts at a glance. See program details below for full wording.
+        Quick facts at a glance. Further down, &ldquo;How this card
+        works&rdquo; spells out rewards, lounges, and fit in more detail.
       </p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
