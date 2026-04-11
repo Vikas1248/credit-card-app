@@ -13,11 +13,7 @@ import { SpendCategoryIcon } from "@/components/spend-category-icons";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import { rewardCalculator } from "@/lib/recommend/rewardCalculator";
-import {
-  SITE_ABOUT_DETAIL,
-  SITE_ABOUT_LEAD,
-  SITE_NAME,
-} from "@/lib/site";
+import { SITE_ABOUT_LEAD, SITE_NAME } from "@/lib/site";
 import { SPEND_CATEGORIES } from "@/lib/spendCategories";
 import type { CardNetwork } from "@/lib/types/card";
 
@@ -951,9 +947,6 @@ export default function Home() {
           </h1>
           <p className="mt-5 text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
             {SITE_ABOUT_LEAD}
-          </p>
-          <p className="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-            {SITE_ABOUT_DETAIL}
           </p>
         </header>
 

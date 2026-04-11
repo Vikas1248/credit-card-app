@@ -18,7 +18,3 @@ export const SITE_TAGLINE =
 /** Home page: what CredGenie is (first paragraph under the headline). */
 export const SITE_ABOUT_LEAD =
   "CredGenie is a credit card discovery companion for India: one place to explore products, fees, and rewards before you apply.";
-
-/** Home page: feature summary and disclaimer. */
-export const SITE_ABOUT_DETAIL =
-  "Filter and sort by annual and joining fees, cashback vs points, and network. Browse by spend category, match cards to your monthly spend, compare two products, and use optional AI ordering and summaries when you configure an API key. We are not a bank—reward math is approximate and offers change; always confirm fees and T&Cs with the issuer.";
