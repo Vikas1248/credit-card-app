@@ -34,21 +34,36 @@ type CreditCard = {
   metadata?: Record<string, unknown> | null;
 };
 
-function metadataHasEntries(
+/** Shown in Additional details; source / AI blurbs stay in DB but are not user-facing here. */
+const HIDDEN_METADATA_KEYS = new Set([
+  "source",
+  "source_uri",
+  "data_source",
+  "ai_best_for",
+  "ai_cons",
+  "ai_not_ideal_for",
+  "ai_pros",
+]);
+
+function filterPublicMetadata(
+  meta: Record<string, unknown> | null | undefined
+): Record<string, unknown> {
+  if (!meta || typeof meta !== "object") return {};
+  return Object.fromEntries(
+    Object.entries(meta).filter(([k]) => !HIDDEN_METADATA_KEYS.has(k))
+  );
+}
+
+function metadataHasPublicEntries(
   meta: Record<string, unknown> | null | undefined
 ): boolean {
-  return Boolean(meta && typeof meta === "object" && Object.keys(meta).length > 0);
+  return Object.keys(filterPublicMetadata(meta)).length > 0;
 }
 
 const METADATA_LABELS: Record<string, string> = {
   affiliate_link: "Apply / referral link",
-  ai_best_for: "AI summary — best for",
-  ai_cons: "AI summary — drawbacks",
-  ai_not_ideal_for: "AI summary — less ideal for",
-  ai_pros: "AI summary — highlights",
   eligibility: "Eligibility",
   reward_conversion: "Reward conversion",
-  source: "Data source",
   welcome_offer: "Welcome offer",
   milestone_rewards: "Milestone rewards",
   excluded_categories: "Excluded categories",
@@ -364,9 +379,9 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
             </p>
           </section>
 
-          {metadataHasEntries(card.metadata) ? (
+          {metadataHasPublicEntries(card.metadata) ? (
             <div className="mt-12">
-              <CardMetadataSection metadata={card.metadata!} />
+              <CardMetadataSection metadata={filterPublicMetadata(card.metadata)} />
             </div>
           ) : null}
           </div>
