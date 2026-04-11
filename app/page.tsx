@@ -143,6 +143,10 @@ const btnPrimary =
 const btnGhost =
   "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800";
 
+/** Same height as referral Apply; indigo to match app accent vs issuer-colored Apply. */
+const cardDetailsButtonClass =
+  "inline-flex min-h-10 w-full items-center justify-center rounded-xl border-2 border-indigo-400/85 bg-indigo-50 px-3 text-sm font-semibold text-indigo-950 shadow-sm transition hover:border-indigo-500 hover:bg-indigo-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 dark:border-indigo-400/55 dark:bg-indigo-950/45 dark:text-indigo-100 dark:hover:border-indigo-400 dark:hover:bg-indigo-900/55";
+
 const sectionShell =
   "rounded-3xl border border-zinc-300/90 bg-white p-8 shadow-md shadow-zinc-900/[0.06] ring-1 ring-zinc-950/[0.04] dark:border-zinc-600 dark:bg-zinc-900/70 dark:shadow-black/40 dark:ring-white/[0.06] sm:p-10";
 
@@ -857,33 +861,41 @@ export default function Home() {
                       </div>
 
                       <div className="mt-4 flex flex-col gap-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="text-xs text-zinc-500">
-                            Fee {formatInr(card.annual_fee)} ·{" "}
-                            {card.reward_type === "cashback"
-                              ? "Cashback"
-                              : "Points"}{" "}
-                            · {card.reward_rate ?? "—"}
-                          </p>
+                        <p className="text-xs text-zinc-500">
+                          Fee {formatInr(card.annual_fee)} ·{" "}
+                          {card.reward_type === "cashback"
+                            ? "Cashback"
+                            : "Points"}{" "}
+                          · {card.reward_rate ?? "—"}
+                        </p>
+                        <div
+                          className={
+                            isAxisBankCard(card.bank) ||
+                            isAmexPlatinumReserveCard(card.card_name, card.bank) ||
+                            isSbiCard(card.bank)
+                              ? "grid grid-cols-1 gap-2 sm:grid-cols-2"
+                              : "grid grid-cols-1 gap-2"
+                          }
+                        >
                           <Link
                             href={`/card/${card.id}`}
-                            className="text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400"
+                            className={cardDetailsButtonClass}
                           >
-                            Full details →
+                            Details
                           </Link>
+                          {isAxisBankCard(card.bank) ? (
+                            <AxisApplyLink fullWidth size="sm" />
+                          ) : null}
+                          {isAmexPlatinumReserveCard(
+                            card.card_name,
+                            card.bank
+                          ) ? (
+                            <AmexPlatinumReserveApplyLink fullWidth size="sm" />
+                          ) : null}
+                          {isSbiCard(card.bank) ? (
+                            <SbiApplyLink fullWidth size="sm" />
+                          ) : null}
                         </div>
-                        {isAxisBankCard(card.bank) ? (
-                          <AxisApplyLink fullWidth size="sm" />
-                        ) : null}
-                        {isAmexPlatinumReserveCard(
-                          card.card_name,
-                          card.bank
-                        ) ? (
-                          <AmexPlatinumReserveApplyLink fullWidth size="sm" />
-                        ) : null}
-                        {isSbiCard(card.bank) ? (
-                          <SbiApplyLink fullWidth size="sm" />
-                        ) : null}
                       </div>
                       </div>
                     </article>
@@ -1218,25 +1230,25 @@ export default function Home() {
                         <div className="capitalize">{card.reward_type}</div>
                       </dl>
                     </div>
-                    <div className="flex shrink-0 flex-col gap-2 sm:items-end">
+                    <div className="flex w-full shrink-0 flex-col gap-2 sm:ml-auto sm:w-[9.5rem]">
+                      <Link
+                        href={`/card/${card.id}`}
+                        className={cardDetailsButtonClass}
+                      >
+                        Details
+                      </Link>
                       {isAxisBankCard(card.bank) ? (
-                        <AxisApplyLink className="w-full sm:w-auto" />
+                        <AxisApplyLink className="w-full" />
                       ) : null}
                       {isAmexPlatinumReserveCard(
                         card.card_name,
                         card.bank
                       ) ? (
-                        <AmexPlatinumReserveApplyLink className="w-full sm:w-auto" />
+                        <AmexPlatinumReserveApplyLink className="w-full" />
                       ) : null}
                       {isSbiCard(card.bank) ? (
-                        <SbiApplyLink className="w-full sm:w-auto" />
+                        <SbiApplyLink className="w-full" />
                       ) : null}
-                      <Link
-                        href={`/card/${card.id}`}
-                        className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                      >
-                        Details
-                      </Link>
                     </div>
                   </div>
                 </li>
