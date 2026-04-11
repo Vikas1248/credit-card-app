@@ -91,6 +91,19 @@ function formatPct(value: number | null | undefined): string {
   return `${value}%`;
 }
 
+function sortCardsByIdOrder(
+  list: CreditCard[],
+  order: string[] | null
+): CreditCard[] {
+  if (!order || order.length === 0) {
+    return [...list].sort((a, b) => a.card_name.localeCompare(b.card_name));
+  }
+  const idx = new Map(order.map((id, i) => [id, i]));
+  return [...list].sort(
+    (a, b) => (idx.get(a.id) ?? 1e9) - (idx.get(b.id) ?? 1e9)
+  );
+}
+
 function topCategoryReward(card: CreditCard): {
   category: keyof RewardBreakdown;
   value: number;
@@ -199,9 +212,11 @@ function Spinner({ className }: { className?: string }) {
 function SiteHeader({
   search,
   onSearchChange,
+  searchRanking,
 }: {
   search: string;
   onSearchChange: (value: string) => void;
+  searchRanking?: boolean;
 }) {
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/85 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/90">
@@ -268,6 +283,11 @@ function SiteHeader({
               className={headerInputClass}
               aria-label="Search cards"
             />
+            {searchRanking ? (
+              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-medium text-indigo-600 dark:text-indigo-400">
+                AI ranking…
+              </span>
+            ) : null}
           </div>
         </div>
       </div>
@@ -317,6 +337,11 @@ export default function Home() {
   } | null>(null);
   const [compareAiLoading, setCompareAiLoading] = useState(false);
   const [compareAiError, setCompareAiError] = useState<string | null>(null);
+  const [searchAiOrder, setSearchAiOrder] = useState<string[] | null>(null);
+  const [searchAiLoading, setSearchAiLoading] = useState(false);
+  const [browseSort, setBrowseSort] = useState<"name" | "ai">("name");
+  const [browseAiOrder, setBrowseAiOrder] = useState<string[] | null>(null);
+  const [browseAiLoading, setBrowseAiLoading] = useState(false);
 
   const loadCards = async () => {
     try {
@@ -390,6 +415,80 @@ export default function Home() {
     };
   }, [cards]);
 
+  useEffect(() => {
+    const q = search.trim();
+    if (q.length < 2) {
+      setSearchAiOrder(null);
+      setSearchAiLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setSearchAiLoading(true);
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const params = new URLSearchParams({ q });
+          const n = getOptionalCardNetworkFilter();
+          if (n) params.set("network", n);
+          const res = await fetch(`/api/cards/search-ai?${params}`, {
+            cache: "no-store",
+          });
+          const data: { source?: string; ordered_ids?: string[] } =
+            await res.json();
+          if (cancelled) return;
+          if (data.source === "ai" && Array.isArray(data.ordered_ids)) {
+            setSearchAiOrder(data.ordered_ids);
+          } else {
+            setSearchAiOrder(null);
+          }
+        } catch {
+          if (!cancelled) setSearchAiOrder(null);
+        } finally {
+          if (!cancelled) setSearchAiLoading(false);
+        }
+      })();
+    }, 450);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [search, cards.length]);
+
+  useEffect(() => {
+    if (browseSort !== "ai" || cards.length === 0) {
+      if (browseSort !== "ai") setBrowseAiOrder(null);
+      setBrowseAiLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setBrowseAiLoading(true);
+    void (async () => {
+      try {
+        const params = new URLSearchParams();
+        const n = getOptionalCardNetworkFilter();
+        if (n) params.set("network", n);
+        const res = await fetch(`/api/cards/browse-order-ai?${params}`, {
+          cache: "no-store",
+        });
+        const data: { source?: string; ordered_ids?: string[] | null } =
+          await res.json();
+        if (cancelled) return;
+        if (data.source === "ai" && Array.isArray(data.ordered_ids)) {
+          setBrowseAiOrder(data.ordered_ids);
+        } else {
+          setBrowseAiOrder(null);
+        }
+      } catch {
+        if (!cancelled) setBrowseAiOrder(null);
+      } finally {
+        if (!cancelled) setBrowseAiLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [browseSort, cards.length]);
+
   const loadRecommendations = async () => {
     try {
       setRecommendationLoading(true);
@@ -435,16 +534,40 @@ export default function Home() {
     }
   };
 
-  const filteredCards = useMemo(() => {
+  const textFilteredCards = useMemo(() => {
     const query = search.trim().toLowerCase();
     if (!query) return cards;
 
     return cards.filter((card) => {
-      const text = [card.card_name, card.bank].join(" ").toLowerCase();
+      const text = [
+        card.card_name,
+        card.bank,
+        card.best_for ?? "",
+        card.key_benefits ?? "",
+        card.reward_rate ?? "",
+      ]
+        .join(" ")
+        .toLowerCase();
 
       return text.includes(query);
     });
   }, [cards, search]);
+
+  const displayBrowseCards = useMemo(() => {
+    const q = search.trim();
+    if (q.length >= 2 && searchAiOrder && searchAiOrder.length > 0) {
+      return sortCardsByIdOrder(textFilteredCards, searchAiOrder);
+    }
+    if (
+      !q &&
+      browseSort === "ai" &&
+      browseAiOrder &&
+      browseAiOrder.length > 0
+    ) {
+      return sortCardsByIdOrder(textFilteredCards, browseAiOrder);
+    }
+    return sortCardsByIdOrder(textFilteredCards, null);
+  }, [textFilteredCards, search, searchAiOrder, browseSort, browseAiOrder]);
 
   const cardsSortedByName = useMemo(
     () => [...cards].sort((a, b) => a.card_name.localeCompare(b.card_name)),
@@ -648,7 +771,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <SiteHeader search={search} onSearchChange={setSearch} />
+      <SiteHeader
+        search={search}
+        onSearchChange={setSearch}
+        searchRanking={searchAiLoading}
+      />
 
       <main className="mx-auto max-w-4xl px-4 py-14 sm:px-6 sm:py-20">
         <header className="mx-auto max-w-2xl text-center">
@@ -1323,12 +1450,55 @@ export default function Home() {
             <div className="min-w-0 flex-1">
               <h2 className={sectionTitleClass}>All cards</h2>
               <p className={sectionLeadClass}>
-                {filteredCards.length}{" "}
-                {filteredCards.length === 1 ? "card" : "cards"}
+                {textFilteredCards.length}{" "}
+                {textFilteredCards.length === 1 ? "card" : "cards"}
                 {search.trim() ? " match your search" : " in the catalog"}.
+                {search.trim().length >= 2 ? (
+                  <>
+                    {" "}
+                    With OpenAI configured, results reorder by relevance after
+                    you pause typing.
+                  </>
+                ) : null}
               </p>
             </div>
           </div>
+
+          {!loading && !error && cards.length > 0 ? (
+            <div className="mt-6 flex flex-wrap items-center gap-2">
+              <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                Browse order:
+              </span>
+              <button
+                type="button"
+                onClick={() => setBrowseSort("name")}
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                  browseSort === "name"
+                    ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                    : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                }`}
+              >
+                A–Z
+              </button>
+              <button
+                type="button"
+                onClick={() => setBrowseSort("ai")}
+                disabled={browseAiLoading}
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition disabled:opacity-50 ${
+                  browseSort === "ai"
+                    ? "bg-indigo-600 text-white dark:bg-indigo-500"
+                    : "border border-indigo-200 bg-indigo-50 text-indigo-950 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-100 dark:hover:bg-indigo-900/50"
+                }`}
+              >
+                {browseAiLoading ? "AI order…" : "AI browse order"}
+              </button>
+              {browseSort === "ai" && !browseAiLoading && !browseAiOrder ? (
+                <span className="text-xs text-zinc-500">
+                  (needs OPENAI_API_KEY — using A–Z)
+                </span>
+              ) : null}
+            </div>
+          ) : null}
 
           {loading ? (
             <div className="mt-8 space-y-4">
@@ -1347,7 +1517,7 @@ export default function Home() {
               <span className="font-semibold">Couldn’t load cards</span>
               <span>{error}</span>
             </div>
-          ) : filteredCards.length === 0 ? (
+          ) : textFilteredCards.length === 0 ? (
             <div className="mt-8 rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 px-6 py-12 text-center dark:border-zinc-700 dark:bg-zinc-900/30">
               {cards.length === 0 && !search.trim() ? (
                 <>
@@ -1374,7 +1544,7 @@ export default function Home() {
             </div>
           ) : (
             <ul className="mt-8 space-y-4">
-              {filteredCards.map((card) => (
+              {displayBrowseCards.map((card) => (
                 <li
                   key={card.id}
                   className={`rounded-2xl border p-5 shadow-sm sm:p-6 ${issuerBrandTileClass(card.bank, card.network)}`}

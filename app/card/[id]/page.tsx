@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CardAiInsight } from "@/components/card-ai-insight";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { CardNetwork } from "@/lib/types/card";
@@ -338,6 +339,8 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
             </dl>
             </section>
           </div>
+
+          <CardAiInsight cardId={card.id} />
 
           <section className="mt-12 border-t border-zinc-100 pt-10 dark:border-zinc-800">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">

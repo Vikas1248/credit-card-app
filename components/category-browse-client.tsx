@@ -53,6 +53,9 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
   const [error, setError] = useState<string | null>(null);
   const [aiParagraph, setAiParagraph] = useState<string | null>(null);
   const [aiInsightError, setAiInsightError] = useState<string | null>(null);
+  const [listSort, setListSort] = useState<"earn" | "ai">("earn");
+  const [categoryAiOrder, setCategoryAiOrder] = useState<string[] | null>(null);
+  const [categoryOrderLoading, setCategoryOrderLoading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -125,9 +128,59 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
     };
   }, [slug]);
 
-  const sorted = useMemo(() => {
+  useEffect(() => {
+    if (listSort !== "ai") {
+      setCategoryAiOrder(null);
+      setCategoryOrderLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setCategoryOrderLoading(true);
+    void (async () => {
+      try {
+        const params = new URLSearchParams({ slug });
+        const catalogNetwork = getOptionalCardNetworkFilter();
+        if (catalogNetwork) params.set("network", catalogNetwork);
+        const res = await fetch(
+          `/api/cards/category-order-ai?${params.toString()}`,
+          { cache: "no-store" }
+        );
+        const data: { source?: string; ordered_ids?: string[] | null } =
+          await res.json();
+        if (cancelled) return;
+        if (data.source === "ai" && Array.isArray(data.ordered_ids)) {
+          setCategoryAiOrder(data.ordered_ids);
+        } else {
+          setCategoryAiOrder(null);
+        }
+      } catch {
+        if (!cancelled) setCategoryAiOrder(null);
+      } finally {
+        if (!cancelled) setCategoryOrderLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [listSort, slug]);
+
+  const sortedByEarn = useMemo(() => {
     return [...cards].sort((a, b) => compareCardsBySpendCategory(slug, a, b));
   }, [cards, slug]);
+
+  const sorted = useMemo(() => {
+    if (
+      listSort === "ai" &&
+      categoryAiOrder &&
+      categoryAiOrder.length > 0
+    ) {
+      const idx = new Map(categoryAiOrder.map((id, i) => [id, i]));
+      return [...cards].sort(
+        (a, b) => (idx.get(a.id) ?? 1e9) - (idx.get(b.id) ?? 1e9)
+      );
+    }
+    return sortedByEarn;
+  }, [listSort, categoryAiOrder, cards, sortedByEarn]);
 
   const withRate = sorted.filter((c) => rewardPctForSpendCategory(c, slug) != null)
     .length;
@@ -154,8 +207,9 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
               {meta.label} cards
             </h1>
             <p className="mt-3 max-w-2xl text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-              {meta.blurb} Sorted by listed {meta.label.toLowerCase()} reward %
-              (highest first). Cards without data for this category appear last.
+              {meta.blurb} Default sort is listed {meta.label.toLowerCase()}{" "}
+              reward % (highest first). Switch to AI ranking for a holistic
+              order when your API key is set.
             </p>
             {aiParagraph ? (
               <p className="mt-4 max-w-2xl rounded-xl border border-indigo-200/70 bg-indigo-50/50 p-4 text-sm leading-relaxed text-zinc-700 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-zinc-300">
@@ -167,6 +221,45 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                 {aiInsightError}
               </p>
             ) : null}
+
+            {!loading && !error && cards.length > 0 ? (
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                  List order:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setListSort("earn")}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                    listSort === "earn"
+                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                      : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  }`}
+                >
+                  Earn % (data)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setListSort("ai")}
+                  disabled={categoryOrderLoading}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition disabled:opacity-50 ${
+                    listSort === "ai"
+                      ? "bg-indigo-600 text-white dark:bg-indigo-500"
+                      : "border border-indigo-200 bg-indigo-50 text-indigo-950 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-100 dark:hover:bg-indigo-900/50"
+                  }`}
+                >
+                  {categoryOrderLoading ? "AI order…" : "AI ranking"}
+                </button>
+                {listSort === "ai" &&
+                !categoryOrderLoading &&
+                !categoryAiOrder ? (
+                  <span className="text-xs text-zinc-500">
+                    (needs OPENAI_API_KEY — using earn %)
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+
             {!loading && !error ? (
               <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-500">
                 {cards.length} {cards.length === 1 ? "card" : "cards"}
