@@ -242,7 +242,7 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
     <main className="min-h-screen bg-zinc-50 px-4 py-12 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 sm:px-6 sm:py-16">
       <div className="mx-auto w-full max-w-3xl lg:max-w-4xl">
         <Link
-          href="/#browse"
+          href="/cards"
           className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
         >
           <span aria-hidden>←</span> Back to all cards

@@ -56,9 +56,15 @@ export default async function CategoryPage({ params }: PageProps) {
             {SITE_NAME}
           </Link>
           <nav
-            className="flex flex-wrap gap-1 text-sm"
-            aria-label="Other categories"
+            className="flex flex-wrap items-center gap-1 text-sm"
+            aria-label="Catalog"
           >
+            <Link
+              href="/cards"
+              className="inline-flex items-center rounded-lg px-2.5 py-1.5 font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+            >
+              All cards
+            </Link>
             {SPEND_CATEGORIES.filter((c) => c.slug !== raw).map((c) => (
               <Link
                 key={c.slug}

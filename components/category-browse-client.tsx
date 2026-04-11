@@ -188,12 +188,20 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
-        <Link
-          href="/#categories"
-          className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-        >
-          <span aria-hidden>←</span> All categories
-        </Link>
+        <div className="mb-8 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium">
+          <Link
+            href="/#categories"
+            className="inline-flex items-center gap-2 text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          >
+            <span aria-hidden>←</span> All categories
+          </Link>
+          <Link
+            href="/cards"
+            className="inline-flex items-center gap-2 text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          >
+            Full catalog <span aria-hidden>→</span>
+          </Link>
+        </div>
 
         <header className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
           <div
@@ -207,9 +215,10 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
               {meta.label} cards
             </h1>
             <p className="mt-3 max-w-2xl text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-              {meta.blurb} Default sort is listed {meta.label.toLowerCase()}{" "}
-              reward % (highest first). Switch to AI ranking for a holistic
-              order when AI is available.
+              {meta.blurb} The full catalog is listed here—cards without a
+              published {meta.label.toLowerCase()} rate show — and sort after
+              cards with data. Default order is by that earn % (highest first).
+              Switch to AI ranking for a holistic order when AI is available.
             </p>
             {aiParagraph ? (
               <p className="mt-4 max-w-2xl rounded-xl border border-indigo-200/70 bg-indigo-50/50 p-4 text-sm leading-relaxed text-zinc-700 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-zinc-300">
