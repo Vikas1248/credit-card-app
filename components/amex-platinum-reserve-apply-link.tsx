@@ -1,21 +1,21 @@
 import { ReferralApplyButton } from "@/components/referral-apply-button";
-import { AXIS_BANK_APPLY_URL } from "@/lib/cards/axisApply";
+import { AMEX_PLATINUM_RESERVE_APPLY_URL } from "@/lib/cards/amexPlatinumReserveApply";
 
-type AxisApplyLinkProps = {
+type Props = {
   className?: string;
   fullWidth?: boolean;
   size?: "default" | "sm";
 };
 
-export function AxisApplyLink({
-  className = "",
+export function AmexPlatinumReserveApplyLink({
+  className,
   fullWidth,
-  size = "default",
-}: AxisApplyLinkProps) {
+  size,
+}: Props) {
   return (
     <ReferralApplyButton
-      href={AXIS_BANK_APPLY_URL}
-      variant="axis"
+      href={AMEX_PLATINUM_RESERVE_APPLY_URL}
+      variant="amex"
       className={className}
       fullWidth={fullWidth}
       size={size}
