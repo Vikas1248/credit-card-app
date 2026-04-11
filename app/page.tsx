@@ -10,6 +10,7 @@ import { isAxisBankCard } from "@/lib/cards/axisApply";
 import { isSbiCard } from "@/lib/cards/sbiApply";
 import { SpendCategoryIcon } from "@/components/spend-category-icons";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
+import { networkTileSurfaceClass } from "@/lib/cards/networkTile";
 import { rewardCalculator } from "@/lib/recommend/rewardCalculator";
 import { SPEND_CATEGORIES } from "@/lib/spendCategories";
 import type { CardNetwork } from "@/lib/types/card";
@@ -619,10 +620,10 @@ export default function Home() {
                   return (
                     <article
                       key={card.id}
-                      className={`w-[min(100%,320px)] shrink-0 snap-center rounded-2xl border bg-white p-6 shadow-sm dark:bg-zinc-900 ${
+                      className={`w-[min(100%,320px)] shrink-0 snap-center rounded-2xl border p-6 shadow-md ${networkTileSurfaceClass(card.network)} ${
                         idx === 0
-                          ? "border-blue-200 ring-1 ring-blue-100 dark:border-blue-900/50 dark:ring-blue-900/30"
-                          : "border-zinc-200/90 dark:border-zinc-700"
+                          ? "ring-2 ring-blue-400/35 dark:ring-blue-500/25"
+                          : ""
                       }`}
                     >
                       <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
@@ -745,10 +746,10 @@ export default function Home() {
                   return (
                     <article
                       key={card.id}
-                      className={`flex flex-col rounded-2xl border bg-white p-6 shadow-sm dark:bg-zinc-950 ${
+                      className={`flex flex-col rounded-2xl border p-6 shadow-md ${networkTileSurfaceClass(card.network)} ${
                         isBest
-                          ? "border-emerald-400 ring-1 ring-emerald-500/20 dark:border-emerald-600"
-                          : "border-zinc-200 dark:border-zinc-700"
+                          ? "ring-2 ring-emerald-400/45 dark:ring-emerald-500/35"
+                          : ""
                       }`}
                     >
                       <div className="flex flex-col">
@@ -775,7 +776,7 @@ export default function Home() {
                       </p>
 
                       <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
-                        <div className="rounded-xl bg-zinc-50 p-3 dark:bg-zinc-900">
+                        <div className="rounded-xl bg-white/75 p-3 shadow-sm dark:bg-zinc-950/45">
                           <dt className="text-xs font-medium text-zinc-500">
                             Monthly reward
                           </dt>
@@ -783,7 +784,7 @@ export default function Home() {
                             {formatInr(monthlyTotal)}
                           </dd>
                         </div>
-                        <div className="rounded-xl bg-zinc-50 p-3 dark:bg-zinc-900">
+                        <div className="rounded-xl bg-white/75 p-3 shadow-sm dark:bg-zinc-950/45">
                           <dt className="text-xs font-medium text-zinc-500">
                             Yearly reward
                           </dt>
@@ -1196,9 +1197,12 @@ export default function Home() {
               )}
             </div>
           ) : (
-            <ul className="mt-8 divide-y divide-zinc-100 dark:divide-zinc-800">
+            <ul className="mt-8 space-y-4">
               {filteredCards.map((card) => (
-                <li key={card.id} className="py-6 first:pt-2">
+                <li
+                  key={card.id}
+                  className={`rounded-2xl border p-5 shadow-sm sm:p-6 ${networkTileSurfaceClass(card.network)}`}
+                >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -1210,7 +1214,7 @@ export default function Home() {
                             {card.card_name}
                           </Link>
                         </h3>
-                        <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                        <span className="rounded-md bg-white/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-700 shadow-sm ring-1 ring-zinc-200/80 dark:bg-zinc-950/50 dark:text-zinc-300 dark:ring-zinc-600/60">
                           {card.network}
                         </span>
                       </div>

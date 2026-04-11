@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
+import { networkTileSurfaceClass } from "@/lib/cards/networkTile";
 import {
   compareCardsBySpendCategory,
   rewardPctForSpendCategory,
@@ -146,11 +147,14 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
             No cards in the catalog yet.
           </p>
         ) : (
-          <ul className="divide-y divide-zinc-100 rounded-2xl border border-zinc-200/80 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900/50">
+          <ul className="space-y-4">
             {sorted.map((card) => {
               const pct = rewardPctForSpendCategory(card, slug);
               return (
-                <li key={card.id} className="px-5 py-5 sm:px-6">
+                <li
+                  key={card.id}
+                  className={`rounded-2xl border p-5 shadow-sm sm:p-6 ${networkTileSurfaceClass(card.network)}`}
+                >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0 flex-1">
                       <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
@@ -169,7 +173,7 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                       </p>
                     </div>
                     <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
-                      <div className="rounded-xl bg-zinc-100 px-3 py-2 text-right dark:bg-zinc-800">
+                      <div className="rounded-xl bg-white/80 px-3 py-2 text-right shadow-sm ring-1 ring-zinc-200/70 dark:bg-zinc-950/50 dark:ring-zinc-600/50">
                         <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                           {meta.label} earn
                         </p>
@@ -183,7 +187,7 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                       </p>
                       <Link
                         href={`/card/${card.id}`}
-                        className="inline-flex rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                        className="inline-flex min-h-10 w-full items-center justify-center rounded-xl border-2 border-indigo-400/85 bg-indigo-50 px-4 text-sm font-semibold text-indigo-950 shadow-sm transition hover:border-indigo-500 hover:bg-indigo-100 dark:border-indigo-400/55 dark:bg-indigo-950/45 dark:text-indigo-100 dark:hover:bg-indigo-900/55 sm:w-auto"
                       >
                         View details
                       </Link>

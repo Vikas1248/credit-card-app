@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { networkTileSurfaceClass } from "@/lib/cards/networkTile";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { CardNetwork } from "@/lib/types/card";
 
@@ -246,7 +247,9 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
           <span aria-hidden>←</span> Back to all cards
         </Link>
 
-        <article className="rounded-3xl border border-zinc-200/80 bg-white px-6 py-10 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/70 sm:px-10 sm:py-12">
+        <article
+          className={`rounded-3xl border px-6 py-10 shadow-md sm:px-10 sm:py-12 ${networkTileSurfaceClass(card.network)}`}
+        >
           <header className="border-b border-zinc-100 pb-10 dark:border-zinc-800">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
