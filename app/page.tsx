@@ -144,11 +144,20 @@ const btnGhost =
   "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800";
 
 const sectionShell =
-  "rounded-3xl border border-zinc-200/70 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/50 sm:p-10";
+  "rounded-3xl border border-zinc-300/90 bg-white p-8 shadow-md shadow-zinc-900/[0.06] ring-1 ring-zinc-950/[0.04] dark:border-zinc-600 dark:bg-zinc-900/70 dark:shadow-black/40 dark:ring-white/[0.06] sm:p-10";
 
 /** In-page section titles (distinct from sticky page header). */
 const sectionTitleClass =
-  "text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-xl";
+  "text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-2xl";
+
+const sectionLeadClass =
+  "mt-2 max-w-xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400";
+
+const sectionHeaderRowClass =
+  "flex gap-3 border-b border-zinc-200 pb-6 dark:border-zinc-600 sm:gap-4";
+
+const sectionHeaderAccentClass =
+  "mt-2 h-11 w-1.5 shrink-0 rounded-full bg-gradient-to-b from-blue-500 to-indigo-600 shadow-sm shadow-blue-500/30";
 
 const headerInputClass =
   "w-full rounded-2xl border border-zinc-200 bg-zinc-50/90 py-3 pl-11 pr-4 text-sm text-zinc-900 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-600 dark:bg-zinc-900/80 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-500";
@@ -531,19 +540,21 @@ export default function Home() {
 
         <section
           id="categories"
-          className="scroll-mt-28 mt-12 sm:mt-16"
+          className={`scroll-mt-28 mt-12 sm:mt-16 ${sectionShell}`}
           aria-labelledby="categories-heading"
         >
-          <h2
-            id="categories-heading"
-            className="text-center text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400"
-          >
-            Browse by category
-          </h2>
-          <p className="mx-auto mt-2 max-w-md text-center text-sm text-zinc-600 dark:text-zinc-400">
-            Tap a category to see cards ranked by that earn rate.
-          </p>
-          <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+          <div className={sectionHeaderRowClass}>
+            <div className={sectionHeaderAccentClass} aria-hidden />
+            <div className="min-w-0 flex-1">
+              <h2 id="categories-heading" className={sectionTitleClass}>
+                Browse by category
+              </h2>
+              <p className={`${sectionLeadClass} max-w-lg`}>
+                Tap a category to open a dedicated list ranked by that earn rate.
+              </p>
+            </div>
+          </div>
+          <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
             {SPEND_CATEGORIES.map((c) => (
               <li key={c.slug}>
                 <Link
@@ -568,27 +579,25 @@ export default function Home() {
           </ul>
         </section>
 
-        <div className="mt-16 space-y-20 sm:mt-20 sm:space-y-24">
+        <div className="mt-16 space-y-24 sm:mt-20 sm:space-y-28">
           <section
             id="featured"
-            className="scroll-mt-28"
+            className={`scroll-mt-28 ${sectionShell}`}
             aria-labelledby="featured-heading"
           >
-            <div className="mb-6 flex items-end justify-between gap-4">
-              <div>
-                <h2
-                  id="featured-heading"
-                  className="text-lg font-semibold text-zinc-900 dark:text-zinc-100"
-                >
+            <div className={sectionHeaderRowClass}>
+              <div className={sectionHeaderAccentClass} aria-hidden />
+              <div className="min-w-0 flex-1">
+                <h2 id="featured-heading" className={sectionTitleClass}>
                   Featured picks
                 </h2>
-                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                <p className={sectionLeadClass}>
                   One highlight each from our categories — swipe for more (max 5).
                 </p>
               </div>
             </div>
             {loading ? (
-              <div className="flex gap-4 overflow-hidden pb-2">
+              <div className="mt-8 flex gap-4 overflow-hidden pb-2">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div
                     key={i}
@@ -597,7 +606,7 @@ export default function Home() {
                 ))}
               </div>
             ) : featuredCarouselItems.length === 0 ? null : (
-              <div className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-3 pt-1 [-ms-overflow-style:none] [scrollbar-width:thin] sm:gap-6 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-300 dark:[&::-webkit-scrollbar-thumb]:bg-zinc-600">
+              <div className="mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-3 pt-1 [-ms-overflow-style:none] [scrollbar-width:thin] sm:gap-6 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-300 dark:[&::-webkit-scrollbar-thumb]:bg-zinc-600">
                 {featuredCarouselItems.map(({ card, tag }, idx) => {
                   const topReward = topCategoryReward(card);
                   const rewardLine = topReward
@@ -649,10 +658,11 @@ export default function Home() {
           </section>
 
           <section id="match" className={`scroll-mt-28 ${sectionShell}`}>
-            <div className="flex flex-col gap-2 border-b border-zinc-100 pb-8 dark:border-zinc-800 sm:flex-row sm:items-end sm:justify-between">
-              <div>
+            <div className={sectionHeaderRowClass}>
+              <div className={sectionHeaderAccentClass} aria-hidden />
+              <div className="min-w-0 flex-1">
                 <h2 className={sectionTitleClass}>Match my spend</h2>
-                <p className="mt-2 max-w-xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                <p className={sectionLeadClass}>
                   Enter average monthly spend (INR) per category. We rank cards by
                   estimated yearly rewards.
                 </p>
@@ -884,12 +894,15 @@ export default function Home() {
           </section>
 
           <section id="compare" className={`scroll-mt-28 ${sectionShell}`}>
-            <div className="border-b border-zinc-100 pb-8 dark:border-zinc-800">
-              <h2 className={sectionTitleClass}>Compare two cards</h2>
-              <p className="mt-2 max-w-xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-                Uses the same monthly spend as Match my spend. Pick two cards for
-                fees, category rates, and estimated returns.
-              </p>
+            <div className={sectionHeaderRowClass}>
+              <div className={sectionHeaderAccentClass} aria-hidden />
+              <div className="min-w-0 flex-1">
+                <h2 className={sectionTitleClass}>Compare two cards</h2>
+                <p className={sectionLeadClass}>
+                  Uses the same monthly spend as Match my spend. Pick two cards for
+                  fees, category rates, and estimated returns.
+                </p>
+              </div>
             </div>
 
             <div className="mt-8 grid grid-cols-1 items-end gap-6 md:grid-cols-[1fr_auto_1fr]">
@@ -1116,13 +1129,16 @@ export default function Home() {
         </section>
 
         <section id="browse" className={`scroll-mt-28 ${sectionShell}`}>
-          <div className="border-b border-zinc-100 pb-8 dark:border-zinc-800">
-            <h2 className={sectionTitleClass}>All cards</h2>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-              {filteredCards.length}{" "}
-              {filteredCards.length === 1 ? "card" : "cards"}
-              {search.trim() ? " match your search" : " in the catalog"}.
-            </p>
+          <div className={sectionHeaderRowClass}>
+            <div className={sectionHeaderAccentClass} aria-hidden />
+            <div className="min-w-0 flex-1">
+              <h2 className={sectionTitleClass}>All cards</h2>
+              <p className={sectionLeadClass}>
+                {filteredCards.length}{" "}
+                {filteredCards.length === 1 ? "card" : "cards"}
+                {search.trim() ? " match your search" : " in the catalog"}.
+              </p>
+            </div>
           </div>
 
           {loading ? (
