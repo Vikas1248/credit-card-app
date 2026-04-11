@@ -1,10 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  networkPillClass,
-  networkRailClass,
-} from "@/lib/cards/networkVisual";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { CardNetwork } from "@/lib/types/card";
 
@@ -250,12 +246,7 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
           <span aria-hidden>←</span> Back to all cards
         </Link>
 
-        <article className="flex overflow-hidden rounded-3xl border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900/70">
-          <div
-            className={`w-1.5 shrink-0 sm:w-2 ${networkRailClass(card.network)}`}
-            aria-hidden
-          />
-          <div className="min-w-0 flex-1 px-6 py-10 sm:px-10 sm:py-12">
+        <article className="rounded-3xl border border-zinc-200/80 bg-white px-6 py-10 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/70 sm:px-10 sm:py-12">
           <header className="border-b border-zinc-100 pb-10 dark:border-zinc-800">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
@@ -266,9 +257,7 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
                   {card.bank}
                 </p>
               </div>
-              <span
-                className={`shrink-0 self-start rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${networkPillClass(card.network)}`}
-              >
+              <span className="shrink-0 self-start rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                 {card.network}
               </span>
             </div>
@@ -361,7 +350,6 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
               <CardMetadataSection metadata={filterPublicMetadata(card.metadata)} />
             </div>
           ) : null}
-          </div>
           </div>
         </article>
       </div>
