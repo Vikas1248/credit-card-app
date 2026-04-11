@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "data:pipeline": ".venv/bin/python run_data_pipeline.py",
+    "data:pipeline:mirror": ".venv/bin/python run_data_pipeline.py --mirror-gcs",
     "data:sync": ".venv/bin/python run_data_pipeline.py --convert-docx",
+    "data:sync:mirror": ".venv/bin/python run_data_pipeline.py --convert-docx --mirror-gcs",
+    "data:upload-gcs": ".venv/bin/python upload_cards_to_gcs.py --mirror",
     "data:merge-refined": ".venv/bin/python merge_docx_into_refined.py"
   },
   "dependencies": {

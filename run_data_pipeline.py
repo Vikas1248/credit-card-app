@@ -5,6 +5,8 @@ End-to-end data path: local → GCS → Supabase → Vercel (reads same Supabase
   0. (Optional) convert_docx_cards_to_json.py — Word → data/credit_cards_*_from_docx.json
   0b. (Optional) merge_docx_into_refined.py — merge *_from_docx.json into *_refined.json (npm run data:merge-refined)
   1. upload_cards_to_gcs.py — every data/*.json → gs://<bucket>/<GCS_PREFIX>/
+     Use upload_cards_to_gcs.py --mirror so GCS has exactly the same *.json set as local data/
+     (removes stale objects under the prefix). run_data_pipeline.py --mirror-gcs forwards this.
   2. import_cards_from_gcs.py — each *.json at that prefix → Supabase public.credit_cards
   3. Vercel — no data upload. Set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY,
      SUPABASE_SERVICE_ROLE_KEY to the same Supabase project; redeploy after env changes.
@@ -91,6 +93,11 @@ def main() -> int:
         action="store_true",
         help="Forward to import: per-file replace by exact card_name.",
     )
+    parser.add_argument(
+        "--mirror-gcs",
+        action="store_true",
+        help="Forward to upload: delete GCS *.json under prefix that are not in local data/.",
+    )
     args = parser.parse_args()
 
     if not args.no_env_file:
@@ -106,7 +113,10 @@ def main() -> int:
             return code
 
     if not args.skip_upload:
-        code = run_step([py, str(REPO_ROOT / "upload_cards_to_gcs.py")])
+        upload_cmd = [py, str(REPO_ROOT / "upload_cards_to_gcs.py")]
+        if args.mirror_gcs:
+            upload_cmd.append("--mirror")
+        code = run_step(upload_cmd)
         if code != 0:
             return code
 

@@ -40,6 +40,36 @@ def upload_json_files(cards_dir: Path, bucket_name: str, prefix: str = "data/") 
     return uploaded_count
 
 
+def delete_gcs_json_not_in_local(
+    bucket_name: str,
+    prefix: str,
+    local_basenames: set[str],
+) -> int:
+    """
+    Remove gs://bucket/prefix/*.json objects whose filename is not in local_basenames.
+    Makes GCS match the local data/ folder for JSON card files.
+    """
+    client = storage.Client()
+    bucket = client.bucket(bucket_name)
+    prefix_norm = prefix.rstrip("/") + "/" if prefix else ""
+    deleted = 0
+    for blob in bucket.list_blobs(prefix=prefix_norm):
+        if blob.name.endswith("/"):
+            continue
+        if not blob.name.lower().endswith(".json"):
+            continue
+        base = Path(blob.name).name
+        if base not in local_basenames:
+            logging.warning(
+                "Deleting stale GCS object (not in local data/): gs://%s/%s",
+                bucket_name,
+                blob.name,
+            )
+            blob.delete()
+            deleted += 1
+    return deleted
+
+
 def upload_single_json(file_path: Path, bucket_name: str, prefix: str = "data/") -> None:
     if not file_path.is_file():
         raise FileNotFoundError(f"JSON file not found: {file_path}")
@@ -98,6 +128,14 @@ def main() -> int:
         default=None,
         help="GCS object prefix (default: GCS_PREFIX env, else data/).",
     )
+    parser.add_argument(
+        "--mirror",
+        action="store_true",
+        help=(
+            "After upload(s), delete any *.json under the GCS prefix that does not exist "
+            "in the local folder (default: data/). Keeps GCS identical to local JSON set."
+        ),
+    )
     args = parser.parse_args()
     bucket = resolve_bucket(args.bucket)
     if not bucket:
@@ -109,10 +147,19 @@ def main() -> int:
     try:
         if args.file:
             upload_single_json(Path(args.file), bucket, prefix)
+            if args.mirror:
+                logging.warning(
+                    "--mirror is ignored with --file; omit --file to upload all data/*.json and mirror."
+                )
             logging.info("Done. Uploaded 1 file.")
             return 0
         cards_dir = Path(args.cards_dir) if args.cards_dir else DEFAULT_DATA_DIR
+        json_files = sorted(cards_dir.glob("*.json")) if cards_dir.is_dir() else []
         count = upload_json_files(cards_dir, bucket, prefix)
+        if args.mirror:
+            local_names = {p.name for p in json_files}
+            removed = delete_gcs_json_not_in_local(bucket, prefix, local_names)
+            logging.info("Mirror: removed %d stale GCS JSON object(s).", removed)
         logging.info("Done. Uploaded %d file(s).", count)
         return 0
     except Exception as exc:  # noqa: BLE001
