@@ -1,8 +1,8 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
-import { CreditCardThumbFill } from "@/components/credit-card-thumb";
 import { SbiApplyLink } from "@/components/sbi-apply-link";
 import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
 import { isAxisBankCard } from "@/lib/cards/axisApply";
@@ -38,6 +38,152 @@ function metadataHasEntries(
   meta: Record<string, unknown> | null | undefined
 ): boolean {
   return Boolean(meta && typeof meta === "object" && Object.keys(meta).length > 0);
+}
+
+const METADATA_LABELS: Record<string, string> = {
+  affiliate_link: "Apply / referral link",
+  ai_best_for: "AI summary — best for",
+  ai_cons: "AI summary — drawbacks",
+  ai_not_ideal_for: "AI summary — less ideal for",
+  ai_pros: "AI summary — highlights",
+  eligibility: "Eligibility",
+  reward_conversion: "Reward conversion",
+  source: "Data source",
+  welcome_offer: "Welcome offer",
+  milestone_rewards: "Milestone rewards",
+  excluded_categories: "Excluded categories",
+  annual_fee_waiver_condition: "Annual fee waiver",
+  cashback_cap_monthly: "Cashback cap (monthly)",
+  finance_charges_monthly: "Finance charges (monthly)",
+  fuel_surcharge_waiver: "Fuel surcharge waiver",
+  priority_pass: "Priority Pass",
+};
+
+function humanizeMetadataKey(key: string): string {
+  return (
+    METADATA_LABELS[key] ??
+    key
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (ch) => ch.toUpperCase())
+  );
+}
+
+function isHttpUrl(s: string): boolean {
+  return /^https?:\/\//i.test(s.trim());
+}
+
+function MetadataValueView({ value }: { value: unknown }): ReactNode {
+  if (value == null) {
+    return <span className="text-zinc-400 dark:text-zinc-500">—</span>;
+  }
+  if (typeof value === "string") {
+    const t = value.trim();
+    if (!t) {
+      return <span className="text-zinc-400 dark:text-zinc-500">—</span>;
+    }
+    if (isHttpUrl(t)) {
+      return (
+        <a
+          href={t}
+          className="break-all font-medium text-blue-600 underline decoration-blue-600/30 underline-offset-2 hover:text-blue-500 dark:text-blue-400"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t}
+        </a>
+      );
+    }
+    return (
+      <span className="whitespace-pre-wrap text-zinc-700 dark:text-zinc-300">
+        {t}
+      </span>
+    );
+  }
+  if (typeof value === "number" || typeof value === "boolean") {
+    return <span className="tabular-nums text-zinc-800 dark:text-zinc-200">{String(value)}</span>;
+  }
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return <span className="text-zinc-400 dark:text-zinc-500">—</span>;
+    }
+    const primitiveOnly = value.every((x) =>
+      ["string", "number", "boolean"].includes(typeof x)
+    );
+    if (primitiveOnly) {
+      return (
+        <ul className="mt-1 list-disc space-y-1.5 pl-5 text-zinc-700 dark:text-zinc-300">
+          {value.map((x, i) => (
+            <li key={i}>{String(x)}</li>
+          ))}
+        </ul>
+      );
+    }
+    return (
+      <ul className="mt-1 list-decimal space-y-3 pl-5 text-sm">
+        {value.map((item, i) => (
+          <li key={i}>
+            <MetadataValueView value={item} />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  if (typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>);
+    if (entries.length === 0) {
+      return <span className="text-zinc-400 dark:text-zinc-500">—</span>;
+    }
+    return (
+      <dl className="mt-1 space-y-2 border-l-2 border-zinc-200 pl-3 dark:border-zinc-600">
+        {entries.map(([k, v]) => (
+          <div key={k}>
+            <dt className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+              {humanizeMetadataKey(k)}
+            </dt>
+            <dd className="mt-0.5">
+              <MetadataValueView value={v} />
+            </dd>
+          </div>
+        ))}
+      </dl>
+    );
+  }
+  return <span>{String(value)}</span>;
+}
+
+function CardMetadataSection({
+  metadata,
+}: {
+  metadata: Record<string, unknown>;
+}) {
+  const entries = Object.entries(metadata).sort(([a], [b]) =>
+    a.localeCompare(b)
+  );
+  return (
+    <section className="rounded-2xl border border-zinc-200 bg-zinc-50/50 p-6 dark:border-zinc-800 dark:bg-zinc-900/40">
+      <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+        Additional details
+      </h2>
+      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+        From source data. Verify important facts with the issuer.
+      </p>
+      <dl className="mt-4 space-y-4">
+        {entries.map(([key, value]) => (
+          <div
+            key={key}
+            className="rounded-lg border border-zinc-100 bg-zinc-50/90 p-3 dark:border-zinc-800 dark:bg-zinc-900/50"
+          >
+            <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              {humanizeMetadataKey(key)}
+            </dt>
+            <dd className="mt-1.5 text-sm">
+              <MetadataValueView value={value} />
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
 }
 
 function formatInr(value: number): string {
@@ -80,44 +226,35 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
   }
 
   return (
-    <main className="min-h-screen bg-zinc-100 px-4 py-8 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 sm:px-6 sm:py-10">
-      <div className="mx-auto w-full max-w-3xl">
+    <main className="min-h-screen bg-zinc-50 px-4 py-12 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 sm:px-6 sm:py-16">
+      <div className="mx-auto w-full max-w-3xl lg:max-w-4xl">
         <Link
           href="/#browse"
-          className="mb-6 inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
         >
-          <span aria-hidden>←</span> Back to catalog
+          <span aria-hidden>←</span> Back to all cards
         </Link>
 
-        <article className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900/80">
-          <div className="relative aspect-[8/5] w-full border-b border-zinc-200 bg-zinc-900 dark:border-zinc-800">
-            <CreditCardThumbFill
-              bank={card.bank}
-              className="object-cover object-center"
-              priority
-              sizes="(max-width: 768px) 100vw, 42rem"
-            />
-          </div>
-          <div className="p-6 sm:p-8">
-          <div className="mb-5 flex items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                Cardwise
-              </p>
-              <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
-                {card.card_name}
-              </h1>
-              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                {card.bank}
-              </p>
+        <article className="rounded-3xl border border-zinc-200/80 bg-white px-6 py-10 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/70 sm:px-10 sm:py-12">
+          <header className="border-b border-zinc-100 pb-10 dark:border-zinc-800">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-4xl">
+                  {card.card_name}
+                </h1>
+                <p className="mt-3 text-base text-zinc-600 dark:text-zinc-400">
+                  {card.bank}
+                </p>
+              </div>
+              <span className="shrink-0 self-start rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                {card.network}
+              </span>
             </div>
-            <span className="shrink-0 rounded-lg bg-blue-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-700 dark:bg-blue-950/80 dark:text-blue-300">
-              {card.network}
-            </span>
-          </div>
+          </header>
 
+          <div className="pt-10">
           {isAxisBankCard(card.bank) ? (
-            <div className="mb-6 flex flex-col gap-2">
+            <div className="mb-8 flex flex-col gap-2">
               <AxisApplyLink className="sm:self-start" />
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 Opens Axis Bank in a new tab (referral). Cardwise is not the
@@ -127,7 +264,7 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
           ) : null}
 
           {isAmexPlatinumReserveCard(card.card_name, card.bank) ? (
-            <div className="mb-6 flex flex-col gap-2">
+            <div className="mb-8 flex flex-col gap-2">
               <AmexPlatinumReserveApplyLink className="sm:self-start" />
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 Opens American Express in a new tab (referral). Cardwise is not
@@ -137,7 +274,7 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
           ) : null}
 
           {isSbiCard(card.bank) ? (
-            <div className="mb-6 flex flex-col gap-2">
+            <div className="mb-8 flex flex-col gap-2">
               <SbiApplyLink className="sm:self-start" />
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 Opens SBI Card in a new tab (referral). Cardwise is not the
@@ -146,44 +283,59 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
             </div>
           ) : null}
 
-          <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
-            <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
-              <dt className="text-xs font-medium text-zinc-500">Joining fee</dt>
-              <dd className="mt-1 font-semibold tabular-nums">
-                {formatInr(card.joining_fee)}
-              </dd>
-            </div>
-            <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
-              <dt className="text-xs font-medium text-zinc-500">Annual fee</dt>
-              <dd className="mt-1 font-semibold tabular-nums">
-                {formatInr(card.annual_fee)}
-              </dd>
-            </div>
-            <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
-              <dt className="text-xs font-medium text-zinc-500">Reward type</dt>
-              <dd className="mt-1 font-medium capitalize">{card.reward_type}</dd>
-            </div>
-            <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50 sm:col-span-2">
-              <dt className="text-xs font-medium text-zinc-500">Reward rate</dt>
-              <dd className="mt-1 text-zinc-800 dark:text-zinc-200">
-                {card.reward_rate ?? "—"}
-              </dd>
-            </div>
-            <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
-              <dt className="text-xs font-medium text-zinc-500">Lounge access</dt>
-              <dd className="mt-1">{card.lounge_access ?? "—"}</dd>
-            </div>
-            <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
-              <dt className="text-xs font-medium text-zinc-500">Best for</dt>
-              <dd className="mt-1">{card.best_for ?? "—"}</dd>
-            </div>
-          </dl>
+          <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
+            <section>
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Fees & rewards
+              </h2>
+              <dl className="mt-4 space-y-4 text-sm">
+                <div className="flex justify-between gap-4 border-b border-zinc-100 pb-4 dark:border-zinc-800">
+                  <dt className="text-zinc-500">Joining fee</dt>
+                  <dd className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+                    {formatInr(card.joining_fee)}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4 border-b border-zinc-100 pb-4 dark:border-zinc-800">
+                  <dt className="text-zinc-500">Annual fee</dt>
+                  <dd className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+                    {formatInr(card.annual_fee)}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4 border-b border-zinc-100 pb-4 dark:border-zinc-800">
+                  <dt className="text-zinc-500">Reward type</dt>
+                  <dd className="font-medium capitalize text-zinc-900 dark:text-zinc-100">
+                    {card.reward_type}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-zinc-500">Reward rate</dt>
+                  <dd className="mt-2 leading-relaxed text-zinc-800 dark:text-zinc-200">
+                    {card.reward_rate ?? "—"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-zinc-500">Lounge access</dt>
+                  <dd className="mt-2 leading-relaxed text-zinc-800 dark:text-zinc-200">
+                    {card.lounge_access ?? "—"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-zinc-500">Best for</dt>
+                  <dd className="mt-2 leading-relaxed text-zinc-800 dark:text-zinc-200">
+                    {card.best_for ?? "—"}
+                  </dd>
+                </div>
+              </dl>
+            </section>
 
-          <section className="mt-6 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Category reward rates
+            <section>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Category earn rates
             </h2>
-            <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+            <p className="mt-1 text-xs text-zinc-500">
+              Approximate % of spend in each category (where available).
+            </p>
+            <dl className="mt-4 grid grid-cols-2 gap-4 text-sm sm:grid-cols-2">
               {(
                 [
                   ["dining_reward", "Dining"],
@@ -200,25 +352,22 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
                 </div>
               ))}
             </dl>
-          </section>
+            </section>
+          </div>
 
-          <section className="mt-6 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-            <h2 className="text-sm font-semibold">Key benefits</h2>
-            <p className="mt-2 text-sm text-zinc-700 dark:text-zinc-300">
-              {card.key_benefits ?? "N/A"}
+          <section className="mt-12 border-t border-zinc-100 pt-10 dark:border-zinc-800">
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Key benefits
+            </h2>
+            <p className="mt-4 text-base leading-relaxed text-zinc-700 dark:text-zinc-300">
+              {card.key_benefits ?? "—"}
             </p>
           </section>
 
           {metadataHasEntries(card.metadata) ? (
-            <section className="mt-6 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-              <h2 className="text-sm font-semibold">Additional details</h2>
-              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                From source data (eligibility, offers, AI summaries, links). Verify with the issuer.
-              </p>
-              <pre className="mt-3 max-h-80 overflow-auto rounded-lg bg-zinc-950 p-3 text-left text-xs leading-relaxed text-zinc-100">
-                {JSON.stringify(card.metadata, null, 2)}
-              </pre>
-            </section>
+            <div className="mt-12">
+              <CardMetadataSection metadata={card.metadata!} />
+            </div>
           ) : null}
           </div>
         </article>

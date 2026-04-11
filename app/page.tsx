@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
-import { CreditCardThumbFill } from "@/components/credit-card-thumb";
 import { SbiApplyLink } from "@/components/sbi-apply-link";
 import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
 import { isAxisBankCard } from "@/lib/cards/axisApply";
@@ -111,16 +110,6 @@ function categoryLabel(key: keyof RewardBreakdown): string {
   return CATEGORY_LABELS.find((c) => c.key === key)?.label ?? key;
 }
 
-function cardPreviewClass(index: number): string {
-  const palettes = [
-    "from-indigo-500 via-violet-500 to-purple-600",
-    "from-emerald-500 via-teal-500 to-cyan-600",
-    "from-amber-500 via-orange-500 to-rose-500",
-    "from-sky-500 via-blue-500 to-indigo-600",
-  ];
-  return palettes[index % palettes.length];
-}
-
 function cardRates(card: CreditCard) {
   return {
     dining_reward: card.dining_reward,
@@ -153,20 +142,20 @@ const btnGhost =
   "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800";
 
 const sectionShell =
-  "rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60 sm:p-8";
+  "rounded-3xl border border-zinc-200/70 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/50 sm:p-10";
 
 /** In-page section titles (distinct from sticky page header). */
 const sectionTitleClass =
-  "border-l-4 border-teal-500 pl-3 text-lg font-bold tracking-tight text-teal-900 dark:border-teal-400 dark:text-teal-200 sm:text-xl";
+  "text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-xl";
 
 const headerInputClass =
-  "w-full rounded-xl border border-slate-600 bg-slate-800/90 py-2.5 pl-10 pr-3 text-sm text-slate-100 shadow-inner outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/35";
+  "w-full rounded-2xl border border-zinc-200 bg-zinc-50/90 py-3 pl-11 pr-4 text-sm text-zinc-900 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-600 dark:bg-zinc-900/80 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-500";
 
 const headerNavLinkClass =
-  "shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white";
+  "shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100";
 
 const headerBtnClass =
-  "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-600 bg-slate-800 px-4 text-sm font-medium text-slate-100 shadow-sm transition hover:bg-slate-700 disabled:opacity-50";
+  "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800";
 
 function Spinner({ className }: { className?: string }) {
   return (
@@ -206,39 +195,33 @@ function SiteHeader({
   loadingCards: boolean;
 }) {
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-800 bg-slate-900 shadow-md dark:border-slate-800 dark:bg-slate-950">
-      <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6">
-        <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+    <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/85 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/90">
+      <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
           <Link
             href="/"
-            className="flex shrink-0 items-center gap-2.5 rounded-xl pr-2 text-white"
+            className="flex shrink-0 items-center gap-2.5 rounded-xl pr-2 text-zinc-900 dark:text-zinc-100"
           >
             <span
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white shadow-lg shadow-indigo-900/40"
+              className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-sm font-bold text-white shadow-md"
               aria-hidden
             >
               C
             </span>
-            <div className="leading-tight">
-              <span className="block text-sm font-bold tracking-tight text-white">
-                Cardwise
-              </span>
-              <span className="hidden text-[11px] font-medium text-slate-400 sm:block">
-                Credit card intelligence
-              </span>
-            </div>
+            <span className="text-sm font-bold tracking-tight">Cardwise</span>
           </Link>
 
           <nav
-            className="order-last flex w-full gap-0.5 overflow-x-auto pb-1 sm:order-none sm:w-auto sm:pb-0"
+            className="flex gap-1 overflow-x-auto pb-1 sm:pb-0 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             aria-label="Sections"
           >
             {(
               [
-                ["#discover", "Discover"],
-                ["#browse", "Browse"],
+                ["#featured", "Featured"],
+                ["#search", "Search"],
                 ["#match", "Match spend"],
                 ["#compare", "Compare"],
+                ["#browse", "All cards"],
               ] as const
             ).map(([href, label]) => (
               <a key={href} href={href} className={headerNavLinkClass}>
@@ -247,8 +230,8 @@ function SiteHeader({
             ))}
           </nav>
 
-          <div className="relative min-w-0 flex-1 basis-[200px]">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+          <div className="relative min-w-0 flex-1 sm:min-w-[240px]">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
               <svg
                 className="h-4 w-4"
                 fill="none"
@@ -283,13 +266,13 @@ function SiteHeader({
           >
             {loadingCards ? (
               <>
-                <Spinner className="h-4 w-4 text-slate-200" />
+                <Spinner className="h-4 w-4 text-zinc-500" />
                 <span className="hidden sm:inline">Syncing</span>
               </>
             ) : (
               <>
                 <svg
-                  className="h-4 w-4 text-slate-200"
+                  className="h-4 w-4 text-zinc-500"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -302,7 +285,7 @@ function SiteHeader({
                     d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                   />
                 </svg>
-                <span className="hidden sm:inline">Sync</span>
+                <span className="hidden sm:inline">Refresh</span>
               </>
             )}
           </button>
@@ -312,26 +295,13 @@ function SiteHeader({
   );
 }
 
-function BrowseGridSkeleton() {
-  return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div
-          key={i}
-          className="h-52 animate-pulse rounded-2xl bg-zinc-100 dark:bg-zinc-800"
-        />
-      ))}
-    </div>
-  );
-}
-
 function PicksSkeleton() {
   return (
-    <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
       {Array.from({ length: 3 }).map((_, i) => (
         <div
           key={i}
-          className="h-80 animate-pulse rounded-2xl bg-zinc-100 dark:bg-zinc-800"
+          className="h-56 animate-pulse rounded-2xl bg-zinc-100 dark:bg-zinc-800"
         />
       ))}
     </div>
@@ -511,6 +481,36 @@ export default function Home() {
     ];
   }, [cards]);
 
+  /** One card per featured category, max 5 (fills with a top-scored extra if needed). */
+  const featuredCarouselItems = useMemo(() => {
+    const result: { card: CreditCard; tag: string }[] = [];
+    const seen = new Set<string>();
+    for (const group of featuredGroups) {
+      const pick = group.cards.find((c) => !seen.has(c.id));
+      if (pick) {
+        seen.add(pick.id);
+        result.push({ card: pick, tag: group.title });
+      }
+    }
+    if (result.length < 5 && cards.length > 0) {
+      const scored = [...cards].sort((a, b) => {
+        const aS =
+          (topCategoryReward(a)?.value ?? 0) * 10 - a.annual_fee / 1000;
+        const bS =
+          (topCategoryReward(b)?.value ?? 0) * 10 - b.annual_fee / 1000;
+        return bS - aS;
+      });
+      for (const c of scored) {
+        if (result.length >= 5) break;
+        if (!seen.has(c.id)) {
+          seen.add(c.id);
+          result.push({ card: c, tag: "Top pick" });
+        }
+      }
+    }
+    return result.slice(0, 5);
+  }, [featuredGroups, cards]);
+
   const parsedSpendForCompare = useMemo(() => {
     const dining = Number(spendDining);
     const travel = Number(spendTravel);
@@ -549,7 +549,7 @@ export default function Home() {
   }, [parsedSpendForCompare, compareLeft, compareRight]);
 
   return (
-    <div className="min-h-screen bg-zinc-100 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+    <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <SiteHeader
         search={search}
         onSearchChange={setSearch}
@@ -557,153 +557,146 @@ export default function Home() {
         loadingCards={loading}
       />
 
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-        <div className="mb-10 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50/90 to-white px-5 py-6 dark:border-blue-900/40 dark:from-blue-950/40 dark:to-zinc-900 sm:px-8 sm:py-8">
-          <p className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-            Welcome
-          </p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
-            Pick a card that fits how you actually spend
+      <main className="mx-auto max-w-4xl px-4 py-14 sm:px-6 sm:py-20">
+        <header className="mx-auto max-w-2xl text-center">
+          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-4xl">
+            Find a card for how you spend
           </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-            Tell us your monthly dining, travel, shopping, and fuel spend—we rank
-            cards by estimated yearly rewards. Compare any two products, then browse
-            the full catalog with search in the header.
+          <p className="mt-5 text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
+            Search the catalog, match your monthly spend, or compare two cards side
+            by side.
           </p>
-          <div className="mt-5 flex flex-wrap gap-2">
-            <a
-              href="#match"
-              className="inline-flex items-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 dark:hover:bg-blue-500"
-            >
-              Start with my spend
-            </a>
-            <a
-              href="#browse"
-              className="inline-flex items-center rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-800 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-            >
-              Browse all cards
-            </a>
-          </div>
-        </div>
+        </header>
 
-        <div className="space-y-10 sm:space-y-12">
-          <section id="discover" className={`scroll-mt-24 ${sectionShell}`}>
-            <div className="flex flex-col gap-2 border-b border-zinc-100 pb-5 dark:border-zinc-800 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mt-16 space-y-20 sm:mt-20 sm:space-y-24">
+          <section
+            id="featured"
+            className="scroll-mt-28"
+            aria-labelledby="featured-heading"
+          >
+            <div className="mb-6 flex items-end justify-between gap-4">
               <div>
-                <h2 className={sectionTitleClass}>Featured discovery</h2>
-                <p className="mt-1 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
-                  Swipe through curated groups to quickly discover strong options
-                  before running your personalized spend match.
+                <h2
+                  id="featured-heading"
+                  className="text-lg font-semibold text-zinc-900 dark:text-zinc-100"
+                >
+                  Featured picks
+                </h2>
+                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                  One highlight each from our categories — swipe for more (max 5).
                 </p>
               </div>
-              <span className="shrink-0 rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                Quick explore
-              </span>
             </div>
-
-            <div className="mt-6 space-y-7">
-              {featuredGroups.map((group) => (
-                <div key={group.id}>
-                  <div className="mb-3 flex items-end justify-between gap-3">
-                    <div>
-                      <h3 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-                        {group.title}
-                      </h3>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                        {group.subtitle}
+            {loading ? (
+              <div className="flex gap-4 overflow-hidden pb-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-44 w-72 shrink-0 animate-pulse rounded-2xl bg-zinc-200/80 dark:bg-zinc-800"
+                  />
+                ))}
+              </div>
+            ) : featuredCarouselItems.length === 0 ? null : (
+              <div className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-3 pt-1 [-ms-overflow-style:none] [scrollbar-width:thin] sm:gap-6 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-300 dark:[&::-webkit-scrollbar-thumb]:bg-zinc-600">
+                {featuredCarouselItems.map(({ card, tag }, idx) => {
+                  const topReward = topCategoryReward(card);
+                  const rewardLine = topReward
+                    ? `${formatPct(topReward.value)} ${categoryLabel(topReward.category)}`
+                    : (card.reward_rate ?? "—").slice(0, 80);
+                  return (
+                    <article
+                      key={card.id}
+                      className={`w-[min(100%,320px)] shrink-0 snap-center rounded-2xl border bg-white p-6 shadow-sm dark:bg-zinc-900 ${
+                        idx === 0
+                          ? "border-blue-200 ring-1 ring-blue-100 dark:border-blue-900/50 dark:ring-blue-900/30"
+                          : "border-zinc-200/90 dark:border-zinc-700"
+                      }`}
+                    >
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                        {tag}
                       </p>
-                    </div>
-                  </div>
-
-                  <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [scrollbar-width:thin]">
-                    {group.cards.map((card, idx) => {
-                      const topReward = topCategoryReward(card);
-                      const usp = card.best_for ?? card.key_benefits ?? "Great everyday value";
-                      const rewardHighlight = topReward
-                        ? `${formatPct(topReward.value)} on ${categoryLabel(topReward.category)}`
-                        : card.reward_rate ?? "Rewards vary by spend category";
-
-                      return (
-                        <article
-                          key={`${group.id}-${card.id}`}
-                          className="w-[280px] shrink-0 snap-start rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-950"
+                      <h3 className="mt-2 font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
+                        <Link
+                          href={`/card/${card.id}`}
+                          className="hover:text-blue-600 dark:hover:text-blue-400"
                         >
-                          <div className="relative h-36 overflow-hidden rounded-t-2xl bg-zinc-900">
-                            <CreditCardThumbFill
-                              bank={card.bank}
-                              className="object-cover object-center"
-                            />
-                            <div
-                              className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${cardPreviewClass(idx)} ${card.bank.toLowerCase().includes("axis") ? "opacity-15" : "opacity-35"} mix-blend-soft-light`}
-                              aria-hidden
-                            />
-                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                            <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/15 blur-xl" />
-                            <div className="absolute bottom-3 left-3 right-3 rounded-lg bg-white/20 px-3 py-2 text-white backdrop-blur-sm">
-                              <p className="line-clamp-1 text-sm font-semibold tracking-tight">
-                                {card.card_name}
-                              </p>
-                              <p className="text-[11px] text-white/85">{card.bank}</p>
-                            </div>
-                          </div>
-
-                          <div className="space-y-3 p-4">
-                            <p className="line-clamp-2 text-sm text-zinc-700 dark:text-zinc-300">
-                              <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                                USP:{" "}
-                              </span>
-                              {usp}
-                            </p>
-
-                            <p className="rounded-lg bg-emerald-50 px-2.5 py-2 text-xs font-medium text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
-                              Key reward: {rewardHighlight}
-                            </p>
-
-                            <div className="flex flex-col gap-2">
-                              {isAxisBankCard(card.bank) ? (
-                                <AxisApplyLink fullWidth />
-                              ) : null}
-                              {isAmexPlatinumReserveCard(
-                                card.card_name,
-                                card.bank
-                              ) ? (
-                                <AmexPlatinumReserveApplyLink fullWidth />
-                              ) : null}
-                              {isSbiCard(card.bank) ? (
-                                <SbiApplyLink fullWidth />
-                              ) : null}
-                              <Link
-                                href={`/card/${card.id}`}
-                                className="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 dark:hover:bg-blue-500"
-                              >
-                                View Details
-                              </Link>
-                            </div>
-                          </div>
-                        </article>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
+                          {card.card_name}
+                        </Link>
+                      </h3>
+                      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                        {card.bank} · {card.network}
+                      </p>
+                      <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+                        {card.best_for ?? card.key_benefits ?? "—"}
+                      </p>
+                      <p className="mt-4 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                        {rewardLine}
+                      </p>
+                      <p className="mt-1 text-xs text-zinc-500">
+                        Fee {formatInr(card.annual_fee)} / yr
+                      </p>
+                      <Link
+                        href={`/card/${card.id}`}
+                        className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-zinc-900 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+                      >
+                        View details
+                      </Link>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
           </section>
 
-          <section id="match" className={`scroll-mt-24 ${sectionShell}`}>
-            <div className="flex flex-col gap-2 border-b border-zinc-100 pb-5 dark:border-zinc-800 sm:flex-row sm:items-end sm:justify-between">
+          <section id="search" className={`scroll-mt-28 ${sectionShell}`}>
+            <h2 className={sectionTitleClass}>Search</h2>
+            <p className="mt-2 max-w-xl text-sm text-zinc-600 dark:text-zinc-400">
+              Same search as the header — use whichever is easier. Results are in{" "}
+              <a href="#browse" className="font-medium text-blue-600 underline-offset-2 hover:underline dark:text-blue-400">
+                All cards
+              </a>{" "}
+              below.
+            </p>
+            <label className="relative mt-6 block">
+              <span className="sr-only">Search cards</span>
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  aria-hidden
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 21l-5.2-5.2M11 18a7 7 0 100-14 7 7 0 000 14z"
+                  />
+                </svg>
+              </span>
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Type a card name or bank…"
+                className="w-full rounded-2xl border border-zinc-200 bg-zinc-50/80 py-4 pl-12 pr-4 text-base text-zinc-900 shadow-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/15 dark:border-zinc-600 dark:bg-zinc-900/60 dark:text-zinc-100 dark:focus:border-blue-500"
+              />
+            </label>
+          </section>
+
+          <section id="match" className={`scroll-mt-28 ${sectionShell}`}>
+            <div className="flex flex-col gap-2 border-b border-zinc-100 pb-8 dark:border-zinc-800 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h2 className={sectionTitleClass}>Match my spend</h2>
-                <p className="mt-1 max-w-xl text-sm text-zinc-600 dark:text-zinc-400">
-                  Average monthly spend per category (INR). We rank by estimated
-                  yearly rewards from your profile.
+                <p className="mt-2 max-w-xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                  Enter average monthly spend (INR) per category. We rank cards by
+                  estimated yearly rewards.
                 </p>
               </div>
-              <span className="shrink-0 rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                Step 1 · Your spend
-              </span>
             </div>
 
-            <div className="mt-6 rounded-xl border border-zinc-100 bg-zinc-50/80 p-4 dark:border-zinc-800 dark:bg-zinc-950/50 sm:p-5">
+            <div className="mt-8 rounded-2xl border border-zinc-100 bg-zinc-50/60 p-5 dark:border-zinc-800 dark:bg-zinc-950/40 sm:p-6">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {(
                   [
@@ -733,7 +726,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <button
                 type="button"
                 onClick={() => void loadRecommendations()}
@@ -750,9 +743,9 @@ export default function Home() {
                   "Show top 3 cards"
                 )}
               </button>
-              <p className="text-xs text-zinc-500 dark:text-zinc-500">
-                Short summaries need{" "}
-                <code className="rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] dark:bg-zinc-800">
+              <p className="text-xs text-zinc-500">
+                Optional AI blurbs need{" "}
+                <code className="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] dark:bg-zinc-800">
                   OPENAI_API_KEY
                 </code>{" "}
                 on the server.
@@ -775,27 +768,20 @@ export default function Home() {
             {recommendationLoading ? (
               <PicksSkeleton />
             ) : recommendations.length > 0 ? (
-              <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-3">
                 {recommendations.map((card, index) => {
                   const isBest = index === 0;
                   const monthlyTotal = card.yearly_reward_inr / 12;
                   return (
                     <article
                       key={card.id}
-                      className={`flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition dark:bg-zinc-950 ${
+                      className={`flex flex-col rounded-2xl border bg-white p-6 shadow-sm dark:bg-zinc-950 ${
                         isBest
-                          ? "border-emerald-500 ring-2 ring-emerald-500/25 dark:border-emerald-500"
+                          ? "border-emerald-400 ring-1 ring-emerald-500/20 dark:border-emerald-600"
                           : "border-zinc-200 dark:border-zinc-700"
                       }`}
                     >
-                      <div className="relative aspect-[8/5] w-full shrink-0 border-b border-zinc-100 bg-zinc-900 dark:border-zinc-800">
-                        <CreditCardThumbFill
-                          bank={card.bank}
-                          className="object-cover object-center"
-                          sizes="(max-width: 1024px) 100vw, 33vw"
-                        />
-                      </div>
-                      <div className="flex flex-col p-5">
+                      <div className="flex flex-col">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                           #{index + 1}
@@ -941,22 +927,16 @@ export default function Home() {
             ) : null}
           </section>
 
-          <section id="compare" className={`scroll-mt-24 ${sectionShell}`}>
-            <div className="flex flex-col gap-2 border-b border-zinc-100 pb-5 dark:border-zinc-800 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <h2 className={sectionTitleClass}>Compare two cards</h2>
-                <p className="mt-1 max-w-xl text-sm text-zinc-600 dark:text-zinc-400">
-                  Same monthly category totals as Match my spend. Choose two
-                  products to see fees, reward rates, and estimated returns
-                  side-by-side.
-                </p>
-              </div>
-              <span className="shrink-0 rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                Side-by-side
-              </span>
+          <section id="compare" className={`scroll-mt-28 ${sectionShell}`}>
+            <div className="border-b border-zinc-100 pb-8 dark:border-zinc-800">
+              <h2 className={sectionTitleClass}>Compare two cards</h2>
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                Uses the same monthly spend as Match my spend. Pick two cards for
+                fees, category rates, and estimated returns.
+              </p>
             </div>
 
-            <div className="mt-6 grid grid-cols-1 items-end gap-4 md:grid-cols-[1fr_auto_1fr]">
+            <div className="mt-8 grid grid-cols-1 items-end gap-6 md:grid-cols-[1fr_auto_1fr]">
               <label className="block min-w-0">
                 <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
                   First card
@@ -1179,21 +1159,24 @@ export default function Home() {
           ) : null}
         </section>
 
-        <section id="browse" className={`scroll-mt-24 ${sectionShell}`}>
-          <div className="flex flex-col gap-3 border-b border-zinc-100 pb-5 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className={sectionTitleClass}>Browse catalog</h2>
-              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                Filter with the search field in the header. {filteredCards.length}{" "}
-                {filteredCards.length === 1 ? "card" : "cards"}
-                {search.trim() ? " match" : " total"}.
-              </p>
-            </div>
+        <section id="browse" className={`scroll-mt-28 ${sectionShell}`}>
+          <div className="border-b border-zinc-100 pb-8 dark:border-zinc-800">
+            <h2 className={sectionTitleClass}>All cards</h2>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              {filteredCards.length}{" "}
+              {filteredCards.length === 1 ? "card" : "cards"}
+              {search.trim() ? " match your search" : " in the catalog"}.
+            </p>
           </div>
 
           {loading ? (
-            <div className="mt-6">
-              <BrowseGridSkeleton />
+            <div className="mt-8 space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-24 animate-pulse rounded-2xl bg-zinc-100 dark:bg-zinc-800"
+                />
+              ))}
             </div>
           ) : error ? (
             <div
@@ -1229,94 +1212,69 @@ export default function Home() {
               )}
             </div>
           ) : (
-            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="mt-8 divide-y divide-zinc-100 dark:divide-zinc-800">
               {filteredCards.map((card) => (
-                <article
-                  key={card.id}
-                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:border-zinc-300 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-950 dark:hover:border-zinc-600"
-                >
-                  <div className="relative aspect-[8/5] w-full shrink-0 border-b border-zinc-100 bg-zinc-900 dark:border-zinc-800">
-                    <CreditCardThumbFill
-                      bank={card.bank}
-                      className="object-cover object-center transition duration-300 group-hover:scale-[1.02]"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    />
-                  </div>
-                  <div className="flex flex-1 flex-col p-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="text-base font-semibold leading-snug tracking-tight">
+                <li key={card.id} className="py-6 first:pt-2">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+                          <Link
+                            href={`/card/${card.id}`}
+                            className="hover:text-blue-600 dark:hover:text-blue-400"
+                          >
+                            {card.card_name}
+                          </Link>
+                        </h3>
+                        <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                          {card.network}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                        {card.bank}
+                      </p>
+                      <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+                        {card.best_for ?? card.reward_rate ?? "—"}
+                      </p>
+                      <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-zinc-500">
+                        <div>
+                          <span className="text-zinc-400">Fee </span>
+                          <span className="font-medium tabular-nums text-zinc-700 dark:text-zinc-300">
+                            {formatInr(card.annual_fee)}
+                          </span>
+                        </div>
+                        <div className="capitalize">{card.reward_type}</div>
+                      </dl>
+                    </div>
+                    <div className="flex shrink-0 flex-col gap-2 sm:items-end">
+                      {isAxisBankCard(card.bank) ? (
+                        <AxisApplyLink className="w-full sm:w-auto" />
+                      ) : null}
+                      {isAmexPlatinumReserveCard(
+                        card.card_name,
+                        card.bank
+                      ) ? (
+                        <AmexPlatinumReserveApplyLink className="w-full sm:w-auto" />
+                      ) : null}
+                      {isSbiCard(card.bank) ? (
+                        <SbiApplyLink className="w-full sm:w-auto" />
+                      ) : null}
                       <Link
                         href={`/card/${card.id}`}
-                        className="text-zinc-900 transition hover:text-blue-600 dark:text-zinc-50 dark:hover:text-blue-400"
+                        className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                       >
-                        {card.card_name}
+                        Details
                       </Link>
-                    </h3>
-                    <span className="shrink-0 rounded-lg bg-blue-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-700 dark:bg-blue-950/80 dark:text-blue-300">
-                      {card.network}
-                    </span>
+                    </div>
                   </div>
-
-                  <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-                    {card.bank}
-                  </p>
-
-                  <dl className="mt-4 space-y-2 border-t border-zinc-100 pt-4 text-sm dark:border-zinc-800">
-                    <div className="flex justify-between gap-2">
-                      <dt className="text-zinc-500">Annual fee</dt>
-                      <dd className="font-medium tabular-nums text-zinc-900 dark:text-zinc-100">
-                        {formatInr(card.annual_fee)}
-                      </dd>
-                    </div>
-                    <div className="flex justify-between gap-2">
-                      <dt className="text-zinc-500">Rewards</dt>
-                      <dd className="text-right font-medium capitalize text-zinc-800 dark:text-zinc-200">
-                        {card.reward_type}
-                      </dd>
-                    </div>
-                    <div className="text-zinc-600 dark:text-zinc-400">
-                      <dt className="text-zinc-500">Rate</dt>
-                      <dd className="mt-0.5 line-clamp-2 text-sm">
-                        {card.reward_rate ?? "—"}
-                      </dd>
-                    </div>
-                    <div className="text-zinc-600 dark:text-zinc-400">
-                      <dt className="text-zinc-500">Best for</dt>
-                      <dd className="mt-0.5 line-clamp-2 text-sm">
-                        {card.best_for ?? "—"}
-                      </dd>
-                    </div>
-                  </dl>
-
-                  <div className="mt-auto flex flex-col gap-2">
-                    {isAxisBankCard(card.bank) ? (
-                      <AxisApplyLink fullWidth />
-                    ) : null}
-                    {isAmexPlatinumReserveCard(
-                      card.card_name,
-                      card.bank
-                    ) ? (
-                      <AmexPlatinumReserveApplyLink fullWidth />
-                    ) : null}
-                    {isSbiCard(card.bank) ? (
-                      <SbiApplyLink fullWidth />
-                    ) : null}
-                    <Link
-                      href={`/card/${card.id}`}
-                      className={`${btnPrimary} w-full text-center no-underline`}
-                    >
-                      View details
-                    </Link>
-                  </div>
-                  </div>
-                </article>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </section>
         </div>
       </main>
-      <footer className="border-t border-zinc-200/80 py-8 text-center text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-500">
+      <footer className="border-t border-zinc-200/80 py-14 text-center text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-500">
         Cardwise uses your data for estimates only. Not financial advice.
       </footer>
     </div>
