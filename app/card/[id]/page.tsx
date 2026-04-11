@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CardAiInsight } from "@/components/card-ai-insight";
 import { CardDetailKeySummary } from "@/components/card-detail-key-summary";
+import { CardProgramDetails } from "@/components/card-program-details";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { CardNetwork } from "@/lib/types/card";
@@ -165,6 +166,39 @@ function MetadataValueView({ value }: { value: unknown }): ReactNode {
   return <span>{String(value)}</span>;
 }
 
+function AdditionalDetailsDocIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className ?? "h-5 w-5"}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" />
+      <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+    </svg>
+  );
+}
+
+function KeyBenefitsIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className ?? "h-5 w-5"}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+    </svg>
+  );
+}
+
 function CardMetadataSection({
   metadata,
 }: {
@@ -174,28 +208,44 @@ function CardMetadataSection({
     a.localeCompare(b)
   );
   return (
-    <section className="rounded-2xl border border-zinc-200 bg-zinc-50/50 p-6 dark:border-zinc-800 dark:bg-zinc-900/40">
-      <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-        Additional details
-      </h2>
-      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-        From source data. Verify important facts with the issuer.
-      </p>
-      <dl className="mt-4 space-y-4">
-        {entries.map(([key, value]) => (
-          <div
-            key={key}
-            className="rounded-lg border border-zinc-100 bg-zinc-50/90 p-3 dark:border-zinc-800 dark:bg-zinc-900/50"
+    <section
+      className="mt-12 border-t border-zinc-100 pt-10 dark:border-zinc-800"
+      aria-labelledby="card-additional-details-heading"
+    >
+      <div className="flex items-start gap-3">
+        <span
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-600/10 text-slate-700 dark:bg-slate-500/15 dark:text-slate-300"
+          aria-hidden
+        >
+          <AdditionalDetailsDocIcon />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2
+            id="card-additional-details-heading"
+            className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
           >
-            <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              {humanizeMetadataKey(key)}
-            </dt>
-            <dd className="mt-1.5 text-sm">
-              <MetadataValueView value={value} />
-            </dd>
-          </div>
-        ))}
-      </dl>
+            Additional details
+          </h2>
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            From source data. Verify important facts with the issuer.
+          </p>
+          <dl className="mt-4 space-y-4">
+            {entries.map(([key, value]) => (
+              <div
+                key={key}
+                className="rounded-xl border border-zinc-200/90 bg-white/80 p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/40"
+              >
+                <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                  {humanizeMetadataKey(key)}
+                </dt>
+                <dd className="mt-1.5 text-sm">
+                  <MetadataValueView value={value} />
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </div>
     </section>
   );
 }
@@ -280,98 +330,45 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
               }}
             />
 
-          <section className="mt-12 border-t border-zinc-100 pt-10 dark:border-zinc-800">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Program details
-            </h2>
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              Issuer wording and perks from our catalog.
-            </p>
-            <dl className="mt-6 space-y-6 text-sm">
-              <div>
-                <dt className="flex items-center gap-2 font-medium text-zinc-700 dark:text-zinc-300">
-                  <span
-                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600/10 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
-                    aria-hidden
-                  >
-                    <svg
-                      className="h-4 w-4"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={1.75}
-                    >
-                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  </span>
-                  Reward rate
-                </dt>
-                <dd className="mt-2 pl-10 leading-relaxed text-zinc-800 dark:text-zinc-200">
-                  {card.reward_rate ?? "—"}
-                </dd>
-              </div>
-              <div>
-                <dt className="flex items-center gap-2 font-medium text-zinc-700 dark:text-zinc-300">
-                  <span
-                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-600/10 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
-                    aria-hidden
-                  >
-                    <svg
-                      className="h-4 w-4"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={1.75}
-                    >
-                      <path d="M2 9a2 2 0 012-2h2.5a1 1 0 01.8.4l1.9 2.53a1 1 0 00.8.4H20a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V9z" />
-                      <path d="M6 15h.01M10 15h4" />
-                    </svg>
-                  </span>
-                  Lounge access
-                </dt>
-                <dd className="mt-2 pl-10 leading-relaxed text-zinc-800 dark:text-zinc-200">
-                  {card.lounge_access ?? "—"}
-                </dd>
-              </div>
-              <div>
-                <dt className="flex items-center gap-2 font-medium text-zinc-700 dark:text-zinc-300">
-                  <span
-                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-600/10 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200"
-                    aria-hidden
-                  >
-                    <svg
-                      className="h-4 w-4"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={1.75}
-                    >
-                      <path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L5 9h7l3-7z" />
-                    </svg>
-                  </span>
-                  Best for
-                </dt>
-                <dd className="mt-2 pl-10 leading-relaxed text-zinc-800 dark:text-zinc-200">
-                  {card.best_for ?? "—"}
-                </dd>
-              </div>
-            </dl>
-          </section>
+          <CardProgramDetails
+            card={{
+              reward_rate: card.reward_rate,
+              lounge_access: card.lounge_access,
+              best_for: card.best_for,
+            }}
+          />
 
-          <section className="mt-12 border-t border-zinc-100 pt-10 dark:border-zinc-800">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Key benefits
-            </h2>
-            <p className="mt-4 text-base leading-relaxed text-zinc-700 dark:text-zinc-300">
-              {card.key_benefits ?? "—"}
-            </p>
+          <section
+            className="mt-12 border-t border-zinc-100 pt-10 dark:border-zinc-800"
+            aria-labelledby="card-key-benefits-heading"
+          >
+            <div className="flex items-start gap-3">
+              <span
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-600/10 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300"
+                aria-hidden
+              >
+                <KeyBenefitsIcon />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h2
+                  id="card-key-benefits-heading"
+                  className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
+                >
+                  Key benefits
+                </h2>
+                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                  Highlights from the issuer listing; confirm live offers on the
+                  bank’s site.
+                </p>
+                <p className="mt-4 text-base leading-relaxed text-zinc-700 dark:text-zinc-300">
+                  {card.key_benefits?.trim() ? card.key_benefits : "—"}
+                </p>
+              </div>
+            </div>
           </section>
 
           {metadataHasPublicEntries(card.metadata) ? (
-            <div className="mt-12">
-              <CardMetadataSection metadata={filterPublicMetadata(card.metadata)} />
-            </div>
+            <CardMetadataSection metadata={filterPublicMetadata(card.metadata)} />
           ) : null}
           </div>
         </article>

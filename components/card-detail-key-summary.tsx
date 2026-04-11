@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { DetailFactTile } from "@/components/card-detail-tiles";
 import { SpendCategoryIcon } from "@/components/spend-category-icons";
 import type { SpendCategorySlug } from "@/lib/spendCategories";
 import type { CardNetwork } from "@/lib/types/card";
@@ -26,17 +26,6 @@ function formatInr(value: number): string {
 function formatPct(value: number | null | undefined): string {
   if (value == null || !Number.isFinite(value)) return "—";
   return `${value}%`;
-}
-
-function IconRing({ children }: { children: ReactNode }) {
-  return (
-    <span
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600/10 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
-      aria-hidden
-    >
-      {children}
-    </span>
-  );
 }
 
 function WalletIcon({ className }: { className?: string }) {
@@ -109,37 +98,6 @@ function NetworkCardIcon({ className }: { className?: string }) {
   );
 }
 
-function KeyTile({
-  icon,
-  label,
-  value,
-  sublabel,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: ReactNode;
-  sublabel?: string;
-}) {
-  return (
-    <div className="flex gap-3 rounded-2xl border border-zinc-200/90 bg-white/80 p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/40">
-      <IconRing>{icon}</IconRing>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-          {label}
-        </p>
-        <p className="mt-0.5 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-          {value}
-        </p>
-        {sublabel ? (
-          <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
-            {sublabel}
-          </p>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
 const CATEGORY_ROWS: { slug: SpendCategorySlug; label: string }[] = [
   { slug: "dining", label: "Dining" },
   { slug: "travel", label: "Travel" },
@@ -181,28 +139,26 @@ export function CardDetailKeySummary({ card }: { card: CardKeySummary }) {
       </p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <KeyTile
-          icon={<WalletIcon />}
-          label="Joining fee"
-          value={formatInr(card.joining_fee)}
-        />
-        <KeyTile
-          icon={<CalendarFeeIcon />}
-          label="Annual fee"
-          value={formatInr(card.annual_fee)}
-        />
-        <KeyTile
-          icon={<RewardTypeIcon />}
-          label="Reward type"
-          value={
-            card.reward_type === "cashback" ? "Cashback" : "Reward points"
-          }
-        />
-        <KeyTile
-          icon={<NetworkCardIcon />}
-          label="Network"
-          value={card.network}
-        />
+        <DetailFactTile icon={<WalletIcon />} label="Joining fee">
+          <span className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
+            {formatInr(card.joining_fee)}
+          </span>
+        </DetailFactTile>
+        <DetailFactTile icon={<CalendarFeeIcon />} label="Annual fee">
+          <span className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
+            {formatInr(card.annual_fee)}
+          </span>
+        </DetailFactTile>
+        <DetailFactTile icon={<RewardTypeIcon />} label="Reward type">
+          <span className="font-semibold capitalize text-zinc-900 dark:text-zinc-50">
+            {card.reward_type === "cashback" ? "Cashback" : "Reward points"}
+          </span>
+        </DetailFactTile>
+        <DetailFactTile icon={<NetworkCardIcon />} label="Network">
+          <span className="font-semibold text-zinc-900 dark:text-zinc-50">
+            {card.network}
+          </span>
+        </DetailFactTile>
       </div>
 
       <h3 className="mt-8 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
@@ -213,14 +169,17 @@ export function CardDetailKeySummary({ card }: { card: CardKeySummary }) {
       </p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {CATEGORY_ROWS.map(({ slug, label }) => (
-          <KeyTile
+          <DetailFactTile
             key={slug}
             icon={
               <SpendCategoryIcon slug={slug} className="h-5 w-5 text-current" />
             }
             label={label}
-            value={formatPct(rateKey[slug])}
-          />
+          >
+            <span className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
+              {formatPct(rateKey[slug])}
+            </span>
+          </DetailFactTile>
         ))}
       </div>
 
