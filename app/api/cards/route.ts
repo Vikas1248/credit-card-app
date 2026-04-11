@@ -23,6 +23,7 @@ type CardRow = {
   travel_reward: number | null;
   shopping_reward: number | null;
   fuel_reward: number | null;
+  metadata: Record<string, unknown> | null;
 };
 
 export async function GET(request: Request) {
@@ -43,7 +44,7 @@ export async function GET(request: Request) {
     let query = supabase
       .from("credit_cards")
       .select(
-        "id, card_name, bank, network, joining_fee, annual_fee, reward_type, reward_rate, lounge_access, best_for, key_benefits, last_updated, dining_reward, travel_reward, shopping_reward, fuel_reward"
+        "id, card_name, bank, network, joining_fee, annual_fee, reward_type, reward_rate, lounge_access, best_for, key_benefits, last_updated, dining_reward, travel_reward, shopping_reward, fuel_reward, metadata"
       )
       .order("annual_fee", { ascending: true })
       .order("card_name", { ascending: true });

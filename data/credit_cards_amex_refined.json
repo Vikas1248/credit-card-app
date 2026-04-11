@@ -1,102 +1,304 @@
 {
   "version": 1,
-  "source": "American Express India public summaries (approximate; verify with issuer)",
+  "source": "Merged: docx source (credit_cards_amex_from_docx.json) + refined-only rows from credit_cards_amex_refined.json (amex)",
   "cards": [
     {
-      "card_name": "American Express® Platinum Card",
+      "affiliate_link": "https://americanexpress.com/en-in/referral/platinum-reserve?ref=vIKASP3DFm&CPID=100506015",
+      "ai_best_for": "High-income frequent travelers",
+      "ai_cons": "Very high annual fee, not ideal for cashback users",
+      "ai_not_ideal_for": "Low spenders or cashback-focused users",
+      "ai_pros": "Premium travel benefits, strong international rewards",
+      "annual_fee": 66000,
       "bank": "American Express",
+      "best_for": "Travel and lifestyle",
+      "card_name": "American Express Platinum Card",
+      "dining_reward": 0.0,
+      "eligibility": "₹25L+ salaried or ₹15L+ self-employed annual income",
+      "fuel_reward": 0.0,
+      "joining_fee": 66000,
+      "key_benefits": [
+        "3X Membership Rewards points on overseas spending",
+        "Premium concierge services",
+        "Luxury hotel benefits"
+      ],
+      "lounge_access": "Unlimited global lounge access",
       "network": "Amex",
-      "joining_fee": 0,
-      "annual_fee": "Rs. 66,000 plus applicable taxes",
+      "reward_conversion": {
+        "description": "1 point per ₹40 spent",
+        "points_per_rupee": 0.025
+      },
       "reward_type": "points",
-      "reward_rate": "3X Membership Rewards® points on overseas spends; elevated earn on travel and dining (see issuer T&Cs)",
-      "lounge_access": "Access to 1400+ lounges worldwide (program rules apply)",
-      "best_for": "Premium travel and lifestyle",
-      "key_benefits": "Global lounge access, hotel/airline program credits, concierge; charge card with no preset spending limit (pay in full)",
-      "dining_reward": 2.5,
-      "travel_reward": 4,
-      "shopping_reward": 2,
-      "fuel_reward": 0.5
+      "shopping_reward": 0.0,
+      "source": "manual",
+      "travel_reward": 0.0,
+      "welcome_offer": "Welcome gift worth up to ₹60,000 after ₹50,000 spend in first 2 months",
+      "reward_rate": "1 point per ₹40 spent"
     },
     {
-      "card_name": "American Express® Platinum ReserveSM Credit Card",
+      "affiliate_link": "https://www.americanexpress.com/en-in/referral?cpid=100506056",
+      "ai_best_for": "Users spending ₹4L–₹7L annually and interested in travel rewards",
+      "ai_cons": "Base rewards are low, benefits unlock only at high spend thresholds",
+      "ai_not_ideal_for": "Low spenders or cashback-focused users",
+      "ai_pros": "Excellent milestone rewards, strong travel benefits, good for high spenders",
+      "annual_fee": 5000,
       "bank": "American Express",
-      "network": "Amex",
-      "joining_fee": 10000,
-      "annual_fee": "Rs. 10,000 plus applicable taxes",
-      "reward_type": "points",
-      "reward_rate": "11,000 bonus Membership Rewards® points in the first year (campaigns vary); ongoing MR on spends per issuer rules",
-      "lounge_access": "Complimentary domestic and international lounge access (select programs)",
-      "best_for": "Taj, SeleQtions and Vivanta hotel privileges",
-      "key_benefits": "Hotel dining/spa vouchers, accelerated rewards on travel and lifestyle spends",
-      "dining_reward": 2.5,
-      "travel_reward": 3.5,
-      "shopping_reward": 2,
-      "fuel_reward": 1
-    },
-    {
-      "card_name": "American Express® Platinum Travel Credit Card",
-      "bank": "American Express",
-      "network": "Amex",
+      "best_for": "Travel and milestone-based rewards",
+      "card_name": "American Express Platinum Travel Card",
+      "dining_reward": 0.0,
+      "eligibility": "₹6L+ annual income (approx.)",
+      "fuel_reward": 0.0,
       "joining_fee": 5000,
-      "annual_fee": "Rs. 5,000 plus applicable taxes",
+      "key_benefits": [
+        "Earn Membership Rewards points on every spend",
+        "Milestone-based bonus rewards up to 40,000+ points",
+        "Taj voucher worth ₹10,000 on high spend",
+        "Priority Pass membership included",
+        "Fuel surcharge waiver at HPCL"
+      ],
+      "lounge_access": "8 complimentary visits per year (2 per quarter, domestic)",
+      "milestone_rewards": [
+        {
+          "reward_points": 7500,
+          "spend": 190000
+        },
+        {
+          "reward_points": 10000,
+          "spend": 400000
+        },
+        {
+          "bonus": "Taj voucher worth ₹10,000",
+          "reward_points": 22500,
+          "spend": 700000
+        }
+      ],
+      "network": "Amex",
+      "priority_pass": "Free membership (annual fee waived)",
+      "reward_conversion": {
+        "description": "1 point per ₹50 spent",
+        "points_per_rupee": 0.02
+      },
       "reward_type": "points",
-      "reward_rate": "Milestone travel vouchers and Membership Rewards® on spends (see issuer for current offers)",
-      "lounge_access": "2 complimentary lounge visits per quarter at select airports",
-      "best_for": "Travel rewards and milestones",
-      "key_benefits": "Travel vouchers on spend milestones; MR redemption toward travel and more",
-      "dining_reward": 2,
-      "travel_reward": 4,
-      "shopping_reward": 1.5,
-      "fuel_reward": 1
+      "shopping_reward": 0.0,
+      "source": "manual",
+      "travel_reward": 0.0,
+      "welcome_offer": "Welcome benefits after eligible spend (varies by campaign)",
+      "reward_rate": "1 point per ₹50 spent"
     },
     {
-      "card_name": "American Express® Gold Card",
+      "affiliate_link": "https://www.americanexpress.com/en-in/referral?cpid=100506056",
+      "ai_best_for": "Users who can consistently do 6 transactions of ₹1,000+ every month",
+      "ai_cons": "No lounge access, base rewards are low without milestone completion",
+      "ai_not_ideal_for": "Users with irregular spending patterns or looking for travel perks",
+      "ai_pros": "Strong monthly milestone rewards, good for consistent spenders, low entry fee",
+      "annual_fee": 4500,
       "bank": "American Express",
+      "best_for": "Milestone rewards and regular spenders",
+      "card_name": "American Express Gold Card",
+      "dining_reward": 0.0,
+      "eligibility": "Not publicly specified (varies by applicant profile)",
+      "fuel_reward": 0.0,
+      "joining_fee": 1000,
+      "key_benefits": [
+        "Earn 1,000 bonus points every month on 6 transactions of ₹1,000+",
+        "Access to Gold Collection rewards catalog",
+        "Fuel surcharge waiver at HPCL"
+      ],
+      "lounge_access": "None",
+      "milestone_rewards": [
+        {
+          "condition": "6 transactions of ₹1,000+ per month",
+          "frequency": "monthly",
+          "reward_points": 1000
+        }
+      ],
       "network": "Amex",
-      "joining_fee": 4500,
-      "annual_fee": "Rs. 4,500 plus applicable taxes (verify at application)",
+      "reward_conversion": {
+        "description": "1 point per ₹50 spent",
+        "points_per_rupee": 0.02
+      },
       "reward_type": "points",
-      "reward_rate": "Membership Rewards® on dining, travel and everyday spends per category rules",
-      "lounge_access": "Limited or add-on lounge benefits; confirm with issuer",
-      "best_for": "Dining and everyday premium rewards",
-      "key_benefits": "Gold-tier MR earn on dining and travel; charge card — settle balance in full",
-      "dining_reward": 3,
-      "travel_reward": 2.5,
-      "shopping_reward": 2,
-      "fuel_reward": 1
+      "shopping_reward": 0.0,
+      "source": "manual",
+      "travel_reward": 0.0,
+      "welcome_offer": "4,000 bonus Membership Rewards points on joining",
+      "reward_rate": "1 point per ₹50 spent"
     },
     {
-      "card_name": "American Express Membership Rewards® Credit Card",
+      "accelerated_rewards": [
+        {
+          "cap": "500 points/month",
+          "category": "Online partners (Flipkart, Zomato, Uber, Ajio, Nykaa, BookMyShow)",
+          "multiplier": "10X",
+          "points_per_rupee": 0.2
+        },
+        {
+          "cap": "250 points/month",
+          "category": "Amazon",
+          "multiplier": "5X",
+          "points_per_rupee": 0.1
+        }
+      ],
+      "affiliate_link": "",
+      "ai_best_for": "Beginners and users who frequently shop online (Amazon, Flipkart, Zomato)",
+      "ai_cons": "No lounge access, capped rewards on accelerated categories",
+      "ai_not_ideal_for": "Travel-focused users or those looking for premium benefits",
+      "ai_pros": "Strong rewards for online spending, low annual fee, easy fee waiver",
+      "annual_fee": 495,
       "bank": "American Express",
-      "network": "Amex",
-      "joining_fee": 4500,
-      "annual_fee": "Rs. 4,500 plus applicable taxes (verify at application)",
-      "reward_type": "points",
-      "reward_rate": "1 Membership Rewards® point per Rs. 50 on most retail spends (exclusions apply)",
-      "lounge_access": "None or paid programs only — confirm with issuer",
-      "best_for": "Simple MR earn and redemption flexibility",
-      "key_benefits": "Straightforward MR program; suitable as an entry to Amex ecosystem",
-      "dining_reward": 1.5,
-      "travel_reward": 1.5,
-      "shopping_reward": 2,
-      "fuel_reward": 0.5
-    },
-    {
-      "card_name": "American Express SmartEarn™ Credit Card",
-      "bank": "American Express",
-      "network": "Amex",
+      "best_for": "Online shopping and entry-level rewards",
+      "card_name": "American Express SmartEarn Credit Card",
+      "dining_reward": 0.0,
+      "eligibility": "₹4.5L+ income (approx., varies by profile)",
+      "fee_waiver": {
+        "benefit": "Annual fee waived",
+        "condition": "₹40,000 annual spend"
+      },
+      "fuel_reward": 0.0,
       "joining_fee": 495,
-      "annual_fee": "Rs. 495 plus applicable taxes (renewal waiver on Rs. 40,000+ eligible spends in prior year)",
+      "key_benefits": [
+        "10X rewards on Flipkart, Zomato, Uber, BookMyShow and more",
+        "5X rewards on Amazon",
+        "₹500 welcome cashback on ₹10,000 spend",
+        "Milestone vouchers up to ₹1,500 annually",
+        "Annual fee waiver on ₹40,000 spend",
+        "Fuel surcharge waiver"
+      ],
+      "lounge_access": "None",
+      "milestone_rewards": [
+        {
+          "reward": "₹500 voucher",
+          "spend": 120000
+        },
+        {
+          "reward": "₹500 voucher",
+          "spend": 180000
+        },
+        {
+          "reward": "₹500 voucher",
+          "spend": 240000
+        }
+      ],
+      "network": "Amex",
+      "reward_conversion": {
+        "description": "1 point per ₹50 spent",
+        "points_per_rupee": 0.02
+      },
       "reward_type": "points",
-      "reward_rate": "Accelerated MR on Amazon, Flipkart, Uber, Zomato, BookMyShow, EaseMyTrip and partners; 1 MR per Rs. 50 base earn on other retail (exclusions apply)",
-      "lounge_access": "No complimentary lounge access",
-      "best_for": "Online shopping and food delivery",
-      "key_benefits": "Low fee; welcome benefit campaigns; fee waiver on meeting annual spend threshold",
-      "dining_reward": 4,
-      "travel_reward": 2.5,
-      "shopping_reward": 5,
-      "fuel_reward": 0.5
+      "shopping_reward": 0.0,
+      "source": "manual",
+      "travel_reward": 0.0,
+      "welcome_offer": "₹500 cashback on ₹10,000 spend in first 90 days",
+      "reward_rate": "1 point per ₹50 spent"
+    },
+    {
+      "affiliate_link": "",
+      "ai_best_for": "Users who can consistently hit ₹20K monthly spend and milestone conditions",
+      "ai_cons": "No lounge access, base rewards are low without milestones",
+      "ai_not_ideal_for": "Low spenders or users looking for premium travel benefits",
+      "ai_pros": "Strong monthly milestone rewards, good entry-level Amex card, fee waiver achievable",
+      "annual_fee": 4500,
+      "bank": "American Express",
+      "best_for": "Monthly milestone rewards and disciplined spenders",
+      "card_name": "American Express Membership Rewards Credit Card",
+      "dining_reward": 0.0,
+      "eligibility": "₹6L+ annual income (approx.)",
+      "fee_waiver": {
+        "benefit": "100% fee waiver",
+        "condition": "₹1.5L annual spend",
+        "partial_waiver": "50% waiver on ₹90K–₹1.49L spend"
+      },
+      "fuel_reward": 0.0,
+      "joining_fee": 1000,
+      "key_benefits": [
+        "Earn 1 Membership Rewards point per ₹50 spent",
+        "1,000 bonus points on 4 transactions of ₹1,500+ per month",
+        "1,000 bonus points on ₹20,000 monthly spend",
+        "5,000 bonus points on renewal",
+        "Access to Gold Collection rewards catalogue",
+        "Fuel surcharge waiver"
+      ],
+      "lounge_access": "None",
+      "milestone_rewards": [
+        {
+          "condition": "4 transactions of ₹1,500+ in a month",
+          "frequency": "monthly",
+          "reward_points": 1000
+        },
+        {
+          "condition": "₹20,000 spend in a month",
+          "frequency": "monthly",
+          "reward_points": 1000
+        },
+        {
+          "condition": "Card renewal",
+          "frequency": "yearly",
+          "reward_points": 5000
+        }
+      ],
+      "network": "Amex",
+      "reward_conversion": {
+        "description": "1 point per ₹50 spent (except fuel, utilities, insurance)",
+        "points_per_rupee": 0.02
+      },
+      "reward_type": "points",
+      "shopping_reward": 0.0,
+      "source": "manual",
+      "travel_reward": 0.0,
+      "welcome_offer": "4,000 bonus points on ₹15,000 spend in first 90 days",
+      "reward_rate": "1 point per ₹50 spent (except fuel, utilities, insurance)"
+    },
+    {
+      "accelerated_rewards": [
+        {
+          "category": "Select partner merchants",
+          "multiplier": "5X",
+          "points_per_rupee": 0.1
+        }
+      ],
+      "affiliate_link": "",
+      "ai_best_for": "High spenders (₹50K+/month) who value travel, dining, and luxury experiences",
+      "ai_cons": "High annual fee, rewards depend heavily on high monthly spending",
+      "ai_not_ideal_for": "Low spenders or cashback-focused users",
+      "ai_pros": "Premium lifestyle benefits, strong travel perks, valuable memberships and lounge access",
+      "annual_fee": 10000,
+      "bank": "American Express",
+      "best_for": "Premium lifestyle, travel, and dining benefits",
+      "card_name": "American Express Platinum Reserve Credit Card",
+      "dining_reward": 0.0,
+      "eligibility": "High-income profile (approval-based)",
+      "fee_waiver": {
+        "benefit": "100% annual fee waiver",
+        "condition": "₹10L annual spend"
+      },
+      "fuel_reward": 0.0,
+      "joining_fee": 10000,
+      "key_benefits": [
+        "Complimentary airport lounge access",
+        "Priority Pass membership",
+        "Luxury memberships (Taj Epicure, Accor Plus, EazyDiner)",
+        "Golf access (2 sessions/month on ₹50K spend)",
+        "₹1,000 monthly vouchers on ₹50K spend",
+        "Concierge services"
+      ],
+      "lounge_access": "Domestic + international lounge access (Priority Pass included, limited visits)",
+      "milestone_rewards": [
+        {
+          "condition": "₹50,000 monthly spend",
+          "frequency": "monthly",
+          "reward": "₹1,000 voucher"
+        }
+      ],
+      "network": "Amex",
+      "reward_conversion": {
+        "description": "1 point per ₹50 spent",
+        "points_per_rupee": 0.02
+      },
+      "reward_type": "points",
+      "shopping_reward": 0.0,
+      "source": "manual",
+      "travel_reward": 0.0,
+      "welcome_offer": "11,000 Membership Rewards points on eligible spend",
+      "reward_rate": "1 point per ₹50 spent"
     }
   ]
 }

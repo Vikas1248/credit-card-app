@@ -17,6 +17,7 @@ create table if not exists public.credit_cards (
   travel_reward double precision,
   shopping_reward double precision,
   fuel_reward double precision,
+  metadata jsonb not null default '{}'::jsonb,
   last_updated timestamp not null default now()
 );
 

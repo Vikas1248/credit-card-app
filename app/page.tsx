@@ -30,6 +30,7 @@ type CreditCard = {
   travel_reward: number | null;
   shopping_reward: number | null;
   fuel_reward: number | null;
+  metadata?: Record<string, unknown> | null;
 };
 
 type RewardBreakdown = {

@@ -2,7 +2,8 @@
 """
 End-to-end data path: local → GCS → Supabase → Vercel (reads same Supabase).
 
-  0. (Optional) convert_docx_cards_to_json.py — Word files in data/*.docx → data/credit_cards_*_from_docx.json
+  0. (Optional) convert_docx_cards_to_json.py — Word → data/credit_cards_*_from_docx.json
+  0b. (Optional) merge_docx_into_refined.py — merge *_from_docx.json into *_refined.json (npm run data:merge-refined)
   1. upload_cards_to_gcs.py — every data/*.json → gs://<bucket>/<GCS_PREFIX>/
   2. import_cards_from_gcs.py — each *.json at that prefix → Supabase public.credit_cards
   3. Vercel — no data upload. Set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY,

@@ -31,7 +31,14 @@ type CreditCard = {
   travel_reward?: number | null;
   shopping_reward?: number | null;
   fuel_reward?: number | null;
+  metadata?: Record<string, unknown> | null;
 };
+
+function metadataHasEntries(
+  meta: Record<string, unknown> | null | undefined
+): boolean {
+  return Boolean(meta && typeof meta === "object" && Object.keys(meta).length > 0);
+}
 
 function formatInr(value: number): string {
   return new Intl.NumberFormat("en-IN", {
@@ -213,6 +220,18 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
               {card.key_benefits ?? "N/A"}
             </p>
           </section>
+
+          {metadataHasEntries(card.metadata) ? (
+            <section className="mt-6 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+              <h2 className="text-sm font-semibold">Additional details</h2>
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                From source data (eligibility, offers, AI summaries, links). Verify with the issuer.
+              </p>
+              <pre className="mt-3 max-h-80 overflow-auto rounded-lg bg-zinc-950 p-3 text-left text-xs leading-relaxed text-zinc-100">
+                {JSON.stringify(card.metadata, null, 2)}
+              </pre>
+            </section>
+          ) : null}
           </div>
         </article>
       </div>

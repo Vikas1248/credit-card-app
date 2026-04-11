@@ -37,6 +37,29 @@ def infer_reward_type(reward_rate: str) -> str:
     return "points"
 
 
+def infer_issuer_slug(bank: str, card: dict[str, Any]) -> str:
+    """Stable slug for DB NOT NULL issuer_slug (Supabase schemas may require this)."""
+    raw = card.get("issuer_slug")
+    if raw is not None and str(raw).strip():
+        s = re.sub(r"[^a-z0-9_]+", "_", str(raw).strip().lower()).strip("_")
+        return (s[:64] if s else "unknown") or "unknown"
+    b = bank.lower()
+    if "american express" in b or b.strip() == "amex":
+        return "amex"
+    if "axis" in b:
+        return "axis"
+    if re.search(r"\bsbi\b", b) or "sbi card" in b:
+        return "sbi"
+    if "hdfc" in b:
+        return "hdfc"
+    if "icici" in b:
+        return "icici"
+    if "kotak" in b:
+        return "kotak"
+    slug = re.sub(r"[^a-z0-9]+", "_", b.strip().lower()).strip("_")
+    return slug[:64] if slug else "unknown"
+
+
 def parse_fee(value: str | int | float | None) -> int:
     if value is None:
         return 0
@@ -73,6 +96,53 @@ def parse_cards_document(payload: Any) -> list[dict[str, Any]]:
 def read_cards(path: str) -> list[dict[str, Any]]:
     with open(path, "r", encoding="utf-8") as file:
         return parse_cards_document(json.load(file))
+
+
+# Keys stored as top-level columns; anything else is folded into `metadata` (jsonb).
+_CARD_TABLE_KEYS = frozenset(
+    {
+        "card_name",
+        "bank",
+        "network",
+        "joining_fee",
+        "annual_fee",
+        "reward_type",
+        "reward_rate",
+        "lounge_access",
+        "best_for",
+        "key_benefits",
+        "dining_reward",
+        "travel_reward",
+        "shopping_reward",
+        "fuel_reward",
+        "metadata",
+        "issuer_slug",
+        "payload",
+        "source_uri",
+        "id",
+        "last_updated",
+    }
+)
+
+
+def _json_safe_value(value: Any) -> Any:
+    try:
+        json.dumps(value)
+        return value
+    except (TypeError, ValueError):
+        return str(value)
+
+
+def _json_safe_dict(data: dict[str, Any]) -> dict[str, Any]:
+    return {str(k): _json_safe_value(v) for k, v in data.items()}
+
+
+def _metadata_extras(card: dict[str, Any]) -> dict[str, Any]:
+    raw = {k: v for k, v in card.items() if k not in _CARD_TABLE_KEYS}
+    out: dict[str, Any] = {}
+    for k, v in raw.items():
+        out[str(k)] = _json_safe_value(v)
+    return out
 
 
 def map_to_db_rows(cards: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -118,9 +188,19 @@ def map_to_db_rows(cards: list[dict[str, Any]]) -> list[dict[str, Any]]:
             else int(annual_fee_raw)
         )
 
+        issuer_slug = infer_issuer_slug(bank, card)
+
+        source_uri = str(
+            card.get("source_uri") or card.get("affiliate_link") or ""
+        ).strip()
+        if not source_uri:
+            source_uri = "urn:cardwise:imported"
+
         row: dict[str, Any] = {
             "card_name": card_name,
             "bank": bank,
+            "issuer_slug": issuer_slug,
+            "source_uri": source_uri,
             "network": network,
             "joining_fee": joining_fee,
             "annual_fee": annual_fee,
@@ -131,15 +211,18 @@ def map_to_db_rows(cards: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "key_benefits": key_benefits,
         }
         for col in ("dining_reward", "travel_reward", "shopping_reward", "fuel_reward"):
-            fv = opt_float(card, col)
-            if fv is not None:
-                row[col] = fv
+            row[col] = opt_float(card, col)
+        extras = _metadata_extras(card)
+        row["metadata"] = extras if extras else {}
+        row["payload"] = _json_safe_dict(dict(card))
         rows.append(row)
     return rows
 
 
 def insert_rows(supabase_url: str, supabase_key: str, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    endpoint = f"{supabase_url.rstrip('/')}/rest/v1/credit_cards"
+    # Upsert when (bank, card_name) unique exists — allows importing both *_from_docx and *_refined.
+    base = f"{supabase_url.rstrip('/')}/rest/v1/credit_cards"
+    endpoint = f"{base}?on_conflict=bank,card_name"
     request = urllib.request.Request(
         endpoint,
         data=json.dumps(rows).encode("utf-8"),
@@ -147,7 +230,7 @@ def insert_rows(supabase_url: str, supabase_key: str, rows: list[dict[str, Any]]
             "Content-Type": "application/json",
             "apikey": supabase_key,
             "Authorization": f"Bearer {supabase_key}",
-            "Prefer": "return=representation",
+            "Prefer": "return=representation,resolution=merge-duplicates",
         },
         method="POST",
     )

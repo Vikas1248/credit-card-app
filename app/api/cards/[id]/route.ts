@@ -15,6 +15,7 @@ type CardRow = {
   best_for: string | null;
   key_benefits: string | null;
   last_updated: string;
+  metadata: Record<string, unknown> | null;
 };
 
 type RouteContext = {
@@ -28,7 +29,7 @@ export async function GET(_request: Request, context: RouteContext) {
     const { data, error } = await supabase
       .from("credit_cards")
       .select(
-        "id, card_name, bank, network, joining_fee, annual_fee, reward_type, reward_rate, lounge_access, best_for, key_benefits, last_updated"
+        "id, card_name, bank, network, joining_fee, annual_fee, reward_type, reward_rate, lounge_access, best_for, key_benefits, last_updated, dining_reward, travel_reward, shopping_reward, fuel_reward, metadata"
       )
       .eq("id", id)
       .maybeSingle();

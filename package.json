@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "data:pipeline": ".venv/bin/python run_data_pipeline.py",
-    "data:sync": ".venv/bin/python run_data_pipeline.py --convert-docx"
+    "data:sync": ".venv/bin/python run_data_pipeline.py --convert-docx",
+    "data:merge-refined": ".venv/bin/python merge_docx_into_refined.py"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
