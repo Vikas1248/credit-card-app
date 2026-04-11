@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CardAiInsight } from "@/components/card-ai-insight";
+import { CardDetailKeySummary } from "@/components/card-detail-key-summary";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { CardNetwork } from "@/lib/types/card";
@@ -207,11 +208,6 @@ function formatInr(value: number): string {
   }).format(value);
 }
 
-function formatPct(value: number | null | undefined): string {
-  if (value == null || !Number.isFinite(value)) return "—";
-  return `${value}%`;
-}
-
 async function getCardById(id: string): Promise<CreditCard | null> {
   // Use the server client (service role when set), same as /api/cards — anon + RLS often blocks row reads.
   const supabase = getSupabaseServerClient();
@@ -268,79 +264,100 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
           </header>
 
           <div className="pt-10">
-          <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-            <section>
-              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Fees & rewards
-              </h2>
-              <dl className="mt-4 space-y-4 text-sm">
-                <div className="flex justify-between gap-4 border-b border-zinc-100 pb-4 dark:border-zinc-800">
-                  <dt className="text-zinc-500">Joining fee</dt>
-                  <dd className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
-                    {formatInr(card.joining_fee)}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-4 border-b border-zinc-100 pb-4 dark:border-zinc-800">
-                  <dt className="text-zinc-500">Annual fee</dt>
-                  <dd className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
-                    {formatInr(card.annual_fee)}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-4 border-b border-zinc-100 pb-4 dark:border-zinc-800">
-                  <dt className="text-zinc-500">Reward type</dt>
-                  <dd className="font-medium capitalize text-zinc-900 dark:text-zinc-100">
-                    {card.reward_type}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-zinc-500">Reward rate</dt>
-                  <dd className="mt-2 leading-relaxed text-zinc-800 dark:text-zinc-200">
-                    {card.reward_rate ?? "—"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-zinc-500">Lounge access</dt>
-                  <dd className="mt-2 leading-relaxed text-zinc-800 dark:text-zinc-200">
-                    {card.lounge_access ?? "—"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-zinc-500">Best for</dt>
-                  <dd className="mt-2 leading-relaxed text-zinc-800 dark:text-zinc-200">
-                    {card.best_for ?? "—"}
-                  </dd>
-                </div>
-              </dl>
-            </section>
+            <CardAiInsight cardId={card.id} className="mb-10 mt-0" />
 
-            <section>
+            <CardDetailKeySummary
+              card={{
+                joining_fee: card.joining_fee,
+                annual_fee: card.annual_fee,
+                reward_type: card.reward_type,
+                network: card.network,
+                dining_reward: card.dining_reward,
+                travel_reward: card.travel_reward,
+                shopping_reward: card.shopping_reward,
+                fuel_reward: card.fuel_reward,
+                last_updated: card.last_updated,
+              }}
+            />
+
+          <section className="mt-12 border-t border-zinc-100 pt-10 dark:border-zinc-800">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Category earn rates
+              Program details
             </h2>
-            <p className="mt-1 text-xs text-zinc-500">
-              Approximate % of spend in each category (where available).
+            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+              Issuer wording and perks from our catalog.
             </p>
-            <dl className="mt-4 grid grid-cols-2 gap-4 text-sm sm:grid-cols-2">
-              {(
-                [
-                  ["dining_reward", "Dining"],
-                  ["travel_reward", "Travel"],
-                  ["shopping_reward", "Shopping"],
-                  ["fuel_reward", "Fuel"],
-                ] as const
-              ).map(([key, label]) => (
-                <div key={key}>
-                  <dt className="text-xs text-zinc-500">{label}</dt>
-                  <dd className="mt-0.5 font-medium tabular-nums">
-                    {formatPct(card[key] as number | null | undefined)}
-                  </dd>
-                </div>
-              ))}
+            <dl className="mt-6 space-y-6 text-sm">
+              <div>
+                <dt className="flex items-center gap-2 font-medium text-zinc-700 dark:text-zinc-300">
+                  <span
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600/10 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+                    aria-hidden
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.75}
+                    >
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </span>
+                  Reward rate
+                </dt>
+                <dd className="mt-2 pl-10 leading-relaxed text-zinc-800 dark:text-zinc-200">
+                  {card.reward_rate ?? "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="flex items-center gap-2 font-medium text-zinc-700 dark:text-zinc-300">
+                  <span
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-600/10 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
+                    aria-hidden
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.75}
+                    >
+                      <path d="M2 9a2 2 0 012-2h2.5a1 1 0 01.8.4l1.9 2.53a1 1 0 00.8.4H20a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V9z" />
+                      <path d="M6 15h.01M10 15h4" />
+                    </svg>
+                  </span>
+                  Lounge access
+                </dt>
+                <dd className="mt-2 pl-10 leading-relaxed text-zinc-800 dark:text-zinc-200">
+                  {card.lounge_access ?? "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="flex items-center gap-2 font-medium text-zinc-700 dark:text-zinc-300">
+                  <span
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-600/10 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200"
+                    aria-hidden
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.75}
+                    >
+                      <path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L5 9h7l3-7z" />
+                    </svg>
+                  </span>
+                  Best for
+                </dt>
+                <dd className="mt-2 pl-10 leading-relaxed text-zinc-800 dark:text-zinc-200">
+                  {card.best_for ?? "—"}
+                </dd>
+              </div>
             </dl>
-            </section>
-          </div>
-
-          <CardAiInsight cardId={card.id} />
+          </section>
 
           <section className="mt-12 border-t border-zinc-100 pt-10 dark:border-zinc-800">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
