@@ -2,6 +2,10 @@ import {
   deriveAmexCategoryRange,
   type CategoryPctRange,
 } from "@/lib/cards/amexCategoryRewards";
+import {
+  deriveSbiAxisCategoryRange,
+  isSbiAxisCatalogBank,
+} from "@/lib/cards/sbiAxisCategoryRewards";
 
 export type SpendCategorySlug = "dining" | "travel" | "shopping" | "fuel";
 
@@ -20,13 +24,15 @@ export type CardWithCategoryRewards = {
   fuel_reward: number | null;
 };
 
-/** Optional fields used to derive Amex points earn % from `metadata` when DB columns are empty. */
+/** Optional fields used to derive issuer-specific earn % from `metadata` / copy. */
 export type CardWithCategoryRewardsInput = CardWithCategoryRewards & {
+  bank?: string | null;
   network?: string;
-  reward_type?: "cashback" | "points";
+  reward_type?: "cashback" | "points" | string;
   best_for?: string | null;
   reward_rate?: string | null;
   metadata?: Record<string, unknown> | null;
+  key_benefits?: string | null;
 };
 
 export const SPEND_CATEGORIES: readonly {
@@ -90,17 +96,34 @@ function storedCategoryPct(
 }
 
 /**
- * Min–max earn % for a category. Uses DB columns when set; otherwise derives Amex MR
- * equivalent % (base 1pt value × earn rate, plus milestones / accelerators in `max`).
+ * Min–max earn % for a category. SBI / Axis prefer catalog-derived ranges from copy +
+ * reward_conversion (avoids mis-scaled manual columns). Then DB columns if set; else Amex MR.
  */
 export function rewardPctRangeForSpendCategory(
   card: CardWithCategoryRewardsInput,
   slug: SpendCategorySlug
 ): CategoryPctRange | null {
+  const extended = card as CardWithCategoryRewardsInput;
+  const bankStr = String(extended.bank ?? "");
+  if (isSbiAxisCatalogBank(bankStr)) {
+    const sbiAxis = deriveSbiAxisCategoryRange(
+      {
+        bank: bankStr,
+        card_name: card.card_name,
+        reward_type: String(extended.reward_type ?? ""),
+        reward_rate: extended.reward_rate ?? null,
+        metadata: extended.metadata,
+        key_benefits: extended.key_benefits ?? null,
+        fuel_reward_column: extended.fuel_reward ?? null,
+      },
+      slug
+    );
+    if (sbiAxis != null) return sbiAxis;
+  }
+
   const stored = storedCategoryPct(card, slug);
   if (stored != null) return { min: stored, max: stored };
 
-  const extended = card as CardWithCategoryRewardsInput;
   const derived = deriveAmexCategoryRange(
     {
       network: String(extended.network ?? ""),
@@ -125,7 +148,7 @@ export function rewardPctForSpendCategory(
   return r.max;
 }
 
-/** Midpoint of range for rough yearly reward math when only derived Amex data exists. */
+/** Midpoint of range for rough yearly reward math when derived data is used. */
 export function rewardPctMidpointForSpendCategory(
   card: CardWithCategoryRewardsInput,
   slug: SpendCategorySlug

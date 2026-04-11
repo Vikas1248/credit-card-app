@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source": "Merged: docx source (credit_cards_axis_from_docx.json) + refined-only rows from credit_cards_axis_refined.json (axis)",
+  "source": "Merged: docx source (credit_cards_axis_from_docx.json) + refined-only rows from credit_cards_axis_refined.json (axis) Includes reward_points_inr_per_point / bluchip_inr for app earn estimates.",
   "cards": [
     {
       "affiliate_link": "https://refer.axis.bank.in/retail/cards/credit-card/refer-and-earn/get-started.htm?axisreferralcode=vi7902C7",
@@ -33,7 +33,8 @@
       "source": "axis_bank",
       "travel_reward": 0.02,
       "welcome_offer": "Complimentary IndiGo ticket voucher worth ₹1,500 on first transaction",
-      "reward_rate": "2 IndiGo BluChips per ₹200 on travel, 1 BluChip per ₹200 on other spends"
+      "reward_rate": "2 IndiGo BluChips per ₹200 on travel, 1 BluChip per ₹200 on other spends",
+      "bluchip_inr": 1.0
     },
     {
       "affiliate_link": "https://refer.axis.bank.in/retail/cards/credit-card/refer-and-earn/get-started.htm?axisreferralcode=vi7902C7",
@@ -67,7 +68,8 @@
       "source": "axis_bank",
       "travel_reward": 0.04,
       "welcome_offer": "IndiGo voucher worth ₹3,000 + BluChips on card activation",
-      "reward_rate": "6 BluChips per ₹200 on IndiGo, 2 BluChips per ₹200 on other spends"
+      "reward_rate": "6 BluChips per ₹200 on IndiGo, 2 BluChips per ₹200 on other spends",
+      "bluchip_inr": 1.0
     },
     {
       "affiliate_link": "",
@@ -137,7 +139,8 @@
       "source": "axis_bank",
       "travel_reward": 0.0,
       "welcome_offer": "SonyLIV Premium subscription worth ₹1,499 on first transaction",
-      "reward_rate": "4 EDGE Reward points per ₹200 spent (~1% return)"
+      "reward_rate": "4 EDGE Reward points per ₹200 spent (~1% return)",
+      "reward_points_inr_per_point": 0.25
     },
     {
       "affiliate_link": "",
@@ -173,7 +176,8 @@
       "source": "axis_bank",
       "travel_reward": 0.0,
       "welcome_offer": "100% cashback up to ₹300 on first utility bill payment within 30 days",
-      "reward_rate": "1 EDGE Reward point per ₹200 spent (~0.5% return)"
+      "reward_rate": "1 EDGE Reward point per ₹200 spent (~0.5% return)",
+      "reward_points_inr_per_point": 0.25
     },
     {
       "affiliate_link": "",
@@ -243,7 +247,8 @@
       "source": "axis_bank",
       "travel_reward": 0.0,
       "welcome_offer": "Up to 1,250 EDGE Reward Points on first fuel transaction within 30 days",
-      "reward_rate": "20 EDGE Reward points per ₹100 on IOCL fuel (≈4%), 5 points per ₹100 on online spends (≈1%), 1 point per ₹100 on others"
+      "reward_rate": "20 EDGE Reward points per ₹100 on IOCL fuel (≈4%), 5 points per ₹100 on online spends (≈1%), 1 point per ₹100 on others",
+      "reward_points_inr_per_point": 0.25
     },
     {
       "affiliate_link": "",
@@ -280,7 +285,8 @@
       "source": "axis_bank",
       "travel_reward": 0.02,
       "welcome_offer": "Shopping or travel vouchers worth ₹5,000 on activation",
-      "reward_rate": "10 EDGE Reward points per ₹200 spent (~1–2% value depending on redemption via vouchers)"
+      "reward_rate": "10 EDGE Reward points per ₹200 spent (~1–2% value depending on redemption via vouchers)",
+      "reward_points_inr_per_point": 0.25
     },
     {
       "affiliate_link": "",
@@ -331,7 +337,8 @@
       "dining_reward": 3,
       "travel_reward": 5,
       "shopping_reward": 2.5,
-      "fuel_reward": 1
+      "fuel_reward": 1,
+      "reward_points_inr_per_point": 0.25
     },
     {
       "card_name": "Axis Bank Atlas Credit Card",
@@ -347,7 +354,8 @@
       "dining_reward": 2,
       "travel_reward": 5,
       "shopping_reward": 2,
-      "fuel_reward": 1
+      "fuel_reward": 1,
+      "reward_points_inr_per_point": 0.25
     }
   ]
 }

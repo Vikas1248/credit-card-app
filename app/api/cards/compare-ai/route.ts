@@ -9,7 +9,7 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { SpendByCategory } from "@/lib/recommend/rewardCalculator";
 
 const SELECT =
-  "id, card_name, bank, network, joining_fee, annual_fee, reward_type, reward_rate, lounge_access, best_for, dining_reward, travel_reward, shopping_reward, fuel_reward, metadata";
+  "id, card_name, bank, network, joining_fee, annual_fee, reward_type, reward_rate, lounge_access, best_for, key_benefits, dining_reward, travel_reward, shopping_reward, fuel_reward, metadata";
 
 function parseSpend(
   body: Record<string, unknown>

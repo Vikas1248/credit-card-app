@@ -6,11 +6,12 @@ import {
 } from "@/lib/recommend/rewardCalculator";
 import {
   rewardPctMidpointForSpendCategory,
+  type SpendCategorySlug,
 } from "@/lib/spendCategories";
 import type { CardNetwork } from "@/lib/types/card";
 
 const SELECT_FIELDS =
-  "id, card_name, bank, network, annual_fee, reward_type, reward_rate, lounge_access, best_for, dining_reward, travel_reward, shopping_reward, fuel_reward, metadata";
+  "id, card_name, bank, network, annual_fee, reward_type, reward_rate, lounge_access, best_for, key_benefits, dining_reward, travel_reward, shopping_reward, fuel_reward, metadata";
 
 type CreditCardRow = {
   id: string;
@@ -22,6 +23,7 @@ type CreditCardRow = {
   reward_rate: string | null;
   lounge_access: string | null;
   best_for: string | null;
+  key_benefits: string | null;
   dining_reward: number | null;
   travel_reward: number | null;
   shopping_reward: number | null;
@@ -81,6 +83,30 @@ function roundInr(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
+function categoryMidpointOrNull(
+  card: CreditCardRow,
+  slug: SpendCategorySlug
+): number | null {
+  const m = rewardPctMidpointForSpendCategory(
+    {
+      card_name: card.card_name,
+      bank: card.bank,
+      dining_reward: card.dining_reward,
+      travel_reward: card.travel_reward,
+      shopping_reward: card.shopping_reward,
+      fuel_reward: card.fuel_reward,
+      network: card.network,
+      reward_type: card.reward_type,
+      best_for: card.best_for,
+      reward_rate: card.reward_rate,
+      metadata: card.metadata,
+      key_benefits: card.key_benefits,
+    },
+    slug
+  );
+  return m > 0 ? m : null;
+}
+
 export async function topSpendRecommendations(
   monthlySpend: SpendByCategory,
   limit = 3
@@ -110,10 +136,12 @@ export async function topSpendRecommendations(
         {
           ...card,
           card_name: card.card_name,
+          bank: card.bank,
           network: card.network,
           reward_type: card.reward_type,
           reward_rate: card.reward_rate,
           best_for: card.best_for,
+          key_benefits: card.key_benefits,
           metadata: card.metadata,
         }
       );
@@ -135,34 +163,10 @@ export async function topSpendRecommendations(
           fuel: roundInr(breakdown.fuel),
         },
         category_reward_pct: {
-          dining:
-            card.dining_reward != null && card.dining_reward > 0
-              ? card.dining_reward
-              : rewardPctMidpointForSpendCategory(
-                  { ...card, metadata: card.metadata },
-                  "dining"
-                ) || null,
-          travel:
-            card.travel_reward != null && card.travel_reward > 0
-              ? card.travel_reward
-              : rewardPctMidpointForSpendCategory(
-                  { ...card, metadata: card.metadata },
-                  "travel"
-                ) || null,
-          shopping:
-            card.shopping_reward != null && card.shopping_reward > 0
-              ? card.shopping_reward
-              : rewardPctMidpointForSpendCategory(
-                  { ...card, metadata: card.metadata },
-                  "shopping"
-                ) || null,
-          fuel:
-            card.fuel_reward != null && card.fuel_reward > 0
-              ? card.fuel_reward
-              : rewardPctMidpointForSpendCategory(
-                  { ...card, metadata: card.metadata },
-                  "fuel"
-                ) || null,
+          dining: categoryMidpointOrNull(card, "dining"),
+          travel: categoryMidpointOrNull(card, "travel"),
+          shopping: categoryMidpointOrNull(card, "shopping"),
+          fuel: categoryMidpointOrNull(card, "fuel"),
         },
       };
     })
@@ -180,7 +184,7 @@ export async function topSpendRecommendations(
       spend_is_monthly_inr:
         "dining, travel, shopping, fuel are interpreted as average monthly spend in INR.",
       reward_columns_are_percent:
-        "Per-card category columns are % of spend in that category; null/unknown counts as 0%.",
+        "Category % uses issuer-specific rules when available (SBI/Axis from catalog copy; else DB columns; Amex from MR metadata). Midpoint used for summary numbers.",
     },
     input_monthly_inr: monthlySpend,
     recommendations,

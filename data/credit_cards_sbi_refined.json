@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source": "Merged: docx source (credit_cards_sbi_from_docx.json) + refined-only rows from credit_cards_sbi_refined.json (sbi)",
+  "source": "Merged: docx source (credit_cards_sbi_from_docx.json) + refined-only rows from credit_cards_sbi_refined.json (sbi) Includes reward_points_inr_per_point / bluchip_inr for app earn estimates.",
   "cards": [
     {
       "affiliate_link": "",
@@ -35,7 +35,8 @@
       "source": "sbi_card",
       "travel_reward": 0.0125,
       "welcome_offer": "₹500 Amazon gift voucher on card activation",
-      "reward_rate": "10X points on partner brands (~2.5%), 5X on other online spends (~1.25%), 1 point per ₹100 offline (~0.25%)"
+      "reward_rate": "10X points on partner brands (~2.5%), 5X on other online spends (~1.25%), 1 point per ₹100 offline (~0.25%)",
+      "reward_points_inr_per_point": 0.25
     },
     {
       "annual_fee": 999,
@@ -121,7 +122,8 @@
       "source": "sbi_card",
       "travel_reward": 0.005,
       "welcome_offer": "₹5,000 e-gift voucher on joining",
-      "reward_rate": "5X rewards on dining, grocery & departmental stores (~2.5%), 2 points per ₹100 on other spends (~0.5%), 1 point = ₹0.25"
+      "reward_rate": "5X rewards on dining, grocery & departmental stores (~2.5%), 2 points per ₹100 on other spends (~0.5%), 1 point = ₹0.25",
+      "reward_points_inr_per_point": 0.25
     },
     {
       "affiliate_link": "",
@@ -159,7 +161,8 @@
       "source": "sbi_card",
       "travel_reward": 0.03,
       "welcome_offer": "5,000 Travel Credits on ₹1L spend within 60 days",
-      "reward_rate": "6 Travel Credits per ₹200 on travel (~3%), 2 per ₹200 on other spends (~1%); 1 TC = ₹1 (miles/hotel), ₹0.5 (travel booking)"
+      "reward_rate": "6 Travel Credits per ₹200 on travel (~3%), 2 per ₹200 on other spends (~1%); 1 TC = ₹1 (miles/hotel), ₹0.5 (travel booking)",
+      "reward_points_inr_per_point": 1.0
     },
     {
       "affiliate_link": "",
@@ -197,7 +200,8 @@
       "source": "sbi_card",
       "travel_reward": 0.005,
       "welcome_offer": "₹3,000 e-gift voucher from brands like Pantaloons, Yatra, Bata",
-      "reward_rate": "10 points per ₹100 on dining, groceries, movies (~2.5%), 2 points per ₹100 on other spends (~0.5%), 4 points = ₹1"
+      "reward_rate": "10 points per ₹100 on dining, groceries, movies (~2.5%), 2 points per ₹100 on other spends (~0.5%), 4 points = ₹1",
+      "reward_points_inr_per_point": 0.25
     },
     {
       "affiliate_link": "",
@@ -236,7 +240,8 @@
       "source": "sbi_card",
       "travel_reward": 0.0017,
       "welcome_offer": "2,000 reward points on ₹2,000 spend in first 60 days",
-      "reward_rate": "10X rewards on dining, grocery, movies & departmental stores (~1.67%), 1 point per ₹150 on other spends (~0.17%), 1 point = ₹0.25"
+      "reward_rate": "10X rewards on dining, grocery, movies & departmental stores (~1.67%), 1 point per ₹150 on other spends (~0.17%), 1 point = ₹0.25",
+      "reward_points_inr_per_point": 0.25
     },
     {
       "card_name": "SBI Card CASHBACK",
@@ -268,7 +273,8 @@
       "dining_reward": 1.5,
       "travel_reward": 4,
       "shopping_reward": 1.5,
-      "fuel_reward": 1
+      "fuel_reward": 1,
+      "reward_points_inr_per_point": 0.25
     },
     {
       "card_name": "SBI Card BPCL Octane",
@@ -284,7 +290,8 @@
       "dining_reward": 1.5,
       "travel_reward": 2,
       "shopping_reward": 1.5,
-      "fuel_reward": 4.5
+      "fuel_reward": 4.5,
+      "reward_points_inr_per_point": 0.25
     }
   ]
 }

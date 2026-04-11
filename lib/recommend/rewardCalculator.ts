@@ -30,7 +30,14 @@ export type CardCategoryRatesInput = CardCategoryRates &
   Partial<
     Pick<
       CardWithCategoryRewardsInput,
-      "card_name" | "network" | "reward_type" | "best_for" | "reward_rate" | "metadata"
+      | "card_name"
+      | "bank"
+      | "network"
+      | "reward_type"
+      | "best_for"
+      | "reward_rate"
+      | "metadata"
+      | "key_benefits"
     >
   >;
 
@@ -51,6 +58,7 @@ function resolvedCategoryPct(
   return rewardPctMidpointForSpendCategory(
     {
       card_name: card.card_name ?? "",
+      bank: card.bank,
       dining_reward: card.dining_reward,
       travel_reward: card.travel_reward,
       shopping_reward: card.shopping_reward,
@@ -60,6 +68,7 @@ function resolvedCategoryPct(
       best_for: card.best_for,
       reward_rate: card.reward_rate,
       metadata: card.metadata,
+      key_benefits: card.key_benefits,
     },
     slug
   );

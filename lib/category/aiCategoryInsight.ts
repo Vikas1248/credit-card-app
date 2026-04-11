@@ -21,6 +21,7 @@ type CardRow = {
   shopping_reward: number | null;
   fuel_reward: number | null;
   best_for: string | null;
+  key_benefits: string | null;
   metadata: Record<string, unknown> | null;
 };
 
@@ -33,7 +34,7 @@ export async function computeCategoryPageInsight(
   let q = supabase
     .from("credit_cards")
     .select(
-      "id, card_name, bank, network, annual_fee, reward_type, reward_rate, dining_reward, travel_reward, shopping_reward, fuel_reward, best_for, metadata"
+      "id, card_name, bank, network, annual_fee, reward_type, reward_rate, key_benefits, dining_reward, travel_reward, shopping_reward, fuel_reward, best_for, metadata"
     )
     .limit(200);
 

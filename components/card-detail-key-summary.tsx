@@ -6,16 +6,19 @@ import {
   type SpendCategorySlug,
 } from "@/lib/spendCategories";
 import { amexMembershipRewardsInrPerPointForUi } from "@/lib/cards/amexCategoryRewards";
+import { isSbiAxisCatalogBank } from "@/lib/cards/sbiAxisCategoryRewards";
 import type { CardNetwork } from "@/lib/types/card";
 
 type CardKeySummary = {
   card_name: string;
+  bank: string;
   joining_fee: number;
   annual_fee: number;
   reward_type: "cashback" | "points";
   network: CardNetwork;
   best_for?: string | null;
   reward_rate?: string | null;
+  key_benefits?: string | null;
   metadata?: Record<string, unknown> | null;
   dining_reward?: number | null;
   travel_reward?: number | null;
@@ -141,11 +144,13 @@ export function CardDetailKeySummary({ card }: { card: CardKeySummary }) {
     reward_type: card.reward_type,
     metadata: card.metadata ?? null,
   });
+  const sbiAxisDerived = isSbiAxisCatalogBank(card.bank);
 
   const rangeFor = (slug: SpendCategorySlug) =>
     rewardPctRangeForSpendCategory(
       {
         card_name: card.card_name,
+        bank: card.bank,
         dining_reward: card.dining_reward ?? null,
         travel_reward: card.travel_reward ?? null,
         shopping_reward: card.shopping_reward ?? null,
@@ -154,6 +159,7 @@ export function CardDetailKeySummary({ card }: { card: CardKeySummary }) {
         reward_type: card.reward_type,
         best_for: card.best_for ?? null,
         reward_rate: card.reward_rate ?? null,
+        key_benefits: card.key_benefits ?? null,
         metadata: card.metadata ?? null,
       },
       slug
@@ -229,20 +235,27 @@ export function CardDetailKeySummary({ card }: { card: CardKeySummary }) {
       </h3>
       <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
         Approximate % of spend.
+        {sbiAxisDerived ? (
+          <>
+            {" "}
+            SBI and Axis values are estimated from reward rules and benefits
+            text in our catalog (low end ≈ base earn, high end ≈ best partner
+            tier where applicable).
+          </>
+        ) : null}
         {mrInrPerPoint != null ? (
           <>
             {" "}
-            We convert points using the estimated value above; ranges add
-            milestones or partner-category accelerators when we have them in
-            catalog data.
+            We convert Amex points using the estimated value above; ranges add
+            milestones or accelerators from catalog data.
           </>
-        ) : (
+        ) : !sbiAxisDerived ? (
           <>
             {" "}
-            Points cards may show a range when we can infer base earn plus
+            Other issuers may show a range when we can infer base earn plus
             bonuses from catalog data.
           </>
-        )}
+        ) : null}
       </p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {CATEGORY_ROWS.map(({ slug, label }) => (

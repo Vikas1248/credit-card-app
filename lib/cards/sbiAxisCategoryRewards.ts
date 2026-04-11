@@ -1,0 +1,303 @@
+import type { CategoryPctRange } from "@/lib/cards/amexCategoryRewards";
+
+/** Same slugs as SpendCategorySlug (avoid circular import). */
+type CategorySlug = "dining" | "travel" | "shopping" | "fuel";
+
+const MAX_REASONABLE_PCT = 45;
+
+function num(v: unknown): number | null {
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string" && v.trim() !== "") {
+    const n = Number(String(v).replace(/,/g, ""));
+    if (Number.isFinite(n)) return n;
+  }
+  return null;
+}
+
+function roundDisplayPct(n: number): number {
+  return Math.round(n * 10) / 10;
+}
+
+export function isSbiAxisCatalogBank(bank: string | null | undefined): boolean {
+  const b = (bank ?? "").toLowerCase();
+  return (
+    /\bsbi\b/.test(b) ||
+    /\baxis\b/.test(b) ||
+    b.includes("sbi card")
+  );
+}
+
+const SLUG_PATTERNS: Record<CategorySlug, RegExp[]> = {
+  dining: [
+    /swiggy|zomato|dining|restaurant|food|grocery|groceries|movie|movies|departmental|department\s*store|eazydiner/i,
+  ],
+  travel: [
+    /travel|flight|hotel|cleartrip|yatra|makemytrip|goibibo|indigo|irctc|rail|train|airline|uber|\bola\b/i,
+  ],
+  shopping: [
+    /amazon|flipkart|myntra|online|shopping|retail|utility|utilities|bill\s*pay|paytm|blinkit|partner\s*merchant/i,
+  ],
+  fuel: [
+    /fuel|petrol|diesel|iocl|bpcl|hpcl|indian\s*oil|bpcl|octane|mobility/i,
+  ],
+};
+
+function corpusFromCard(input: {
+  reward_rate: string | null | undefined;
+  metadata: Record<string, unknown> | null | undefined;
+  key_benefits: string | null | undefined;
+}): string {
+  const parts: string[] = [];
+  if (input.reward_rate) parts.push(input.reward_rate);
+  if (input.key_benefits) parts.push(input.key_benefits);
+  const meta = input.metadata && typeof input.metadata === "object"
+    ? (input.metadata as Record<string, unknown>)
+    : {};
+  const rc = meta.reward_conversion;
+  if (rc && typeof rc === "object") {
+    parts.push(String((rc as Record<string, unknown>).description ?? ""));
+  }
+  const kb = meta.key_benefits;
+  if (Array.isArray(kb)) {
+    parts.push(kb.map(String).join("\n"));
+  } else if (typeof kb === "string") {
+    parts.push(kb);
+  }
+  return parts.join("\n");
+}
+
+/** `(~2.5%)`, `(~1.25%)`, `5% cashback`, `4% on` — capped for sanity. */
+function parsePercentHints(text: string): number[] {
+  const out: number[] = [];
+  const reParen = /\(\s*~?\s*([\d.]+)\s*%\s*\)/g;
+  let m: RegExpExecArray | null;
+  while ((m = reParen.exec(text)) !== null) {
+    const v = Number(m[1]);
+    if (Number.isFinite(v) && v > 0 && v <= MAX_REASONABLE_PCT) out.push(v);
+  }
+  const rePlain = /\b([\d.]+)\s*%\s*(?:cashback|on|off|value|back)/gi;
+  while ((m = rePlain.exec(text)) !== null) {
+    const v = Number(m[1]);
+    if (Number.isFinite(v) && v > 0 && v <= MAX_REASONABLE_PCT) out.push(v);
+  }
+  return out;
+}
+
+function getPointsPerRupee(meta: Record<string, unknown>): number | null {
+  const rc = meta.reward_conversion;
+  if (!rc || typeof rc !== "object") return null;
+  return num((rc as Record<string, unknown>).points_per_rupee);
+}
+
+function parseInrPerPointFromText(text: string): number | null {
+  const t = text.replace(/\s+/g, " ");
+  let m = t.match(/1\s*TC\s*=\s*₹?\s*([\d.]+)/i);
+  if (m) {
+    const v = Number(m[1]);
+    if (Number.isFinite(v) && v > 0) return v;
+  }
+  m = t.match(/(?:1|one)\s+point\s*=\s*₹?\s*([\d.]+)/i);
+  if (m) {
+    const v = Number(m[1]);
+    if (Number.isFinite(v) && v > 0) return v;
+  }
+  m = t.match(/(\d+)\s*points?\s*=\s*₹?\s*1\b/i);
+  if (m) {
+    const n = Number(m[1]);
+    if (Number.isFinite(n) && n > 0) return 1 / n;
+  }
+  m = t.match(/(\d+)\s*points?\s*=\s*₹?\s*1\s*redeem/i);
+  if (m) {
+    const n = Number(m[1]);
+    if (Number.isFinite(n) && n > 0) return 1 / n;
+  }
+  return null;
+}
+
+function inrPerPointFromMeta(meta: Record<string, unknown>): number | null {
+  const keys = [
+    "reward_points_inr_per_point",
+    "membership_rewards_inr_per_point",
+    "edge_point_inr",
+    "bluchip_inr",
+  ] as const;
+  for (const k of keys) {
+    const v = num(meta[k]);
+    if (v != null && v > 0) return v;
+  }
+  return null;
+}
+
+function defaultInrPerPoint(
+  cardName: string,
+  rewardTypeNorm: string,
+  corpus: string
+): number {
+  if (/indo?go/i.test(cardName)) return 1;
+  if (rewardTypeNorm.includes("travel_credit")) return 1;
+  const parsed = parseInrPerPointFromText(corpus);
+  if (parsed != null) return parsed;
+  return 0.25;
+}
+
+function fuelCashbackExcluded(meta: Record<string, unknown>, corpus: string): boolean {
+  const ex = meta.excluded_categories;
+  if (Array.isArray(ex)) {
+    const s = ex.map((x) => String(x).toLowerCase()).join(" ");
+    if (s.includes("fuel")) return true;
+  }
+  const t = corpus.toLowerCase();
+  return t.includes("except fuel") || t.includes("excluding fuel");
+}
+
+function slugMatchesCorpus(slug: CategorySlug, corpus: string): boolean {
+  return SLUG_PATTERNS[slug].some((re) => re.test(corpus));
+}
+
+/** e.g. 2 BluChips per ₹200 vs 1 per ₹200, or 6 Travel Credits per ₹200 vs 2 per ₹200. */
+function parsePointsPerRupeeBands(
+  corpus: string,
+  inrPerPoint: number
+): { minPct: number; maxPct: number } | null {
+  const re =
+    /(\d+)\s+(?:BluChips?|EDGE\s*(?:Reward\s*)?points?|reward\s*points?|Travel\s*Credits?)\s+per\s+₹?\s*([\d,]+)/gi;
+  const ppms: number[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(corpus)) !== null) {
+    const pts = Number(m[1]);
+    const rs = Number(String(m[2]).replace(/,/g, ""));
+    if (pts > 0 && rs > 0) ppms.push((pts / rs) * inrPerPoint * 100);
+  }
+  if (ppms.length < 2) return null;
+  return { minPct: Math.min(...ppms), maxPct: Math.max(...ppms) };
+}
+
+export type SbiAxisDerivationCardInput = {
+  bank: string;
+  card_name: string;
+  reward_type: string;
+  reward_rate: string | null;
+  metadata: Record<string, unknown> | null | undefined;
+  key_benefits?: string | null;
+  fuel_reward_column?: number | null;
+};
+
+/**
+ * Derives min–max category earn % for SBI / Axis catalog cards from reward_conversion,
+ * cashback slabs, and % hints in copy. When this returns non-null, spendCategories prefers
+ * it over hand-entered category columns (often mis-scaled).
+ */
+export function deriveSbiAxisCategoryRange(
+  card: SbiAxisDerivationCardInput,
+  slug: CategorySlug
+): CategoryPctRange | null {
+  if (!isSbiAxisCatalogBank(card.bank)) return null;
+
+  const meta =
+    card.metadata && typeof card.metadata === "object"
+      ? (card.metadata as Record<string, unknown>)
+      : {};
+  const corpus = corpusFromCard({
+    reward_rate: card.reward_rate,
+    metadata: card.metadata,
+    key_benefits: card.key_benefits,
+  });
+  const rewardTypeNorm = String(card.reward_type ?? "").toLowerCase();
+
+  const online = num(meta.online_cashback);
+  const offline = num(meta.offline_cashback);
+  const isCashbackSlab =
+    rewardTypeNorm.includes("cashback") &&
+    online != null &&
+    offline != null &&
+    online > 0 &&
+    offline >= 0 &&
+    online <= 1 &&
+    offline <= 1;
+
+  if (isCashbackSlab) {
+    const lo = offline * 100;
+    const hi = online * 100;
+    if (!Number.isFinite(lo) || !Number.isFinite(hi) || hi <= 0) return null;
+    if (slug === "fuel" && fuelCashbackExcluded(meta, corpus)) return null;
+    const minR = roundDisplayPct(Math.min(lo, hi));
+    const maxR = roundDisplayPct(Math.max(lo, hi));
+    if (slug === "fuel") {
+      return { min: minR, max: minR };
+    }
+    return { min: minR, max: maxR };
+  }
+
+  const hints = parsePercentHints(corpus);
+  const ppr = getPointsPerRupee(meta);
+  const metaInr = inrPerPointFromMeta(meta);
+  const textInr = parseInrPerPointFromText(corpus);
+  const inr =
+    metaInr ?? textInr ?? defaultInrPerPoint(card.card_name, rewardTypeNorm, corpus);
+
+  let basePct: number | null = null;
+  if (ppr != null && ppr > 0 && inr > 0) {
+    basePct = ppr * inr * 100;
+  }
+
+  const bands = parsePointsPerRupeeBands(corpus, inr);
+
+  let floorPct: number;
+  let ceilPct: number;
+  if (hints.length > 0) {
+    floorPct = Math.min(...hints);
+    ceilPct = Math.max(...hints);
+  } else if (bands) {
+    floorPct = bands.minPct;
+    ceilPct = bands.maxPct;
+  } else if (basePct != null) {
+    floorPct = basePct;
+    ceilPct = basePct;
+  } else {
+    return null;
+  }
+
+  if (bands) {
+    floorPct = Math.min(floorPct, bands.minPct);
+    ceilPct = Math.max(ceilPct, bands.maxPct);
+  }
+  if (basePct != null) {
+    floorPct = Math.min(floorPct, basePct);
+    ceilPct = Math.max(ceilPct, basePct);
+  }
+
+  if (slug === "fuel") {
+    if (fuelCashbackExcluded(meta, corpus)) return null;
+    const colFuel = card.fuel_reward_column;
+    const hasFuelSignal =
+      slugMatchesCorpus("fuel", corpus) ||
+      (typeof colFuel === "number" && Number.isFinite(colFuel) && colFuel > 0);
+    if (!hasFuelSignal) {
+      if (basePct == null) return null;
+      return {
+        min: roundDisplayPct(basePct),
+        max: roundDisplayPct(basePct),
+      };
+    }
+  }
+
+  const matches = slugMatchesCorpus(slug, corpus);
+  if (matches) {
+    return {
+      min: roundDisplayPct(floorPct),
+      max: roundDisplayPct(Math.max(ceilPct, floorPct)),
+    };
+  }
+
+  if (basePct == null) {
+    return {
+      min: roundDisplayPct(floorPct),
+      max: roundDisplayPct(floorPct),
+    };
+  }
+
+  return {
+    min: roundDisplayPct(basePct),
+    max: roundDisplayPct(basePct),
+  };
+}

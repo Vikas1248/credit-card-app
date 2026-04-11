@@ -320,12 +320,14 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
             <CardDetailKeySummary
               card={{
                 card_name: card.card_name,
+                bank: card.bank,
                 joining_fee: card.joining_fee,
                 annual_fee: card.annual_fee,
                 reward_type: card.reward_type,
                 network: card.network,
                 best_for: card.best_for,
                 reward_rate: card.reward_rate,
+                key_benefits: card.key_benefits,
                 metadata: card.metadata,
                 dining_reward: card.dining_reward,
                 travel_reward: card.travel_reward,

@@ -102,6 +102,7 @@ function formatPct(value: number | null | undefined): string {
 function cardCategoryInput(card: CreditCard) {
   return {
     card_name: card.card_name,
+    bank: card.bank,
     dining_reward: card.dining_reward,
     travel_reward: card.travel_reward,
     shopping_reward: card.shopping_reward,
@@ -110,6 +111,7 @@ function cardCategoryInput(card: CreditCard) {
     reward_type: card.reward_type,
     best_for: card.best_for,
     reward_rate: card.reward_rate,
+    key_benefits: card.key_benefits ?? null,
     metadata: card.metadata ?? null,
   };
 }
