@@ -689,7 +689,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-8">
               <button
                 type="button"
                 onClick={() => void loadRecommendations()}
@@ -706,13 +706,6 @@ export default function Home() {
                   "Show top 3 cards"
                 )}
               </button>
-              <p className="text-xs text-zinc-500">
-                Optional AI blurbs need{" "}
-                <code className="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] dark:bg-zinc-800">
-                  OPENAI_API_KEY
-                </code>{" "}
-                on the server.
-              </p>
             </div>
 
             <div className="sr-only" aria-live="polite">
