@@ -77,6 +77,22 @@ type FeaturedGroup = {
   cards: CreditCard[];
 };
 
+type BrowseSortMode =
+  | "name"
+  | "annual_asc"
+  | "annual_desc"
+  | "joining_asc"
+  | "joining_desc"
+  | "ai";
+
+function parseOptionalInrBound(raw: string): number | null {
+  const t = raw.trim();
+  if (!t) return null;
+  const n = Number(t);
+  if (!Number.isFinite(n) || n < 0) return null;
+  return n;
+}
+
 function formatInr(value: number): string {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -339,9 +355,21 @@ export default function Home() {
   const [compareAiError, setCompareAiError] = useState<string | null>(null);
   const [searchAiOrder, setSearchAiOrder] = useState<string[] | null>(null);
   const [searchAiLoading, setSearchAiLoading] = useState(false);
-  const [browseSort, setBrowseSort] = useState<"name" | "ai">("name");
+  const [browseSort, setBrowseSort] = useState<BrowseSortMode>("name");
   const [browseAiOrder, setBrowseAiOrder] = useState<string[] | null>(null);
   const [browseAiLoading, setBrowseAiLoading] = useState(false);
+  const [filterMinAnnual, setFilterMinAnnual] = useState("");
+  const [filterMaxAnnual, setFilterMaxAnnual] = useState("");
+  const [filterMinJoining, setFilterMinJoining] = useState("");
+  const [filterMaxJoining, setFilterMaxJoining] = useState("");
+  const [filterRewardType, setFilterRewardType] = useState<
+    "all" | "cashback" | "points"
+  >("all");
+  const [filterNetwork, setFilterNetwork] = useState<"all" | CardNetwork>(
+    "all"
+  );
+
+  const catalogNetworkLock = getOptionalCardNetworkFilter();
 
   const loadCards = async () => {
     try {
@@ -534,11 +562,45 @@ export default function Home() {
     }
   };
 
+  const feeTypeFilteredCards = useMemo(() => {
+    const minA = parseOptionalInrBound(filterMinAnnual);
+    const maxA = parseOptionalInrBound(filterMaxAnnual);
+    const minJ = parseOptionalInrBound(filterMinJoining);
+    const maxJ = parseOptionalInrBound(filterMaxJoining);
+
+    return cards.filter((c) => {
+      if (filterRewardType !== "all" && c.reward_type !== filterRewardType) {
+        return false;
+      }
+      if (
+        !catalogNetworkLock &&
+        filterNetwork !== "all" &&
+        c.network !== filterNetwork
+      ) {
+        return false;
+      }
+      if (minA !== null && c.annual_fee < minA) return false;
+      if (maxA !== null && c.annual_fee > maxA) return false;
+      if (minJ !== null && c.joining_fee < minJ) return false;
+      if (maxJ !== null && c.joining_fee > maxJ) return false;
+      return true;
+    });
+  }, [
+    cards,
+    filterRewardType,
+    filterNetwork,
+    catalogNetworkLock,
+    filterMinAnnual,
+    filterMaxAnnual,
+    filterMinJoining,
+    filterMaxJoining,
+  ]);
+
   const textFilteredCards = useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) return cards;
+    if (!query) return feeTypeFilteredCards;
 
-    return cards.filter((card) => {
+    return feeTypeFilteredCards.filter((card) => {
       const text = [
         card.card_name,
         card.bank,
@@ -551,22 +613,46 @@ export default function Home() {
 
       return text.includes(query);
     });
-  }, [cards, search]);
+  }, [feeTypeFilteredCards, search]);
 
   const displayBrowseCards = useMemo(() => {
+    const list = textFilteredCards;
     const q = search.trim();
     if (q.length >= 2 && searchAiOrder && searchAiOrder.length > 0) {
-      return sortCardsByIdOrder(textFilteredCards, searchAiOrder);
+      return sortCardsByIdOrder(list, searchAiOrder);
     }
-    if (
-      !q &&
-      browseSort === "ai" &&
-      browseAiOrder &&
-      browseAiOrder.length > 0
-    ) {
-      return sortCardsByIdOrder(textFilteredCards, browseAiOrder);
+    if (!q && browseSort === "ai" && browseAiOrder && browseAiOrder.length > 0) {
+      return sortCardsByIdOrder(list, browseAiOrder);
     }
-    return sortCardsByIdOrder(textFilteredCards, null);
+    if (browseSort === "annual_asc") {
+      return [...list].sort(
+        (a, b) =>
+          a.annual_fee - b.annual_fee ||
+          a.card_name.localeCompare(b.card_name)
+      );
+    }
+    if (browseSort === "annual_desc") {
+      return [...list].sort(
+        (a, b) =>
+          b.annual_fee - a.annual_fee ||
+          a.card_name.localeCompare(b.card_name)
+      );
+    }
+    if (browseSort === "joining_asc") {
+      return [...list].sort(
+        (a, b) =>
+          a.joining_fee - b.joining_fee ||
+          a.card_name.localeCompare(b.card_name)
+      );
+    }
+    if (browseSort === "joining_desc") {
+      return [...list].sort(
+        (a, b) =>
+          b.joining_fee - a.joining_fee ||
+          a.card_name.localeCompare(b.card_name)
+      );
+    }
+    return sortCardsByIdOrder(list, null);
   }, [textFilteredCards, search, searchAiOrder, browseSort, browseAiOrder]);
 
   const cardsSortedByName = useMemo(
@@ -1450,53 +1536,197 @@ export default function Home() {
             <div className="min-w-0 flex-1">
               <h2 className={sectionTitleClass}>All cards</h2>
               <p className={sectionLeadClass}>
-                {textFilteredCards.length}{" "}
-                {textFilteredCards.length === 1 ? "card" : "cards"}
-                {search.trim() ? " match your search" : " in the catalog"}.
-                {search.trim().length >= 2 ? (
+                {textFilteredCards.length === cards.length && !search.trim() ? (
                   <>
-                    {" "}
-                    With OpenAI configured, results reorder by relevance after
-                    you pause typing.
+                    {cards.length} {cards.length === 1 ? "card" : "cards"} in
+                    the catalog.
                   </>
+                ) : (
+                  <>
+                    {textFilteredCards.length}{" "}
+                    {textFilteredCards.length === 1 ? "card" : "cards"}{" "}
+                    matching your criteria ({cards.length} in catalog).
+                  </>
+                )}{" "}
+                {search.trim().length >= 2 ? (
+                  <span className="text-zinc-500">
+                    With OpenAI configured, search results reorder by relevance
+                    after you pause typing.
+                  </span>
                 ) : null}
               </p>
             </div>
           </div>
 
           {!loading && !error && cards.length > 0 ? (
-            <div className="mt-6 flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                Browse order:
-              </span>
-              <button
-                type="button"
-                onClick={() => setBrowseSort("name")}
-                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                  browseSort === "name"
-                    ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                    : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                }`}
-              >
-                A–Z
-              </button>
-              <button
-                type="button"
-                onClick={() => setBrowseSort("ai")}
-                disabled={browseAiLoading}
-                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition disabled:opacity-50 ${
-                  browseSort === "ai"
-                    ? "bg-indigo-600 text-white dark:bg-indigo-500"
-                    : "border border-indigo-200 bg-indigo-50 text-indigo-950 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-100 dark:hover:bg-indigo-900/50"
-                }`}
-              >
-                {browseAiLoading ? "AI order…" : "AI browse order"}
-              </button>
-              {browseSort === "ai" && !browseAiLoading && !browseAiOrder ? (
-                <span className="text-xs text-zinc-500">
-                  (needs OPENAI_API_KEY — using A–Z)
-                </span>
-              ) : null}
+            <div className="mt-6 space-y-5 rounded-2xl border border-zinc-200 bg-zinc-50/60 p-5 dark:border-zinc-700 dark:bg-zinc-950/40">
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                  Filter
+                </h3>
+                <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                      Annual fee min (₹)
+                    </span>
+                    <input
+                      type="number"
+                      min={0}
+                      step={100}
+                      value={filterMinAnnual}
+                      onChange={(e) => setFilterMinAnnual(e.target.value)}
+                      placeholder="Any"
+                      className={inputClass}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                      Annual fee max (₹)
+                    </span>
+                    <input
+                      type="number"
+                      min={0}
+                      step={100}
+                      value={filterMaxAnnual}
+                      onChange={(e) => setFilterMaxAnnual(e.target.value)}
+                      placeholder="Any"
+                      className={inputClass}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                      Joining fee min (₹)
+                    </span>
+                    <input
+                      type="number"
+                      min={0}
+                      step={100}
+                      value={filterMinJoining}
+                      onChange={(e) => setFilterMinJoining(e.target.value)}
+                      placeholder="Any"
+                      className={inputClass}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                      Joining fee max (₹)
+                    </span>
+                    <input
+                      type="number"
+                      min={0}
+                      step={100}
+                      value={filterMaxJoining}
+                      onChange={(e) => setFilterMaxJoining(e.target.value)}
+                      placeholder="Any"
+                      className={inputClass}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                      Reward type
+                    </span>
+                    <select
+                      value={filterRewardType}
+                      onChange={(e) =>
+                        setFilterRewardType(
+                          e.target.value as "all" | "cashback" | "points"
+                        )
+                      }
+                      className={inputClass}
+                    >
+                      <option value="all">All</option>
+                      <option value="cashback">Cashback</option>
+                      <option value="points">Points</option>
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                      Card network
+                    </span>
+                    <select
+                      value={catalogNetworkLock ?? filterNetwork}
+                      onChange={(e) =>
+                        setFilterNetwork(e.target.value as "all" | CardNetwork)
+                      }
+                      disabled={Boolean(catalogNetworkLock)}
+                      className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-70`}
+                      title={
+                        catalogNetworkLock
+                          ? "Catalog is limited by NEXT_PUBLIC_CARD_NETWORK"
+                          : undefined
+                      }
+                    >
+                      <option value="all">All networks</option>
+                      <option value="Visa">Visa</option>
+                      <option value="Mastercard">Mastercard</option>
+                      <option value="Amex">Amex</option>
+                    </select>
+                    {catalogNetworkLock ? (
+                      <span className="mt-1 block text-[11px] text-zinc-500">
+                        Locked to {catalogNetworkLock} via env.
+                      </span>
+                    ) : null}
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilterMinAnnual("");
+                    setFilterMaxAnnual("");
+                    setFilterMinJoining("");
+                    setFilterMaxJoining("");
+                    setFilterRewardType("all");
+                    setFilterNetwork("all");
+                  }}
+                  className="mt-4 text-xs font-semibold text-blue-600 underline-offset-2 hover:underline dark:text-blue-400"
+                >
+                  Clear filters
+                </button>
+              </div>
+
+              <div className="border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                <label className="block sm:flex sm:items-end sm:gap-4">
+                  <div className="min-w-0 flex-1">
+                    <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                      Sort
+                    </span>
+                    <select
+                      value={browseSort}
+                      onChange={(e) =>
+                        setBrowseSort(e.target.value as BrowseSortMode)
+                      }
+                      className={inputClass}
+                    >
+                      <option value="name">Name (A–Z)</option>
+                      <option value="annual_asc">
+                        Annual fee (low → high)
+                      </option>
+                      <option value="annual_desc">
+                        Annual fee (high → low)
+                      </option>
+                      <option value="joining_asc">
+                        Joining fee (low → high)
+                      </option>
+                      <option value="joining_desc">
+                        Joining fee (high → low)
+                      </option>
+                      <option value="ai">AI curated browse</option>
+                    </select>
+                  </div>
+                  {browseSort === "ai" ? (
+                    <span className="mt-2 flex items-center gap-2 text-xs text-zinc-500 sm:mt-0 sm:pb-2.5">
+                      {browseAiLoading ? (
+                        <>
+                          <Spinner className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                          Loading order…
+                        </>
+                      ) : !browseAiOrder ? (
+                        <>Needs OPENAI_API_KEY — using A–Z</>
+                      ) : null}
+                    </span>
+                  ) : null}
+                </label>
+              </div>
             </div>
           ) : null}
 
@@ -1534,10 +1764,14 @@ export default function Home() {
               ) : (
                 <>
                   <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                    No cards match your search
+                    {feeTypeFilteredCards.length === 0
+                      ? "No cards match your filters"
+                      : "No cards match your search"}
                   </p>
                   <p className="mt-1 text-sm text-zinc-500">
-                    Try another name or bank, or clear the search box.
+                    {feeTypeFilteredCards.length === 0
+                      ? "Widen annual or joining fee ranges, set reward type and network to All, or clear filters."
+                      : "Try another query, clear the search box, or adjust filters."}
                   </p>
                 </>
               )}
@@ -1572,9 +1806,15 @@ export default function Home() {
                       </p>
                       <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-zinc-500">
                         <div>
-                          <span className="text-zinc-400">Fee </span>
+                          <span className="text-zinc-400">Annual </span>
                           <span className="font-medium tabular-nums text-zinc-700 dark:text-zinc-300">
                             {formatInr(card.annual_fee)}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-zinc-400">Joining </span>
+                          <span className="font-medium tabular-nums text-zinc-700 dark:text-zinc-300">
+                            {formatInr(card.joining_fee)}
                           </span>
                         </div>
                         <div className="capitalize">{card.reward_type}</div>
