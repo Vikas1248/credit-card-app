@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
-import { networkTileSurfaceClass } from "@/lib/cards/networkTile";
+import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import {
   compareCardsBySpendCategory,
   rewardPctForSpendCategory,
@@ -153,7 +153,7 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
               return (
                 <li
                   key={card.id}
-                  className={`rounded-2xl border p-5 shadow-sm sm:p-6 ${networkTileSurfaceClass(card.network)}`}
+                  className={`rounded-2xl border p-5 shadow-sm sm:p-6 ${issuerBrandTileClass(card.bank, card.network)}`}
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0 flex-1">

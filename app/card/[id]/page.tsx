@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { networkTileSurfaceClass } from "@/lib/cards/networkTile";
+import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { CardNetwork } from "@/lib/types/card";
 
@@ -248,7 +248,7 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
         </Link>
 
         <article
-          className={`rounded-3xl border px-6 py-10 shadow-md sm:px-10 sm:py-12 ${networkTileSurfaceClass(card.network)}`}
+          className={`rounded-3xl border px-6 py-10 shadow-md sm:px-10 sm:py-12 ${issuerBrandTileClass(card.bank, card.network)}`}
         >
           <header className="border-b border-zinc-100 pb-10 dark:border-zinc-800">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">

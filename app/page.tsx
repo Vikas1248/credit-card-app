@@ -10,7 +10,7 @@ import { isAxisBankCard } from "@/lib/cards/axisApply";
 import { isSbiCard } from "@/lib/cards/sbiApply";
 import { SpendCategoryIcon } from "@/components/spend-category-icons";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
-import { networkTileSurfaceClass } from "@/lib/cards/networkTile";
+import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import { rewardCalculator } from "@/lib/recommend/rewardCalculator";
 import { SPEND_CATEGORIES } from "@/lib/spendCategories";
 import type { CardNetwork } from "@/lib/types/card";
@@ -620,7 +620,7 @@ export default function Home() {
                   return (
                     <article
                       key={card.id}
-                      className={`w-[min(100%,320px)] shrink-0 snap-center rounded-2xl border p-6 shadow-md ${networkTileSurfaceClass(card.network)} ${
+                      className={`w-[min(100%,320px)] shrink-0 snap-center rounded-2xl border p-6 shadow-md ${issuerBrandTileClass(card.bank, card.network)} ${
                         idx === 0
                           ? "ring-2 ring-blue-400/35 dark:ring-blue-500/25"
                           : ""
@@ -746,7 +746,7 @@ export default function Home() {
                   return (
                     <article
                       key={card.id}
-                      className={`flex flex-col rounded-2xl border p-6 shadow-md ${networkTileSurfaceClass(card.network)} ${
+                      className={`flex flex-col rounded-2xl border p-6 shadow-md ${issuerBrandTileClass(card.bank, card.network)} ${
                         isBest
                           ? "ring-2 ring-emerald-400/45 dark:ring-emerald-500/35"
                           : ""
@@ -1201,7 +1201,7 @@ export default function Home() {
               {filteredCards.map((card) => (
                 <li
                   key={card.id}
-                  className={`rounded-2xl border p-5 shadow-sm sm:p-6 ${networkTileSurfaceClass(card.network)}`}
+                  className={`rounded-2xl border p-5 shadow-sm sm:p-6 ${issuerBrandTileClass(card.bank, card.network)}`}
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0 flex-1">
