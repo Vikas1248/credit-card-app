@@ -85,11 +85,8 @@ export function CardAiInsight({ cardId }: { cardId: string }) {
           AI snapshot
         </h2>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          Add{" "}
-          <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">
-            OPENAI_API_KEY
-          </code>{" "}
-          to enable a short AI summary for this card.
+          When AI is enabled for this deployment, a short summary for this card
+          appears here.
         </p>
       </section>
     );

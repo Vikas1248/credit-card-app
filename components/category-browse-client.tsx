@@ -209,7 +209,7 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
             <p className="mt-3 max-w-2xl text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
               {meta.blurb} Default sort is listed {meta.label.toLowerCase()}{" "}
               reward % (highest first). Switch to AI ranking for a holistic
-              order when your API key is set.
+              order when AI is available.
             </p>
             {aiParagraph ? (
               <p className="mt-4 max-w-2xl rounded-xl border border-indigo-200/70 bg-indigo-50/50 p-4 text-sm leading-relaxed text-zinc-700 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-zinc-300">
@@ -254,7 +254,7 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                 !categoryOrderLoading &&
                 !categoryAiOrder ? (
                   <span className="text-xs text-zinc-500">
-                    (needs OPENAI_API_KEY — using earn %)
+                    (AI unavailable — using earn %)
                   </span>
                 ) : null}
               </div>

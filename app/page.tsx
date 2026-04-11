@@ -266,19 +266,62 @@ function SortIcon({ className }: { className?: string }) {
 const browseToolbarBtnClass =
   "relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border text-zinc-700 shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:text-zinc-200";
 
-function SiteHeader({
+function HomeSearchBar({
+  id,
+  className,
   search,
   onSearchChange,
   searchRanking,
 }: {
+  id?: string;
+  className?: string;
   search: string;
   onSearchChange: (value: string) => void;
   searchRanking?: boolean;
 }) {
   return (
+    <div
+      id={id}
+      className={`relative min-w-0 scroll-mt-28 ${className ?? ""}`}
+    >
+      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
+        <svg
+          className="h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+          aria-hidden
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M21 21l-5.2-5.2M11 18a7 7 0 100-14 7 7 0 000 14z"
+          />
+        </svg>
+      </span>
+      <input
+        type="search"
+        value={search}
+        onChange={(e) => onSearchChange(e.target.value)}
+        placeholder="Search cards or banks…"
+        className={headerInputClass}
+        aria-label="Search cards"
+      />
+      {searchRanking ? (
+        <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-medium text-indigo-600 dark:text-indigo-400">
+          AI ranking…
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function SiteHeader() {
+  return (
     <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/85 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/90">
       <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
           <Link
             href="/"
             className="flex shrink-0 items-center gap-2.5 rounded-xl pr-2 text-zinc-900 dark:text-zinc-100"
@@ -311,41 +354,6 @@ function SiteHeader({
               </a>
             ))}
           </nav>
-
-          <div
-            id="search"
-            className="relative min-w-0 flex-1 scroll-mt-28 sm:min-w-[240px]"
-          >
-            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-                aria-hidden
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21 21l-5.2-5.2M11 18a7 7 0 100-14 7 7 0 000 14z"
-                />
-              </svg>
-            </span>
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search cards or banks…"
-              className={headerInputClass}
-              aria-label="Search cards"
-            />
-            {searchRanking ? (
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-medium text-indigo-600 dark:text-indigo-400">
-                AI ranking…
-              </span>
-            ) : null}
-          </div>
         </div>
       </div>
     </header>
@@ -931,11 +939,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <SiteHeader
-        search={search}
-        onSearchChange={setSearch}
-        searchRanking={searchAiLoading}
-      />
+      <SiteHeader />
 
       <main className="mx-auto max-w-4xl px-4 py-14 sm:px-6 sm:py-20">
         <header className="mx-auto max-w-2xl text-center">
@@ -949,6 +953,15 @@ export default function Home() {
             {SITE_ABOUT_LEAD}
           </p>
         </header>
+
+        <div className="mx-auto mt-10 max-w-xl">
+          <HomeSearchBar
+            id="search"
+            search={search}
+            onSearchChange={setSearch}
+            searchRanking={searchAiLoading}
+          />
+        </div>
 
         <section
           id="categories"
@@ -1004,10 +1017,7 @@ export default function Home() {
                   Featured picks
                 </h2>
                 <p className={sectionLeadClass}>
-                  Full-width spotlight carousel inspired by issuer homepages: one
-                  featured card at a time with a large plastic preview, arrows, and
-                  dots. With OpenAI enabled picks refresh hourly; otherwise up to
-                  five category highlights.
+                  Rotating highlights from the catalog—up to five picks at a time.
                 </p>
               </div>
             </div>
@@ -1023,12 +1033,8 @@ export default function Home() {
               <div className="min-w-0 flex-1">
                 <h2 className={sectionTitleClass}>Match my spend</h2>
                 <p className={sectionLeadClass}>
-                  Enter average monthly spend (INR) per category. With{" "}
-                  <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-800">
-                    OPENAI_API_KEY
-                  </code>{" "}
-                  set, an AI picks and explains your top 3 from the best
-                  candidates; otherwise we use the numeric ranking only.
+                  Enter average monthly spend (INR) per category. We rank your top
+                  three; when AI is available, you also get short explanations.
                 </p>
               </div>
             </div>
@@ -1272,8 +1278,8 @@ export default function Home() {
                 <h2 className={sectionTitleClass}>Compare two cards</h2>
                 <p className={sectionLeadClass}>
                   Uses the same monthly spend as Match my spend when valid. The
-                  table is computed locally; with OpenAI configured, an AI summary
-                  loads below.
+                  table is computed from your inputs; when AI is available, a short
+                  summary appears below.
                 </p>
               </div>
             </div>
@@ -1385,15 +1391,8 @@ export default function Home() {
                   </div>
                 ) : !compareAiLoading && !compareAiError ? (
                   <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-                    Add{" "}
-                    <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">
-                      OPENAI_API_KEY
-                    </code>{" "}
-                    (and do not set{" "}
-                    <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">
-                      DISABLE_EXTERNAL_API_CALLS
-                    </code>
-                    ) to generate this summary.
+                    AI summary isn’t available in this environment. The comparison
+                    table below still reflects your spend.
                   </p>
                 ) : null}
               </div>
@@ -1574,8 +1573,8 @@ export default function Home() {
                   )}{" "}
                   {search.trim().length >= 2 ? (
                     <span className="text-zinc-500">
-                      With OpenAI configured, search results reorder by relevance
-                      after you pause typing.
+                      When AI is available, results can reorder by relevance after
+                      you pause typing.
                     </span>
                   ) : null}
                 </p>
@@ -1812,7 +1811,7 @@ export default function Home() {
                         Loading order…
                       </>
                     ) : !browseAiOrder ? (
-                      <>Needs OPENAI_API_KEY — using A–Z</>
+                      <>AI order unavailable — using A–Z</>
                     ) : null}
                   </span>
                 ) : null}
