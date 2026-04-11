@@ -1,4 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
@@ -8,6 +7,7 @@ import { SbiApplyLink } from "@/components/sbi-apply-link";
 import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
 import { isAxisBankCard } from "@/lib/cards/axisApply";
 import { isSbiCard } from "@/lib/cards/sbiApply";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { CardNetwork } from "@/lib/types/card";
 
 type CardDetailsPageProps = {
@@ -54,25 +54,13 @@ function formatPct(value: number | null | undefined): string {
 }
 
 async function getCardById(id: string): Promise<CreditCard | null> {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-      "Missing Supabase env vars. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
-    );
-  }
-
-  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  });
-
+  // Use the server client (service role when set), same as /api/cards — anon + RLS often blocks row reads.
+  const supabase = getSupabaseServerClient();
   const { data, error } = await supabase
     .from("credit_cards")
-    .select("*")
+    .select(
+      "id, card_name, bank, network, joining_fee, annual_fee, reward_type, reward_rate, lounge_access, best_for, key_benefits, last_updated, dining_reward, travel_reward, shopping_reward, fuel_reward, metadata"
+    )
     .eq("id", id)
     .maybeSingle();
 
@@ -80,7 +68,7 @@ async function getCardById(id: string): Promise<CreditCard | null> {
     throw new Error(error.message);
   }
 
-  return data;
+  return data as CreditCard | null;
 }
 
 export default async function CardDetailsPage({ params }: CardDetailsPageProps) {
