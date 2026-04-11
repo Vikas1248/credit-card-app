@@ -225,6 +225,45 @@ function Spinner({ className }: { className?: string }) {
   );
 }
 
+function FilterIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="7" y1="12" x2="17" y2="12" />
+      <line x1="10" y1="18" x2="14" y2="18" />
+    </svg>
+  );
+}
+
+function SortIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 6h8M4 12h5M4 18h2" />
+      <path d="M19 5v14M16 8l3-3 3 3M16 16l3 3 3-3" />
+    </svg>
+  );
+}
+
+const browseToolbarBtnClass =
+  "relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border text-zinc-700 shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:text-zinc-200";
+
 function SiteHeader({
   search,
   onSearchChange,
@@ -368,8 +407,31 @@ export default function Home() {
   const [filterNetwork, setFilterNetwork] = useState<"all" | CardNetwork>(
     "all"
   );
+  const [browseFilterOpen, setBrowseFilterOpen] = useState(false);
+  const [browseSortOpen, setBrowseSortOpen] = useState(false);
 
   const catalogNetworkLock = getOptionalCardNetworkFilter();
+
+  const browseFiltersActive = useMemo(
+    () =>
+      filterMinAnnual.trim() !== "" ||
+      filterMaxAnnual.trim() !== "" ||
+      filterMinJoining.trim() !== "" ||
+      filterMaxJoining.trim() !== "" ||
+      filterRewardType !== "all" ||
+      (!catalogNetworkLock && filterNetwork !== "all"),
+    [
+      filterMinAnnual,
+      filterMaxAnnual,
+      filterMinJoining,
+      filterMaxJoining,
+      filterRewardType,
+      filterNetwork,
+      catalogNetworkLock,
+    ]
+  );
+
+  const browseSortNonDefault = browseSort !== "name";
 
   const loadCards = async () => {
     try {
@@ -1533,200 +1595,267 @@ export default function Home() {
         <section id="browse" className={`scroll-mt-28 ${sectionShell}`}>
           <div className={sectionHeaderRowClass}>
             <div className={sectionHeaderAccentClass} aria-hidden />
-            <div className="min-w-0 flex-1">
-              <h2 className={sectionTitleClass}>All cards</h2>
-              <p className={sectionLeadClass}>
-                {textFilteredCards.length === cards.length && !search.trim() ? (
-                  <>
-                    {cards.length} {cards.length === 1 ? "card" : "cards"} in
-                    the catalog.
-                  </>
-                ) : (
-                  <>
-                    {textFilteredCards.length}{" "}
-                    {textFilteredCards.length === 1 ? "card" : "cards"}{" "}
-                    matching your criteria ({cards.length} in catalog).
-                  </>
-                )}{" "}
-                {search.trim().length >= 2 ? (
-                  <span className="text-zinc-500">
-                    With OpenAI configured, search results reorder by relevance
-                    after you pause typing.
-                  </span>
-                ) : null}
-              </p>
+            <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 flex-1">
+                <h2 className={sectionTitleClass}>All cards</h2>
+                <p className={sectionLeadClass}>
+                  {textFilteredCards.length === cards.length && !search.trim() ? (
+                    <>
+                      {cards.length} {cards.length === 1 ? "card" : "cards"} in
+                      the catalog.
+                    </>
+                  ) : (
+                    <>
+                      {textFilteredCards.length}{" "}
+                      {textFilteredCards.length === 1 ? "card" : "cards"}{" "}
+                      matching your criteria ({cards.length} in catalog).
+                    </>
+                  )}{" "}
+                  {search.trim().length >= 2 ? (
+                    <span className="text-zinc-500">
+                      With OpenAI configured, search results reorder by relevance
+                      after you pause typing.
+                    </span>
+                  ) : null}
+                </p>
+                <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                  Use the filter and sort icons to narrow the list and change
+                  order.
+                </p>
+              </div>
+              {!loading && !error && cards.length > 0 ? (
+                <div
+                  className="flex shrink-0 items-center gap-2"
+                  role="toolbar"
+                  aria-label="Browse tools"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBrowseFilterOpen((o) => !o);
+                      setBrowseSortOpen(false);
+                    }}
+                    className={`${browseToolbarBtnClass} border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800 ${
+                      browseFilterOpen
+                        ? "border-blue-400 ring-2 ring-blue-500/30 dark:border-blue-500/50"
+                        : ""
+                    }`}
+                    aria-expanded={browseFilterOpen}
+                    aria-controls="browse-filter-panel"
+                    title="Filter cards"
+                  >
+                    <FilterIcon className="h-5 w-5" />
+                    <span className="sr-only">Filter</span>
+                    {browseFiltersActive ? (
+                      <span
+                        className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-blue-500"
+                        aria-hidden
+                      />
+                    ) : null}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBrowseSortOpen((o) => !o);
+                      setBrowseFilterOpen(false);
+                    }}
+                    className={`${browseToolbarBtnClass} border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800 ${
+                      browseSortOpen
+                        ? "border-blue-400 ring-2 ring-blue-500/30 dark:border-blue-500/50"
+                        : ""
+                    }`}
+                    aria-expanded={browseSortOpen}
+                    aria-controls="browse-sort-panel"
+                    title="Sort cards"
+                  >
+                    <SortIcon className="h-5 w-5" />
+                    <span className="sr-only">Sort</span>
+                    {browseSortNonDefault ? (
+                      <span
+                        className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-indigo-500"
+                        aria-hidden
+                      />
+                    ) : null}
+                  </button>
+                </div>
+              ) : null}
             </div>
           </div>
 
-          {!loading && !error && cards.length > 0 ? (
-            <div className="mt-6 space-y-5 rounded-2xl border border-zinc-200 bg-zinc-50/60 p-5 dark:border-zinc-700 dark:bg-zinc-950/40">
-              <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                  Filter
-                </h3>
-                <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  <label className="block">
-                    <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                      Annual fee min (₹)
-                    </span>
-                    <input
-                      type="number"
-                      min={0}
-                      step={100}
-                      value={filterMinAnnual}
-                      onChange={(e) => setFilterMinAnnual(e.target.value)}
-                      placeholder="Any"
-                      className={inputClass}
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                      Annual fee max (₹)
-                    </span>
-                    <input
-                      type="number"
-                      min={0}
-                      step={100}
-                      value={filterMaxAnnual}
-                      onChange={(e) => setFilterMaxAnnual(e.target.value)}
-                      placeholder="Any"
-                      className={inputClass}
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                      Joining fee min (₹)
-                    </span>
-                    <input
-                      type="number"
-                      min={0}
-                      step={100}
-                      value={filterMinJoining}
-                      onChange={(e) => setFilterMinJoining(e.target.value)}
-                      placeholder="Any"
-                      className={inputClass}
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                      Joining fee max (₹)
-                    </span>
-                    <input
-                      type="number"
-                      min={0}
-                      step={100}
-                      value={filterMaxJoining}
-                      onChange={(e) => setFilterMaxJoining(e.target.value)}
-                      placeholder="Any"
-                      className={inputClass}
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                      Reward type
-                    </span>
-                    <select
-                      value={filterRewardType}
-                      onChange={(e) =>
-                        setFilterRewardType(
-                          e.target.value as "all" | "cashback" | "points"
-                        )
-                      }
-                      className={inputClass}
-                    >
-                      <option value="all">All</option>
-                      <option value="cashback">Cashback</option>
-                      <option value="points">Points</option>
-                    </select>
-                  </label>
-                  <label className="block">
-                    <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                      Card network
-                    </span>
-                    <select
-                      value={catalogNetworkLock ?? filterNetwork}
-                      onChange={(e) =>
-                        setFilterNetwork(e.target.value as "all" | CardNetwork)
-                      }
-                      disabled={Boolean(catalogNetworkLock)}
-                      className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-70`}
-                      title={
-                        catalogNetworkLock
-                          ? "Catalog is limited by NEXT_PUBLIC_CARD_NETWORK"
-                          : undefined
-                      }
-                    >
-                      <option value="all">All networks</option>
-                      <option value="Visa">Visa</option>
-                      <option value="Mastercard">Mastercard</option>
-                      <option value="Amex">Amex</option>
-                    </select>
-                    {catalogNetworkLock ? (
-                      <span className="mt-1 block text-[11px] text-zinc-500">
-                        Locked to {catalogNetworkLock} via env.
-                      </span>
-                    ) : null}
-                  </label>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFilterMinAnnual("");
-                    setFilterMaxAnnual("");
-                    setFilterMinJoining("");
-                    setFilterMaxJoining("");
-                    setFilterRewardType("all");
-                    setFilterNetwork("all");
-                  }}
-                  className="mt-4 text-xs font-semibold text-blue-600 underline-offset-2 hover:underline dark:text-blue-400"
-                >
-                  Clear filters
-                </button>
-              </div>
-
-              <div className="border-t border-zinc-200 pt-4 dark:border-zinc-700">
-                <label className="block sm:flex sm:items-end sm:gap-4">
-                  <div className="min-w-0 flex-1">
-                    <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                      Sort
-                    </span>
-                    <select
-                      value={browseSort}
-                      onChange={(e) =>
-                        setBrowseSort(e.target.value as BrowseSortMode)
-                      }
-                      className={inputClass}
-                    >
-                      <option value="name">Name (A–Z)</option>
-                      <option value="annual_asc">
-                        Annual fee (low → high)
-                      </option>
-                      <option value="annual_desc">
-                        Annual fee (high → low)
-                      </option>
-                      <option value="joining_asc">
-                        Joining fee (low → high)
-                      </option>
-                      <option value="joining_desc">
-                        Joining fee (high → low)
-                      </option>
-                      <option value="ai">AI curated browse</option>
-                    </select>
-                  </div>
-                  {browseSort === "ai" ? (
-                    <span className="mt-2 flex items-center gap-2 text-xs text-zinc-500 sm:mt-0 sm:pb-2.5">
-                      {browseAiLoading ? (
-                        <>
-                          <Spinner className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                          Loading order…
-                        </>
-                      ) : !browseAiOrder ? (
-                        <>Needs OPENAI_API_KEY — using A–Z</>
-                      ) : null}
+          {!loading && !error && cards.length > 0 && browseFilterOpen ? (
+            <div
+              id="browse-filter-panel"
+              className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50/60 p-5 dark:border-zinc-700 dark:bg-zinc-950/40"
+            >
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Filter by fees, reward type &amp; network
+              </h3>
+              <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <label className="block">
+                  <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                    Annual fee min (₹)
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    step={100}
+                    value={filterMinAnnual}
+                    onChange={(e) => setFilterMinAnnual(e.target.value)}
+                    placeholder="Any"
+                    className={inputClass}
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                    Annual fee max (₹)
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    step={100}
+                    value={filterMaxAnnual}
+                    onChange={(e) => setFilterMaxAnnual(e.target.value)}
+                    placeholder="Any"
+                    className={inputClass}
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                    Joining fee min (₹)
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    step={100}
+                    value={filterMinJoining}
+                    onChange={(e) => setFilterMinJoining(e.target.value)}
+                    placeholder="Any"
+                    className={inputClass}
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                    Joining fee max (₹)
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    step={100}
+                    value={filterMaxJoining}
+                    onChange={(e) => setFilterMaxJoining(e.target.value)}
+                    placeholder="Any"
+                    className={inputClass}
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                    Reward type
+                  </span>
+                  <select
+                    value={filterRewardType}
+                    onChange={(e) =>
+                      setFilterRewardType(
+                        e.target.value as "all" | "cashback" | "points"
+                      )
+                    }
+                    className={inputClass}
+                  >
+                    <option value="all">All</option>
+                    <option value="cashback">Cashback</option>
+                    <option value="points">Points</option>
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                    Card network
+                  </span>
+                  <select
+                    value={catalogNetworkLock ?? filterNetwork}
+                    onChange={(e) =>
+                      setFilterNetwork(e.target.value as "all" | CardNetwork)
+                    }
+                    disabled={Boolean(catalogNetworkLock)}
+                    className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-70`}
+                    title={
+                      catalogNetworkLock
+                        ? "Catalog is limited by NEXT_PUBLIC_CARD_NETWORK"
+                        : undefined
+                    }
+                  >
+                    <option value="all">All networks</option>
+                    <option value="Visa">Visa</option>
+                    <option value="Mastercard">Mastercard</option>
+                    <option value="Amex">Amex</option>
+                  </select>
+                  {catalogNetworkLock ? (
+                    <span className="mt-1 block text-[11px] text-zinc-500">
+                      Locked to {catalogNetworkLock} via env.
                     </span>
                   ) : null}
                 </label>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setFilterMinAnnual("");
+                  setFilterMaxAnnual("");
+                  setFilterMinJoining("");
+                  setFilterMaxJoining("");
+                  setFilterRewardType("all");
+                  setFilterNetwork("all");
+                }}
+                className="mt-4 text-xs font-semibold text-blue-600 underline-offset-2 hover:underline dark:text-blue-400"
+              >
+                Clear filters
+              </button>
+            </div>
+          ) : null}
+
+          {!loading && !error && cards.length > 0 && browseSortOpen ? (
+            <div
+              id="browse-sort-panel"
+              className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50/60 p-5 dark:border-zinc-700 dark:bg-zinc-950/40"
+            >
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Sort order
+              </h3>
+              <label className="mt-3 block sm:flex sm:items-end sm:gap-4">
+                <div className="min-w-0 flex-1">
+                  <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                    Order by
+                  </span>
+                  <select
+                    value={browseSort}
+                    onChange={(e) =>
+                      setBrowseSort(e.target.value as BrowseSortMode)
+                    }
+                    className={inputClass}
+                  >
+                    <option value="name">Name (A–Z)</option>
+                    <option value="annual_asc">Annual fee (low → high)</option>
+                    <option value="annual_desc">Annual fee (high → low)</option>
+                    <option value="joining_asc">
+                      Joining fee (low → high)
+                    </option>
+                    <option value="joining_desc">
+                      Joining fee (high → low)
+                    </option>
+                    <option value="ai">AI curated browse</option>
+                  </select>
+                </div>
+                {browseSort === "ai" ? (
+                  <span className="mt-2 flex items-center gap-2 text-xs text-zinc-500 sm:mt-0 sm:pb-2.5">
+                    {browseAiLoading ? (
+                      <>
+                        <Spinner className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                        Loading order…
+                      </>
+                    ) : !browseAiOrder ? (
+                      <>Needs OPENAI_API_KEY — using A–Z</>
+                    ) : null}
+                  </span>
+                ) : null}
+              </label>
             </div>
           ) : null}
 
