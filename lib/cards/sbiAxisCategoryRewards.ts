@@ -29,13 +29,13 @@ export function isSbiAxisCatalogBank(bank: string | null | undefined): boolean {
 
 const SLUG_PATTERNS: Record<CategorySlug, RegExp[]> = {
   dining: [
-    /swiggy|zomato|dining|restaurant|food|grocery|groceries|movie|movies|departmental|department\s*store|eazydiner/i,
+    /swiggy|zomato|dining|restaurant|food\s+delivery|food\s+apps|grocer|groceries|movie|movies|departmental|department\s*store|eazydiner|blinkit/i,
   ],
   travel: [
     /travel|flight|hotel|cleartrip|yatra|makemytrip|goibibo|indigo|irctc|rail|train|airline|uber|\bola\b/i,
   ],
   shopping: [
-    /amazon|flipkart|myntra|online|shopping|retail|utility|utilities|bill\s*pay|paytm|blinkit|partner\s*merchant/i,
+    /amazon|flipkart|myntra|online\s+shopping|shopping|retail|utility\s+bill|utilities|bill\s+pay|paytm|blinkit|partner\s*merchant|airtel\s+thanks/i,
   ],
   fuel: [
     /fuel|petrol|diesel|iocl|bpcl|hpcl|indian\s*oil|bpcl|octane|mobility/i,
@@ -154,6 +154,31 @@ function slugMatchesCorpus(slug: CategorySlug, corpus: string): boolean {
   return SLUG_PATTERNS[slug].some((re) => re.test(corpus));
 }
 
+/**
+ * Cashback cards often list 25% / 10% / 1% in one block; dining should not inherit
+ * the telecom-only top tier (e.g. Airtel Axis 25% is for Airtel Thanks, not restaurants).
+ */
+function diningCashbackTierPct(corpus: string): number | null {
+  const t = corpus.replace(/\s+/g, " ");
+  const patterns = [
+    /(\d+(?:\.\d+)?)\s*%\s*(?:value-back|value\s*back|cashback)[^.\n]{0,120}(?:food\s+delivery|Zomato|Swiggy|Blinkit)/i,
+    /(\d+(?:\.\d+)?)\s*%\s*on\s*utilities\s*&\s*food\s+apps/i,
+    /(\d+(?:\.\d+)?)\s*%\s*[^\n]{0,50}utilities\s*&\s*food\s+apps/i,
+    /(\d+(?:\.\d+)?)\s*%\s*value-back\s+on\s+food\s+delivery/i,
+  ];
+  let best: number | null = null;
+  for (const re of patterns) {
+    const m = t.match(re);
+    if (m) {
+      const v = Number(m[1]);
+      if (Number.isFinite(v) && v > 0 && v <= MAX_REASONABLE_PCT) {
+        best = best == null ? v : Math.max(best, v);
+      }
+    }
+  }
+  return best;
+}
+
 /** e.g. 2 BluChips per ₹200 vs 1 per ₹200, or 6 Travel Credits per ₹200 vs 2 per ₹200. */
 function parsePointsPerRupeeBands(
   corpus: string,
@@ -264,6 +289,20 @@ export function deriveSbiAxisCategoryRange(
   if (basePct != null) {
     floorPct = Math.min(floorPct, basePct);
     ceilPct = Math.max(ceilPct, basePct);
+  }
+
+  if (
+    slug === "dining" &&
+    rewardTypeNorm.includes("cashback") &&
+    hints.length >= 2
+  ) {
+    const diningCap = diningCashbackTierPct(corpus);
+    if (diningCap != null) {
+      return {
+        min: roundDisplayPct(floorPct),
+        max: roundDisplayPct(Math.min(ceilPct, diningCap)),
+      };
+    }
   }
 
   if (slug === "fuel") {
