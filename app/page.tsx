@@ -2,9 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
 import { CreditCardThumbFill } from "@/components/credit-card-thumb";
+import { SbiApplyLink } from "@/components/sbi-apply-link";
+import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
 import { isAxisBankCard } from "@/lib/cards/axisApply";
+import { isSbiCard } from "@/lib/cards/sbiApply";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { rewardCalculator } from "@/lib/recommend/rewardCalculator";
 import type { CardNetwork } from "@/lib/types/card";
@@ -658,6 +662,15 @@ export default function Home() {
                               {isAxisBankCard(card.bank) ? (
                                 <AxisApplyLink fullWidth />
                               ) : null}
+                              {isAmexPlatinumReserveCard(
+                                card.card_name,
+                                card.bank
+                              ) ? (
+                                <AmexPlatinumReserveApplyLink fullWidth />
+                              ) : null}
+                              {isSbiCard(card.bank) ? (
+                                <SbiApplyLink fullWidth />
+                              ) : null}
                               <Link
                                 href={`/card/${card.id}`}
                                 className="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 dark:hover:bg-blue-500"
@@ -909,6 +922,15 @@ export default function Home() {
                         {isAxisBankCard(card.bank) ? (
                           <AxisApplyLink fullWidth size="sm" />
                         ) : null}
+                        {isAmexPlatinumReserveCard(
+                          card.card_name,
+                          card.bank
+                        ) ? (
+                          <AmexPlatinumReserveApplyLink fullWidth size="sm" />
+                        ) : null}
+                        {isSbiCard(card.bank) ? (
+                          <SbiApplyLink fullWidth size="sm" />
+                        ) : null}
                       </div>
                       </div>
                     </article>
@@ -1023,6 +1045,18 @@ export default function Home() {
                       {isAxisBankCard(compareLeft.bank) ? (
                         <AxisApplyLink size="sm" className="mt-2" />
                       ) : null}
+                      {isAmexPlatinumReserveCard(
+                        compareLeft.card_name,
+                        compareLeft.bank
+                      ) ? (
+                        <AmexPlatinumReserveApplyLink
+                          size="sm"
+                          className="mt-2"
+                        />
+                      ) : null}
+                      {isSbiCard(compareLeft.bank) ? (
+                        <SbiApplyLink size="sm" className="mt-2" />
+                      ) : null}
                     </th>
                     <th className="px-4 py-3 font-semibold text-zinc-700 dark:text-zinc-200">
                       <Link
@@ -1036,6 +1070,18 @@ export default function Home() {
                       </span>
                       {isAxisBankCard(compareRight.bank) ? (
                         <AxisApplyLink size="sm" className="mt-2" />
+                      ) : null}
+                      {isAmexPlatinumReserveCard(
+                        compareRight.card_name,
+                        compareRight.bank
+                      ) ? (
+                        <AmexPlatinumReserveApplyLink
+                          size="sm"
+                          className="mt-2"
+                        />
+                      ) : null}
+                      {isSbiCard(compareRight.bank) ? (
+                        <SbiApplyLink size="sm" className="mt-2" />
                       ) : null}
                     </th>
                   </tr>
@@ -1228,6 +1274,15 @@ export default function Home() {
                   <div className="mt-auto flex flex-col gap-2">
                     {isAxisBankCard(card.bank) ? (
                       <AxisApplyLink fullWidth />
+                    ) : null}
+                    {isAmexPlatinumReserveCard(
+                      card.card_name,
+                      card.bank
+                    ) ? (
+                      <AmexPlatinumReserveApplyLink fullWidth />
+                    ) : null}
+                    {isSbiCard(card.bank) ? (
+                      <SbiApplyLink fullWidth />
                     ) : null}
                     <Link
                       href={`/card/${card.id}`}

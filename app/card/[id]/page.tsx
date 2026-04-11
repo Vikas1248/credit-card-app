@@ -1,9 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
 import { CreditCardThumbFill } from "@/components/credit-card-thumb";
+import { SbiApplyLink } from "@/components/sbi-apply-link";
+import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
 import { isAxisBankCard } from "@/lib/cards/axisApply";
+import { isSbiCard } from "@/lib/cards/sbiApply";
 import type { CardNetwork } from "@/lib/types/card";
 
 type CardDetailsPageProps = {
@@ -123,6 +127,26 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 Opens Axis Bank in a new tab (referral). Cardwise is not the
                 lender; terms are set by the bank.
+              </p>
+            </div>
+          ) : null}
+
+          {isAmexPlatinumReserveCard(card.card_name, card.bank) ? (
+            <div className="mb-6 flex flex-col gap-2">
+              <AmexPlatinumReserveApplyLink className="sm:self-start" />
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Opens American Express in a new tab (referral). Cardwise is not
+                the issuer; approval and terms are decided by American Express.
+              </p>
+            </div>
+          ) : null}
+
+          {isSbiCard(card.bank) ? (
+            <div className="mb-6 flex flex-col gap-2">
+              <SbiApplyLink className="sm:self-start" />
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Opens SBI Card in a new tab (referral). Cardwise is not the
+                issuer; approval and terms are decided by SBI Card.
               </p>
             </div>
           ) : null}

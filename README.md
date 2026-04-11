@@ -19,8 +19,9 @@ Bundled datasets for imports:
 
 - `data/credit_cards_amex_refined.json`
 - `data/credit_cards_axis_refined.json`
+- `data/credit_cards_sbi_refined.json` (replace with your own “SBI Credit Card data” export if needed)
 
-Use `import_cards_to_supabase.py` (optional `--purge-axis` before reloading Axis) and `upload_cards_to_gcs.py` with your environment variables when syncing to Supabase or GCS.
+Use `import_cards_to_supabase.py` with optional `--purge-axis`, `--purge-sbi`, or `sql/delete_sbi_bank_cards.sql`, plus `upload_cards_to_gcs.py` when syncing to Supabase or GCS.
 
 ### Why do I see more cards than in my JSON?
 
