@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
+import { FeaturedCardsCarousel } from "@/components/featured-cards-carousel";
 import { SbiApplyLink } from "@/components/sbi-apply-link";
 import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
 import { isAxisBankCard } from "@/lib/cards/axisApply";
@@ -922,6 +923,16 @@ export default function Home() {
     return featuredCarouselItems;
   }, [featuredFromAi, featuredCarouselItems]);
 
+  const featuredCarouselSlides = useMemo(() => {
+    return displayFeaturedCarouselItems.map(({ card, tag }) => {
+      const topReward = topCategoryReward(card);
+      const rewardLine = topReward
+        ? `${formatPct(topReward.value)} ${categoryLabel(topReward.category)}`
+        : (card.reward_rate ?? "—").slice(0, 80);
+      return { card, tag, rewardLine };
+    });
+  }, [displayFeaturedCarouselItems]);
+
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <SiteHeader
@@ -1000,70 +1011,17 @@ export default function Home() {
                   Featured picks
                 </h2>
                 <p className={sectionLeadClass}>
-                  Curated carousel: with OpenAI enabled we refresh picks hourly from
-                  your catalog; otherwise one highlight per category (max 5).
+                  Full-width spotlight carousel inspired by issuer homepages: one
+                  featured card at a time with a large plastic preview, arrows, and
+                  dots. With OpenAI enabled picks refresh hourly; otherwise up to
+                  five category highlights.
                 </p>
               </div>
             </div>
-            {loading ? (
-              <div className="mt-8 flex gap-4 overflow-hidden pb-2">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-44 w-72 shrink-0 animate-pulse rounded-2xl bg-zinc-200/80 dark:bg-zinc-800"
-                  />
-                ))}
-              </div>
-            ) : displayFeaturedCarouselItems.length === 0 ? null : (
-              <div className="mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-3 pt-1 [-ms-overflow-style:none] [scrollbar-width:thin] sm:gap-6 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-300 dark:[&::-webkit-scrollbar-thumb]:bg-zinc-600">
-                {displayFeaturedCarouselItems.map(({ card, tag }, idx) => {
-                  const topReward = topCategoryReward(card);
-                  const rewardLine = topReward
-                    ? `${formatPct(topReward.value)} ${categoryLabel(topReward.category)}`
-                    : (card.reward_rate ?? "—").slice(0, 80);
-                  return (
-                    <article
-                      key={card.id}
-                      className={`w-[min(100%,320px)] shrink-0 snap-center rounded-2xl border p-6 shadow-md ${issuerBrandTileClass(card.bank, card.network)} ${
-                        idx === 0
-                          ? "ring-2 ring-blue-400/35 dark:ring-blue-500/25"
-                          : ""
-                      }`}
-                    >
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                        {tag}
-                      </p>
-                      <h3 className="mt-2 font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
-                        <Link
-                          href={`/card/${card.id}`}
-                          className="hover:text-blue-600 dark:hover:text-blue-400"
-                        >
-                          {card.card_name}
-                        </Link>
-                      </h3>
-                      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                        {card.bank} · {card.network}
-                      </p>
-                      <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                        {card.best_for ?? card.key_benefits ?? "—"}
-                      </p>
-                      <p className="mt-4 text-xs font-medium text-emerald-700 dark:text-emerald-400">
-                        {rewardLine}
-                      </p>
-                      <p className="mt-1 text-xs text-zinc-500">
-                        Fee {formatInr(card.annual_fee)} / yr
-                      </p>
-                      <Link
-                        href={`/card/${card.id}`}
-                        className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-zinc-900 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
-                      >
-                        View details
-                      </Link>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
+            <FeaturedCardsCarousel
+              items={featuredCarouselSlides}
+              loading={loading}
+            />
           </section>
 
           <section id="match" className={`scroll-mt-28 ${sectionShell}`}>
