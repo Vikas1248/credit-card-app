@@ -13,7 +13,6 @@ import { isSbiCard } from "@/lib/cards/sbiApply";
 import { SpendCategoryIcon } from "@/components/spend-category-icons";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
-import { rewardCalculator } from "@/lib/recommend/rewardCalculator";
 import { SITE_ABOUT_LEAD, SITE_NAME } from "@/lib/site";
 import { SPEND_CATEGORIES } from "@/lib/spendCategories";
 import type { CardNetwork } from "@/lib/types/card";
@@ -114,15 +113,6 @@ function topCategoryReward(card: CreditCard): {
 
 function categoryLabel(key: keyof RewardBreakdown): string {
   return CATEGORY_LABELS.find((c) => c.key === key)?.label ?? key;
-}
-
-function cardRates(card: CreditCard) {
-  return {
-    dining_reward: card.dining_reward,
-    travel_reward: card.travel_reward,
-    shopping_reward: card.shopping_reward,
-    fuel_reward: card.fuel_reward,
-  };
 }
 
 function categoryPct(
@@ -271,7 +261,7 @@ function SiteHeader() {
                 ["#search", "Search"],
                 ["#categories", "Categories"],
                 ["#featured", "Featured"],
-                ["#match", "Match spend"],
+                ["#spend-picks", "Your spend"],
                 ["#compare", "Compare"],
               ] as const
             ).map(([href, label]) => (
@@ -430,6 +420,7 @@ export default function Home() {
 
       const response = await fetch("/api/cards/recommend", {
         method: "POST",
+        cache: "no-store",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ dining, travel, shopping, fuel }),
       });
@@ -567,19 +558,6 @@ export default function Home() {
     () => cards.find((c) => c.id === compareIdB) ?? null,
     [cards, compareIdB]
   );
-
-  const comparisonMetrics = useMemo(() => {
-    if (!parsedSpendForCompare || !compareLeft || !compareRight) return null;
-    const left = rewardCalculator.computeYearlyRewards(
-      parsedSpendForCompare,
-      cardRates(compareLeft)
-    );
-    const right = rewardCalculator.computeYearlyRewards(
-      parsedSpendForCompare,
-      cardRates(compareRight)
-    );
-    return { left, right };
-  }, [parsedSpendForCompare, compareLeft, compareRight]);
 
   useEffect(() => {
     if (!compareLeft || !compareRight) {
@@ -807,14 +785,32 @@ export default function Home() {
             />
           </section>
 
-          <section id="match" className={`scroll-mt-28 ${sectionShell}`}>
+          <section
+            id="spend-picks"
+            className={`scroll-mt-28 ${sectionShell}`}
+            aria-labelledby="spend-picks-heading"
+          >
             <div className={sectionHeaderRowClass}>
               <div className={sectionHeaderAccentClass} aria-hidden />
               <div className="min-w-0 flex-1">
-                <h2 className={sectionTitleClass}>Match my spend</h2>
+                <h2 id="spend-picks-heading" className={sectionTitleClass}>
+                  Top cards for your spend
+                </h2>
                 <p className={sectionLeadClass}>
-                  Enter average monthly spend (INR) per category. We rank your top
-                  three; when AI is available, you also get short explanations.
+                  Enter average monthly spend (₹) per category. We estimate each
+                  card’s yearly rewards from its category rates and rank the top
+                  three.{" "}
+                  <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                    If you multiply every box by the same amount, the order usually
+                    stays the same
+                  </span>
+                  —change{" "}
+                  <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                    how you split spend across categories
+                  </span>{" "}
+                  to see different winners. With AI available, we may adjust those
+                  three picks and add short explanations; without it, ranking is
+                  numeric only.
                 </p>
               </div>
             </div>
@@ -863,7 +859,7 @@ export default function Home() {
                     Calculating picks…
                   </>
                 ) : (
-                  "Show top 3 cards"
+                  "Update top 3 for this spend"
                 )}
               </button>
             </div>
@@ -1057,9 +1053,13 @@ export default function Home() {
               <div className="min-w-0 flex-1">
                 <h2 className={sectionTitleClass}>Compare two cards</h2>
                 <p className={sectionLeadClass}>
-                  Uses the same monthly spend as Match my spend when valid. The
-                  table is computed from your inputs; when AI is available, a short
-                  summary appears below.
+                  Side-by-side fees, reward terms, and category earn rates (same
+                  fields as each card’s detail page). When AI is available, a short
+                  narrative summary can appear above; if you’ve entered spend in{" "}
+                  <a href="#spend-picks" className="font-medium underline">
+                    Top cards for your spend
+                  </a>
+                  , the AI uses it for context.
                 </p>
               </div>
             </div>
@@ -1123,16 +1123,6 @@ export default function Home() {
               </label>
             </div>
 
-            {!parsedSpendForCompare ? (
-              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
-                Enter valid monthly spend amounts in{" "}
-                <a href="#match" className="font-semibold underline">
-                  Match my spend
-                </a>{" "}
-                to estimate comparison rewards.
-              </div>
-            ) : null}
-
             {compareLeft && compareRight ? (
               <div className="mt-6 rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-5 dark:border-indigo-900/40 dark:bg-indigo-950/25">
                 <div className="flex items-center gap-2">
@@ -1171,20 +1161,20 @@ export default function Home() {
                   </div>
                 ) : !compareAiLoading && !compareAiError ? (
                   <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-                    AI summary isn’t available in this environment. The comparison
-                    table below still reflects your spend.
+                    AI summary isn’t available in this environment. Use the
+                    comparison table below for fees, rewards, and category rates.
                   </p>
                 ) : null}
               </div>
             ) : null}
 
-            {compareLeft && compareRight && comparisonMetrics ? (
+            {compareLeft && compareRight ? (
               <div className="mt-6 overflow-hidden rounded-xl border border-zinc-200 shadow-sm dark:border-zinc-700">
                 <table className="w-full min-w-[520px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
-                    <th className="px-4 py-3 font-semibold text-zinc-700 dark:text-zinc-200">
-                      Metric
+                    <th className="w-[28%] px-4 py-3 font-semibold text-zinc-700 dark:text-zinc-200">
+                      Details
                     </th>
                     <th className="px-4 py-3 font-semibold text-zinc-700 dark:text-zinc-200">
                       <Link
@@ -1241,6 +1231,32 @@ export default function Home() {
                   </tr>
                 </thead>
                 <tbody className="text-zinc-700 dark:text-zinc-300">
+                  <tr className="border-b border-zinc-100 bg-zinc-50/80 dark:border-zinc-800 dark:bg-zinc-900/50">
+                    <td
+                      colSpan={3}
+                      className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-zinc-500"
+                    >
+                      Fees &amp; rewards
+                    </td>
+                  </tr>
+                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                    <td className="px-4 py-2.5 font-medium text-zinc-600 dark:text-zinc-400">
+                      Network
+                    </td>
+                    <td className="px-4 py-2.5">{compareLeft.network}</td>
+                    <td className="px-4 py-2.5">{compareRight.network}</td>
+                  </tr>
+                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                    <td className="px-4 py-2.5 font-medium text-zinc-600 dark:text-zinc-400">
+                      Joining fee
+                    </td>
+                    <td className="px-4 py-2.5 tabular-nums">
+                      {formatInr(compareLeft.joining_fee)}
+                    </td>
+                    <td className="px-4 py-2.5 tabular-nums">
+                      {formatInr(compareRight.joining_fee)}
+                    </td>
+                  </tr>
                   <tr className="border-b border-zinc-100 dark:border-zinc-800">
                     <td className="px-4 py-2.5 font-medium text-zinc-600 dark:text-zinc-400">
                       Annual fee
@@ -1252,12 +1268,59 @@ export default function Home() {
                       {formatInr(compareRight.annual_fee)}
                     </td>
                   </tr>
+                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                    <td className="px-4 py-2.5 font-medium text-zinc-600 dark:text-zinc-400">
+                      Reward type
+                    </td>
+                    <td className="px-4 py-2.5 capitalize">
+                      {compareLeft.reward_type}
+                    </td>
+                    <td className="px-4 py-2.5 capitalize">
+                      {compareRight.reward_type}
+                    </td>
+                  </tr>
+                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                    <td className="px-4 py-2.5 align-top font-medium text-zinc-600 dark:text-zinc-400">
+                      Reward rate
+                    </td>
+                    <td className="px-4 py-2.5 align-top text-sm leading-relaxed">
+                      {compareLeft.reward_rate ?? "—"}
+                    </td>
+                    <td className="px-4 py-2.5 align-top text-sm leading-relaxed">
+                      {compareRight.reward_rate ?? "—"}
+                    </td>
+                  </tr>
+                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                    <td className="px-4 py-2.5 align-top font-medium text-zinc-600 dark:text-zinc-400">
+                      Lounge access
+                    </td>
+                    <td className="px-4 py-2.5 align-top text-sm leading-relaxed">
+                      {compareLeft.lounge_access ?? "—"}
+                    </td>
+                    <td className="px-4 py-2.5 align-top text-sm leading-relaxed">
+                      {compareRight.lounge_access ?? "—"}
+                    </td>
+                  </tr>
+                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                    <td className="px-4 py-2.5 align-top font-medium text-zinc-600 dark:text-zinc-400">
+                      Best for
+                    </td>
+                    <td className="px-4 py-2.5 align-top text-sm leading-relaxed">
+                      {compareLeft.best_for ?? "—"}
+                    </td>
+                    <td className="px-4 py-2.5 align-top text-sm leading-relaxed">
+                      {compareRight.best_for ?? "—"}
+                    </td>
+                  </tr>
                   <tr className="border-b border-zinc-100 bg-zinc-50/80 dark:border-zinc-800 dark:bg-zinc-900/50">
                     <td
                       colSpan={3}
                       className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-zinc-500"
                     >
-                      Reward % (category spend)
+                      Category earn rates
+                      <span className="mt-0.5 block font-normal normal-case text-[11px] leading-snug text-zinc-500 dark:text-zinc-400">
+                        Approximate % of spend per category (where available).
+                      </span>
                     </td>
                   </tr>
                   {CATEGORY_LABELS.map(({ key, label }) => (
@@ -1276,56 +1339,10 @@ export default function Home() {
                       </td>
                     </tr>
                   ))}
-                  <tr className="border-b border-zinc-100 bg-zinc-50/80 dark:border-zinc-800 dark:bg-zinc-900/50">
-                    <td
-                      colSpan={3}
-                      className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-zinc-500"
-                    >
-                      Estimated reward (your spend)
-                    </td>
-                  </tr>
-                  {CATEGORY_LABELS.map(({ key, label }) => {
-                    const lm = comparisonMetrics.left.breakdown[key] / 12;
-                    const rm = comparisonMetrics.right.breakdown[key] / 12;
-                    return (
-                      <tr
-                        key={`${key}-inr`}
-                        className="border-b border-zinc-100 dark:border-zinc-800"
-                      >
-                        <td className="px-4 py-2 pl-6 text-zinc-600 dark:text-zinc-400">
-                          {label} / month
-                        </td>
-                        <td className="px-4 py-2 tabular-nums">{formatInr(lm)}</td>
-                        <td className="px-4 py-2 tabular-nums">{formatInr(rm)}</td>
-                      </tr>
-                    );
-                  })}
-                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
-                    <td className="px-4 py-2.5 font-medium text-zinc-600 dark:text-zinc-400">
-                      Total / month
-                    </td>
-                    <td className="px-4 py-2.5 tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
-                      {formatInr(comparisonMetrics.left.yearlyTotal / 12)}
-                    </td>
-                    <td className="px-4 py-2.5 tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
-                      {formatInr(comparisonMetrics.right.yearlyTotal / 12)}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2.5 font-medium text-zinc-600 dark:text-zinc-400">
-                      Total / year
-                    </td>
-                    <td className="px-4 py-2.5 tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
-                      {formatInr(comparisonMetrics.left.yearlyTotal)}
-                    </td>
-                    <td className="px-4 py-2.5 tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
-                      {formatInr(comparisonMetrics.right.yearlyTotal)}
-                    </td>
-                  </tr>
                 </tbody>
               </table>
             </div>
-          ) : parsedSpendForCompare && (compareIdA || compareIdB) ? (
+          ) : compareIdA || compareIdB ? (
             <p className="mt-4 text-sm text-zinc-500">
               Select both cards to see the comparison.
             </p>
