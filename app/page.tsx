@@ -10,6 +10,10 @@ import { isAxisBankCard } from "@/lib/cards/axisApply";
 import { isSbiCard } from "@/lib/cards/sbiApply";
 import { SpendCategoryIcon } from "@/components/spend-category-icons";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
+import {
+  networkPillClass,
+  networkRailClass,
+} from "@/lib/cards/networkVisual";
 import { rewardCalculator } from "@/lib/recommend/rewardCalculator";
 import { SPEND_CATEGORIES } from "@/lib/spendCategories";
 import type { CardNetwork } from "@/lib/types/card";
@@ -619,12 +623,17 @@ export default function Home() {
                   return (
                     <article
                       key={card.id}
-                      className={`w-[min(100%,320px)] shrink-0 snap-center rounded-2xl border bg-white p-6 shadow-sm dark:bg-zinc-900 ${
+                      className={`flex w-[min(100%,320px)] shrink-0 snap-center overflow-hidden rounded-2xl border bg-white shadow-sm dark:bg-zinc-900 ${
                         idx === 0
                           ? "border-blue-200 ring-1 ring-blue-100 dark:border-blue-900/50 dark:ring-blue-900/30"
                           : "border-zinc-200/90 dark:border-zinc-700"
                       }`}
                     >
+                      <div
+                        className={`w-1.5 shrink-0 sm:w-2 ${networkRailClass(card.network)}`}
+                        aria-hidden
+                      />
+                      <div className="min-w-0 flex-1 p-6">
                       <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
                         {tag}
                       </p>
@@ -636,8 +645,13 @@ export default function Home() {
                           {card.card_name}
                         </Link>
                       </h3>
-                      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                        {card.bank} · {card.network}
+                      <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+                        <span>{card.bank}</span>
+                        <span
+                          className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${networkPillClass(card.network)}`}
+                        >
+                          {card.network}
+                        </span>
                       </p>
                       <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
                         {card.best_for ?? card.key_benefits ?? "—"}
@@ -654,6 +668,7 @@ export default function Home() {
                       >
                         View details
                       </Link>
+                      </div>
                     </article>
                   );
                 })}
@@ -745,13 +760,17 @@ export default function Home() {
                   return (
                     <article
                       key={card.id}
-                      className={`flex flex-col rounded-2xl border bg-white p-6 shadow-sm dark:bg-zinc-950 ${
+                      className={`flex overflow-hidden rounded-2xl border bg-white shadow-sm dark:bg-zinc-950 ${
                         isBest
                           ? "border-emerald-400 ring-1 ring-emerald-500/20 dark:border-emerald-600"
                           : "border-zinc-200 dark:border-zinc-700"
                       }`}
                     >
-                      <div className="flex flex-col">
+                      <div
+                        className={`w-1.5 shrink-0 sm:w-2 ${networkRailClass(card.network)}`}
+                        aria-hidden
+                      />
+                      <div className="flex min-w-0 flex-1 flex-col p-6">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                           #{index + 1}
@@ -770,8 +789,13 @@ export default function Home() {
                           {card.card_name}
                         </Link>
                       </h3>
-                      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                        {card.bank} · {card.network}
+                      <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+                        <span>{card.bank}</span>
+                        <span
+                          className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${networkPillClass(card.network)}`}
+                        >
+                          {card.network}
+                        </span>
                       </p>
 
                       <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
@@ -1196,10 +1220,19 @@ export default function Home() {
               )}
             </div>
           ) : (
-            <ul className="mt-8 divide-y divide-zinc-100 dark:divide-zinc-800">
-              {filteredCards.map((card) => (
-                <li key={card.id} className="py-6 first:pt-2">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <ul className="mt-8 overflow-hidden rounded-2xl border border-zinc-200/90 dark:border-zinc-700">
+              {filteredCards.map((card, rowIndex) => (
+                <li
+                  key={card.id}
+                  className="flex border-b border-zinc-100 last:border-b-0 dark:border-zinc-800"
+                >
+                  <div
+                    className={`w-1.5 shrink-0 self-stretch ${networkRailClass(card.network)}`}
+                    aria-hidden
+                  />
+                  <div
+                    className={`flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between ${rowIndex === 0 ? "pb-6 pl-4 pr-4 pt-2 sm:px-5" : "p-6 sm:px-5"}`}
+                  >
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
@@ -1210,7 +1243,9 @@ export default function Home() {
                             {card.card_name}
                           </Link>
                         </h3>
-                        <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                        <span
+                          className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${networkPillClass(card.network)}`}
+                        >
                           {card.network}
                         </span>
                       </div>

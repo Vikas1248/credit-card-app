@@ -4,6 +4,10 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import {
+  networkPillClass,
+  networkRailClass,
+} from "@/lib/cards/networkVisual";
+import {
   compareCardsBySpendCategory,
   rewardPctForSpendCategory,
   spendCategoryBySlug,
@@ -146,12 +150,21 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
             No cards in the catalog yet.
           </p>
         ) : (
-          <ul className="divide-y divide-zinc-100 rounded-2xl border border-zinc-200/80 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900/50">
-            {sorted.map((card) => {
+          <ul className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white dark:border-zinc-800 dark:bg-zinc-900/50">
+            {sorted.map((card, rowIndex) => {
               const pct = rewardPctForSpendCategory(card, slug);
               return (
-                <li key={card.id} className="px-5 py-5 sm:px-6">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <li
+                  key={card.id}
+                  className="flex border-b border-zinc-100 last:border-b-0 dark:border-zinc-800"
+                >
+                  <div
+                    className={`w-1.5 shrink-0 self-stretch ${networkRailClass(card.network)}`}
+                    aria-hidden
+                  />
+                  <div
+                    className={`flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between ${rowIndex === 0 ? "px-5 pb-5 pt-4 sm:px-6" : "p-5 sm:p-6"}`}
+                  >
                     <div className="min-w-0 flex-1">
                       <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
                         <Link
@@ -161,8 +174,13 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                           {card.card_name}
                         </Link>
                       </h2>
-                      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                        {card.bank} · {card.network}
+                      <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+                        <span>{card.bank}</span>
+                        <span
+                          className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${networkPillClass(card.network)}`}
+                        >
+                          {card.network}
+                        </span>
                       </p>
                       <p className="mt-2 line-clamp-2 text-sm text-zinc-600 dark:text-zinc-300">
                         {card.best_for ?? card.reward_rate ?? "—"}
@@ -183,7 +201,7 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                       </p>
                       <Link
                         href={`/card/${card.id}`}
-                        className="inline-flex rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                        className="inline-flex min-h-10 w-full items-center justify-center rounded-xl border-2 border-indigo-400/85 bg-indigo-50 px-4 text-sm font-semibold text-indigo-950 shadow-sm transition hover:border-indigo-500 hover:bg-indigo-100 dark:border-indigo-400/55 dark:bg-indigo-950/45 dark:text-indigo-100 dark:hover:bg-indigo-900/55 sm:w-auto"
                       >
                         View details
                       </Link>
