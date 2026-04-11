@@ -1,12 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
-import { AxisApplyLink } from "@/components/axis-apply-link";
-import { SbiApplyLink } from "@/components/sbi-apply-link";
-import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
-import { isAxisBankCard } from "@/lib/cards/axisApply";
-import { isSbiCard } from "@/lib/cards/sbiApply";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { CardNetwork } from "@/lib/types/card";
 
@@ -43,6 +37,9 @@ const HIDDEN_METADATA_KEYS = new Set([
   "ai_cons",
   "ai_not_ideal_for",
   "ai_pros",
+  "affiliate_link",
+  "referral_link",
+  "apply_link",
 ]);
 
 function filterPublicMetadata(
@@ -61,7 +58,6 @@ function metadataHasPublicEntries(
 }
 
 const METADATA_LABELS: Record<string, string> = {
-  affiliate_link: "Apply / referral link",
   eligibility: "Eligibility",
   reward_conversion: "Reward conversion",
   welcome_offer: "Welcome offer",
@@ -268,36 +264,6 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
           </header>
 
           <div className="pt-10">
-          {isAxisBankCard(card.bank) ? (
-            <div className="mb-8 flex flex-col gap-2">
-              <AxisApplyLink className="sm:self-start" />
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Opens Axis Bank in a new tab (referral). Cardwise is not the
-                lender; terms are set by the bank.
-              </p>
-            </div>
-          ) : null}
-
-          {isAmexPlatinumReserveCard(card.card_name, card.bank) ? (
-            <div className="mb-8 flex flex-col gap-2">
-              <AmexPlatinumReserveApplyLink className="sm:self-start" />
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Opens American Express in a new tab (referral). Cardwise is not
-                the issuer; approval and terms are decided by American Express.
-              </p>
-            </div>
-          ) : null}
-
-          {isSbiCard(card.bank) ? (
-            <div className="mb-8 flex flex-col gap-2">
-              <SbiApplyLink className="sm:self-start" />
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Opens SBI Card in a new tab (referral). Cardwise is not the
-                issuer; approval and terms are decided by SBI Card.
-              </p>
-            </div>
-          ) : null}
-
           <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
             <section>
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
