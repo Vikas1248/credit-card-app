@@ -6,7 +6,9 @@ import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import {
   compareCardsBySpendCategory,
+  formatCategoryRewardPctRange,
   rewardPctForSpendCategory,
+  rewardPctRangeForSpendCategory,
   spendCategoryBySlug,
   type SpendCategorySlug,
 } from "@/lib/spendCategories";
@@ -30,6 +32,7 @@ type CreditCard = {
   travel_reward: number | null;
   shopping_reward: number | null;
   fuel_reward: number | null;
+  metadata: Record<string, unknown> | null;
 };
 
 function formatInr(value: number): string {
@@ -39,11 +42,6 @@ function formatInr(value: number): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(value);
-}
-
-function formatPct(value: number | null): string {
-  if (value == null || !Number.isFinite(value)) return "—";
-  return `${value}%`;
 }
 
 export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
@@ -303,7 +301,7 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
         ) : (
           <ul className="space-y-4">
             {sorted.map((card) => {
-              const pct = rewardPctForSpendCategory(card, slug);
+              const range = rewardPctRangeForSpendCategory(card, slug);
               return (
                 <li
                   key={card.id}
@@ -332,7 +330,7 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                           {meta.label} earn
                         </p>
                         <p className="text-lg font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
-                          {formatPct(pct)}
+                          {formatCategoryRewardPctRange(range)}
                         </p>
                       </div>
                       <p className="text-xs text-zinc-500">

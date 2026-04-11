@@ -4,10 +4,13 @@ import {
   rewardCalculator,
   type SpendByCategory,
 } from "@/lib/recommend/rewardCalculator";
+import {
+  rewardPctMidpointForSpendCategory,
+} from "@/lib/spendCategories";
 import type { CardNetwork } from "@/lib/types/card";
 
 const SELECT_FIELDS =
-  "id, card_name, bank, network, annual_fee, reward_type, reward_rate, lounge_access, best_for, dining_reward, travel_reward, shopping_reward, fuel_reward";
+  "id, card_name, bank, network, annual_fee, reward_type, reward_rate, lounge_access, best_for, dining_reward, travel_reward, shopping_reward, fuel_reward, metadata";
 
 type CreditCardRow = {
   id: string;
@@ -23,6 +26,7 @@ type CreditCardRow = {
   travel_reward: number | null;
   shopping_reward: number | null;
   fuel_reward: number | null;
+  metadata: Record<string, unknown> | null;
 };
 
 export type SpendRecommendationRow = {
@@ -103,7 +107,15 @@ export async function topSpendRecommendations(
     .map((card) => {
       const { yearlyTotal, breakdown } = rewardCalculator.computeYearlyRewards(
         monthlySpend,
-        card
+        {
+          ...card,
+          card_name: card.card_name,
+          network: card.network,
+          reward_type: card.reward_type,
+          reward_rate: card.reward_rate,
+          best_for: card.best_for,
+          metadata: card.metadata,
+        }
       );
       return {
         id: card.id,
@@ -123,10 +135,34 @@ export async function topSpendRecommendations(
           fuel: roundInr(breakdown.fuel),
         },
         category_reward_pct: {
-          dining: card.dining_reward,
-          travel: card.travel_reward,
-          shopping: card.shopping_reward,
-          fuel: card.fuel_reward,
+          dining:
+            card.dining_reward != null && card.dining_reward > 0
+              ? card.dining_reward
+              : rewardPctMidpointForSpendCategory(
+                  { ...card, metadata: card.metadata },
+                  "dining"
+                ) || null,
+          travel:
+            card.travel_reward != null && card.travel_reward > 0
+              ? card.travel_reward
+              : rewardPctMidpointForSpendCategory(
+                  { ...card, metadata: card.metadata },
+                  "travel"
+                ) || null,
+          shopping:
+            card.shopping_reward != null && card.shopping_reward > 0
+              ? card.shopping_reward
+              : rewardPctMidpointForSpendCategory(
+                  { ...card, metadata: card.metadata },
+                  "shopping"
+                ) || null,
+          fuel:
+            card.fuel_reward != null && card.fuel_reward > 0
+              ? card.fuel_reward
+              : rewardPctMidpointForSpendCategory(
+                  { ...card, metadata: card.metadata },
+                  "fuel"
+                ) || null,
         },
       };
     })

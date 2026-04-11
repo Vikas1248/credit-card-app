@@ -14,7 +14,13 @@ import { SpendCategoryIcon } from "@/components/spend-category-icons";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import { SITE_ABOUT_LEAD, SITE_NAME } from "@/lib/site";
-import { SPEND_CATEGORIES } from "@/lib/spendCategories";
+import {
+  formatCategoryRewardPctRange,
+  rewardPctForSpendCategory,
+  rewardPctRangeForSpendCategory,
+  SPEND_CATEGORIES,
+  type SpendCategorySlug,
+} from "@/lib/spendCategories";
 import type { CardNetwork } from "@/lib/types/card";
 
 type CreditCard = {
@@ -93,19 +99,32 @@ function formatPct(value: number | null | undefined): string {
   return `${value}%`;
 }
 
+function cardCategoryInput(card: CreditCard) {
+  return {
+    card_name: card.card_name,
+    dining_reward: card.dining_reward,
+    travel_reward: card.travel_reward,
+    shopping_reward: card.shopping_reward,
+    fuel_reward: card.fuel_reward,
+    network: card.network,
+    reward_type: card.reward_type,
+    best_for: card.best_for,
+    reward_rate: card.reward_rate,
+    metadata: card.metadata ?? null,
+  };
+}
+
 function topCategoryReward(card: CreditCard): {
   category: keyof RewardBreakdown;
   value: number;
 } | null {
-  const entries: Array<[keyof RewardBreakdown, number | null]> = [
-    ["dining", card.dining_reward],
-    ["travel", card.travel_reward],
-    ["shopping", card.shopping_reward],
-    ["fuel", card.fuel_reward],
-  ];
-  const valid = entries.filter(
-    ([, value]) => typeof value === "number" && Number.isFinite(value) && value > 0
-  ) as Array<[keyof RewardBreakdown, number]>;
+  const keys: SpendCategorySlug[] = ["dining", "travel", "shopping", "fuel"];
+  const valid = keys
+    .map((k) => [k, rewardPctForSpendCategory(cardCategoryInput(card), k)] as const)
+    .filter(
+      (entry): entry is [SpendCategorySlug, number] =>
+        entry[1] != null && entry[1] > 0
+    );
   if (valid.length === 0) return null;
   valid.sort((a, b) => b[1] - a[1]);
   return { category: valid[0][0], value: valid[0][1] };
@@ -115,17 +134,10 @@ function categoryLabel(key: keyof RewardBreakdown): string {
   return CATEGORY_LABELS.find((c) => c.key === key)?.label ?? key;
 }
 
-function categoryPct(
-  card: CreditCard,
-  key: keyof RewardBreakdown
-): number | null {
-  const map: Record<keyof RewardBreakdown, number | null> = {
-    dining: card.dining_reward,
-    travel: card.travel_reward,
-    shopping: card.shopping_reward,
-    fuel: card.fuel_reward,
-  };
-  return map[key];
+function categoryEarnDisplay(card: CreditCard, key: SpendCategorySlug): string {
+  return formatCategoryRewardPctRange(
+    rewardPctRangeForSpendCategory(cardCategoryInput(card), key)
+  );
 }
 
 const inputClass =
@@ -1332,10 +1344,10 @@ export default function Home() {
                         {label}
                       </td>
                       <td className="px-4 py-2 tabular-nums">
-                        {formatPct(categoryPct(compareLeft, key))}
+                        {categoryEarnDisplay(compareLeft, key)}
                       </td>
                       <td className="px-4 py-2 tabular-nums">
-                        {formatPct(categoryPct(compareRight, key))}
+                        {categoryEarnDisplay(compareRight, key)}
                       </td>
                     </tr>
                   ))}

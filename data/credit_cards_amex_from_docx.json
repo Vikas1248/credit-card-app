@@ -28,6 +28,7 @@
         "points_per_rupee": 0.025
       },
       "reward_type": "points",
+      "membership_rewards_inr_per_point": 0.25,
       "shopping_reward": 0.0,
       "source": "manual",
       "travel_reward": 0.0,
@@ -78,6 +79,7 @@
         "points_per_rupee": 0.02
       },
       "reward_type": "points",
+      "membership_rewards_inr_per_point": 0.25,
       "shopping_reward": 0.0,
       "source": "manual",
       "travel_reward": 0.0,
@@ -117,6 +119,7 @@
         "points_per_rupee": 0.02
       },
       "reward_type": "points",
+      "membership_rewards_inr_per_point": 0.25,
       "shopping_reward": 0.0,
       "source": "manual",
       "travel_reward": 0.0,
@@ -184,6 +187,7 @@
         "points_per_rupee": 0.02
       },
       "reward_type": "points",
+      "membership_rewards_inr_per_point": 0.25,
       "shopping_reward": 0.0,
       "source": "manual",
       "travel_reward": 0.0,
@@ -241,6 +245,7 @@
         "points_per_rupee": 0.02
       },
       "reward_type": "points",
+      "membership_rewards_inr_per_point": 0.25,
       "shopping_reward": 0.0,
       "source": "manual",
       "travel_reward": 0.0,
@@ -294,6 +299,7 @@
         "points_per_rupee": 0.02
       },
       "reward_type": "points",
+      "membership_rewards_inr_per_point": 0.25,
       "shopping_reward": 0.0,
       "source": "manual",
       "travel_reward": 0.0,

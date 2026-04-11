@@ -17,6 +17,7 @@ export type CardForCompareAi = {
   travel_reward: number | null;
   shopping_reward: number | null;
   fuel_reward: number | null;
+  metadata?: Record<string, unknown> | null;
 };
 
 export type CompareAiResponse = {
@@ -40,6 +41,12 @@ function summarizeCard(
   let yearly: { yearlyTotal: number } | null = null;
   if (spend) {
     yearly = rewardCalculator.computeYearlyRewards(spend, {
+      card_name: card.card_name,
+      network: card.network as "Visa" | "Mastercard" | "Amex",
+      reward_type: card.reward_type as "cashback" | "points",
+      reward_rate: card.reward_rate,
+      best_for: card.best_for,
+      metadata: card.metadata,
       dining_reward: card.dining_reward,
       travel_reward: card.travel_reward,
       shopping_reward: card.shopping_reward,

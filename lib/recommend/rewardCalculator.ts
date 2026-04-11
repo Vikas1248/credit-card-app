@@ -1,3 +1,8 @@
+import {
+  rewardPctMidpointForSpendCategory,
+  type CardWithCategoryRewardsInput,
+} from "@/lib/spendCategories";
+
 /** Average monthly spend per category (INR). */
 export type SpendByCategory = {
   dining: number;
@@ -20,9 +25,44 @@ export type CardCategoryRates = {
   fuel_reward: number | null;
 };
 
+/** Card row with optional fields so Amex derived % midpoints can be used. */
+export type CardCategoryRatesInput = CardCategoryRates &
+  Partial<
+    Pick<
+      CardWithCategoryRewardsInput,
+      "card_name" | "network" | "reward_type" | "best_for" | "reward_rate" | "metadata"
+    >
+  >;
+
 function pct(value: number | null | undefined): number {
   if (value == null || !Number.isFinite(value)) return 0;
   return value;
+}
+
+function resolvedCategoryPct(
+  card: CardCategoryRatesInput,
+  key: "dining" | "travel" | "shopping" | "fuel"
+): number {
+  const slug = key;
+  const base = card[`${key}_reward` as const];
+  if (typeof base === "number" && Number.isFinite(base) && base > 0) {
+    return base;
+  }
+  return rewardPctMidpointForSpendCategory(
+    {
+      card_name: card.card_name ?? "",
+      dining_reward: card.dining_reward,
+      travel_reward: card.travel_reward,
+      shopping_reward: card.shopping_reward,
+      fuel_reward: card.fuel_reward,
+      network: card.network,
+      reward_type: card.reward_type,
+      best_for: card.best_for,
+      reward_rate: card.reward_rate,
+      metadata: card.metadata,
+    },
+    slug
+  );
 }
 
 /**
@@ -32,13 +72,17 @@ function pct(value: number | null | undefined): number {
 export const rewardCalculator = {
   computeYearlyRewards(
     monthlySpend: SpendByCategory,
-    card: CardCategoryRates
+    card: CardCategoryRatesInput
   ): { yearlyTotal: number; breakdown: RewardBreakdown } {
     const months = 12;
-    const dining = monthlySpend.dining * months * (pct(card.dining_reward) / 100);
-    const travel = monthlySpend.travel * months * (pct(card.travel_reward) / 100);
-    const shopping = monthlySpend.shopping * months * (pct(card.shopping_reward) / 100);
-    const fuel = monthlySpend.fuel * months * (pct(card.fuel_reward) / 100);
+    const dining =
+      monthlySpend.dining * months * (resolvedCategoryPct(card, "dining") / 100);
+    const travel =
+      monthlySpend.travel * months * (resolvedCategoryPct(card, "travel") / 100);
+    const shopping =
+      monthlySpend.shopping * months * (resolvedCategoryPct(card, "shopping") / 100);
+    const fuel =
+      monthlySpend.fuel * months * (resolvedCategoryPct(card, "fuel") / 100);
     const breakdown = { dining, travel, shopping, fuel };
     const yearlyTotal = dining + travel + shopping + fuel;
     return { yearlyTotal, breakdown };

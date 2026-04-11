@@ -1,13 +1,22 @@
 import { DetailFactTile } from "@/components/card-detail-tiles";
 import { SpendCategoryIcon } from "@/components/spend-category-icons";
-import type { SpendCategorySlug } from "@/lib/spendCategories";
+import {
+  formatCategoryRewardPctRange,
+  rewardPctRangeForSpendCategory,
+  type SpendCategorySlug,
+} from "@/lib/spendCategories";
+import { amexMembershipRewardsInrPerPointForUi } from "@/lib/cards/amexCategoryRewards";
 import type { CardNetwork } from "@/lib/types/card";
 
 type CardKeySummary = {
+  card_name: string;
   joining_fee: number;
   annual_fee: number;
   reward_type: "cashback" | "points";
   network: CardNetwork;
+  best_for?: string | null;
+  reward_rate?: string | null;
+  metadata?: Record<string, unknown> | null;
   dining_reward?: number | null;
   travel_reward?: number | null;
   shopping_reward?: number | null;
@@ -23,9 +32,13 @@ function formatInr(value: number): string {
   }).format(value);
 }
 
-function formatPct(value: number | null | undefined): string {
-  if (value == null || !Number.isFinite(value)) return "—";
-  return `${value}%`;
+function formatInrPerPoint(value: number): string {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(value);
 }
 
 function WalletIcon({ className }: { className?: string }) {
@@ -98,6 +111,23 @@ function NetworkCardIcon({ className }: { className?: string }) {
   );
 }
 
+function PointValueIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className ?? "h-5 w-5"}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="4" />
+    </svg>
+  );
+}
+
 const CATEGORY_ROWS: { slug: SpendCategorySlug; label: string }[] = [
   { slug: "dining", label: "Dining" },
   { slug: "travel", label: "Travel" },
@@ -106,12 +136,28 @@ const CATEGORY_ROWS: { slug: SpendCategorySlug; label: string }[] = [
 ];
 
 export function CardDetailKeySummary({ card }: { card: CardKeySummary }) {
-  const rateKey = {
-    dining: card.dining_reward,
-    travel: card.travel_reward,
-    shopping: card.shopping_reward,
-    fuel: card.fuel_reward,
-  } as const;
+  const mrInrPerPoint = amexMembershipRewardsInrPerPointForUi({
+    network: card.network,
+    reward_type: card.reward_type,
+    metadata: card.metadata ?? null,
+  });
+
+  const rangeFor = (slug: SpendCategorySlug) =>
+    rewardPctRangeForSpendCategory(
+      {
+        card_name: card.card_name,
+        dining_reward: card.dining_reward ?? null,
+        travel_reward: card.travel_reward ?? null,
+        shopping_reward: card.shopping_reward ?? null,
+        fuel_reward: card.fuel_reward ?? null,
+        network: card.network,
+        reward_type: card.reward_type,
+        best_for: card.best_for ?? null,
+        reward_rate: card.reward_rate ?? null,
+        metadata: card.metadata ?? null,
+      },
+      slug
+    );
 
   const updatedLabel = card.last_updated
     ? (() => {
@@ -139,7 +185,9 @@ export function CardDetailKeySummary({ card }: { card: CardKeySummary }) {
         works&rdquo; spells out rewards, lounges, and fit in more detail.
       </p>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div
+        className={`mt-4 grid gap-3 sm:grid-cols-2 ${mrInrPerPoint != null ? "lg:grid-cols-5" : "lg:grid-cols-4"}`}
+      >
         <DetailFactTile icon={<WalletIcon />} label="Joining fee">
           <span className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
             {formatInr(card.joining_fee)}
@@ -160,13 +208,41 @@ export function CardDetailKeySummary({ card }: { card: CardKeySummary }) {
             {card.network}
           </span>
         </DetailFactTile>
+        {mrInrPerPoint != null ? (
+          <DetailFactTile
+            icon={<PointValueIcon />}
+            label="Est. point value"
+            ringClassName="bg-sky-600/10 text-sky-800 dark:bg-sky-500/15 dark:text-sky-200"
+          >
+            <span className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
+              {formatInrPerPoint(mrInrPerPoint)}
+              <span className="block text-[10px] font-normal normal-case leading-snug text-zinc-500 dark:text-zinc-400">
+                per Membership Rewards point (used for category % below)
+              </span>
+            </span>
+          </DetailFactTile>
+        ) : null}
       </div>
 
       <h3 className="mt-8 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
         Category earn rates
       </h3>
       <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
-        Approximate % of spend where we have data.
+        Approximate % of spend.
+        {mrInrPerPoint != null ? (
+          <>
+            {" "}
+            We convert points using the estimated value above; ranges add
+            milestones or partner-category accelerators when we have them in
+            catalog data.
+          </>
+        ) : (
+          <>
+            {" "}
+            Points cards may show a range when we can infer base earn plus
+            bonuses from catalog data.
+          </>
+        )}
       </p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {CATEGORY_ROWS.map(({ slug, label }) => (
@@ -178,7 +254,7 @@ export function CardDetailKeySummary({ card }: { card: CardKeySummary }) {
             label={label}
           >
             <span className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
-              {formatPct(rateKey[slug])}
+              {formatCategoryRewardPctRange(rangeFor(slug))}
             </span>
           </DetailFactTile>
         ))}

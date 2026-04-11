@@ -63,6 +63,7 @@ function metadataHasPublicEntries(
 
 const METADATA_LABELS: Record<string, string> = {
   eligibility: "Eligibility",
+  membership_rewards_inr_per_point: "Estimated point value (INR)",
   reward_conversion: "Reward conversion",
   welcome_offer: "Welcome offer",
   milestone_rewards: "Milestone rewards",
@@ -318,10 +319,14 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
 
             <CardDetailKeySummary
               card={{
+                card_name: card.card_name,
                 joining_fee: card.joining_fee,
                 annual_fee: card.annual_fee,
                 reward_type: card.reward_type,
                 network: card.network,
+                best_for: card.best_for,
+                reward_rate: card.reward_rate,
+                metadata: card.metadata,
                 dining_reward: card.dining_reward,
                 travel_reward: card.travel_reward,
                 shopping_reward: card.shopping_reward,
