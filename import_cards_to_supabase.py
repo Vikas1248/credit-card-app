@@ -61,13 +61,18 @@ def opt_float(card: dict[str, Any], key: str) -> float | None:
         return None
 
 
-def read_cards(path: str) -> list[dict[str, Any]]:
-    with open(path, "r", encoding="utf-8") as file:
-        payload = json.load(file)
+def parse_cards_document(payload: Any) -> list[dict[str, Any]]:
+    if not isinstance(payload, dict):
+        raise ValueError("JSON root must be an object with a 'cards' list.")
     cards = payload.get("cards", [])
     if not isinstance(cards, list):
         raise ValueError("Input JSON must contain a 'cards' list.")
     return [card for card in cards if isinstance(card, dict)]
+
+
+def read_cards(path: str) -> list[dict[str, Any]]:
+    with open(path, "r", encoding="utf-8") as file:
+        return parse_cards_document(json.load(file))
 
 
 def map_to_db_rows(cards: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -79,11 +84,14 @@ def map_to_db_rows(cards: list[dict[str, Any]]) -> list[dict[str, Any]]:
         lounge_access = str(card.get("lounge_access", "N/A")).strip() or "N/A"
         best_for = str(card.get("best_for", "N/A")).strip() or "N/A"
         key_benefits_raw = card.get("key_benefits")
-        key_benefits = (
-            str(key_benefits_raw).strip()
-            if key_benefits_raw is not None
-            else reward_rate
-        )
+        if key_benefits_raw is None:
+            key_benefits = reward_rate
+        elif isinstance(key_benefits_raw, list):
+            key_benefits = "\n".join(
+                str(x).strip() for x in key_benefits_raw if str(x).strip()
+            ) or reward_rate
+        else:
+            key_benefits = str(key_benefits_raw).strip() or reward_rate
 
         bank = str(card.get("bank", "")).strip() or infer_bank(card_name)
         network_raw = str(card.get("network", "")).strip()
@@ -198,6 +206,29 @@ def delete_non_amex_rows(supabase_url: str, supabase_key: str) -> None:
         response.read()
 
 
+def delete_rows_by_exact_card_names(
+    supabase_url: str, supabase_key: str, card_names: list[str]
+) -> None:
+    """DELETE rows where card_name equals the given value (exact). One request per name."""
+    base = supabase_url.rstrip("/")
+    for name in card_names:
+        n = name.strip()
+        if not n:
+            continue
+        enc = urllib.parse.quote(n, safe="")
+        endpoint = f"{base}/rest/v1/credit_cards?card_name=eq.{enc}"
+        request = urllib.request.Request(
+            endpoint,
+            headers={
+                "apikey": supabase_key,
+                "Authorization": f"Bearer {supabase_key}",
+            },
+            method="DELETE",
+        )
+        with urllib.request.urlopen(request, timeout=120) as response:
+            response.read()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Import extracted credit card JSON into Supabase credit_cards table."
@@ -222,15 +253,26 @@ def main() -> int:
         action="store_true",
         help="Before insert, DELETE rows where bank ILIKE '%%sbi%%'. Needs service role.",
     )
+    parser.add_argument(
+        "--replace-matching",
+        action="store_true",
+        help=(
+            "Before insert, DELETE rows whose card_name exactly matches each card in the input file. "
+            "Use with a one-card JSON to add or refresh that row only (no full bank purge)."
+        ),
+    )
     args = parser.parse_args()
 
-    supabase_url = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
+    supabase_url = os.getenv("NEXT_PUBLIC_SUPABASE_URL") or os.getenv("SUPABASE_URL")
     supabase_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv(
         "NEXT_PUBLIC_SUPABASE_ANON_KEY"
     )
 
     if not supabase_url:
-        print("Error: NEXT_PUBLIC_SUPABASE_URL is not set.", file=sys.stderr)
+        print(
+            "Error: NEXT_PUBLIC_SUPABASE_URL or SUPABASE_URL is not set.",
+            file=sys.stderr,
+        )
         return 1
     if not supabase_key:
         print(
@@ -252,6 +294,13 @@ def main() -> int:
 
         cards = read_cards(args.input)
         rows = map_to_db_rows(cards)
+        if args.replace_matching:
+            names = sorted({r["card_name"] for r in rows})
+            delete_rows_by_exact_card_names(supabase_url, supabase_key, names)
+            print(
+                "Replaced (deleted by exact card_name): " + ", ".join(names),
+                file=sys.stderr,
+            )
         if not rows:
             print("No cards to insert.")
             return 0

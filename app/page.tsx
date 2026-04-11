@@ -1204,12 +1204,28 @@ export default function Home() {
             </div>
           ) : filteredCards.length === 0 ? (
             <div className="mt-8 rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 px-6 py-12 text-center dark:border-zinc-700 dark:bg-zinc-900/30">
-              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                No cards match your search
-              </p>
-              <p className="mt-1 text-sm text-zinc-500">
-                Try another name or bank, or clear the search box.
-              </p>
+              {cards.length === 0 && !search.trim() ? (
+                <>
+                  <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    No cards in the database
+                  </p>
+                  <p className="mt-1 text-sm text-zinc-500">
+                    Production loads from Supabase (<code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">credit_cards</code>), not from repo{" "}
+                    <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">data/</code>. Import rows into the same Supabase project your
+                    Vercel env points to, and confirm{" "}
+                    <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">NEXT_PUBLIC_SUPABASE_URL</code> and keys are set in Vercel.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    No cards match your search
+                  </p>
+                  <p className="mt-1 text-sm text-zinc-500">
+                    Try another name or bank, or clear the search box.
+                  </p>
+                </>
+              )}
             </div>
           ) : (
             <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -1,6 +1,6 @@
-/** SBI Card e-apply referral (opens in a new tab). */
+/** SBI Card apply / referral (opens in a new tab). */
 export const SBI_CARD_APPLY_URL =
-  "https://www.sbicard.com/eapply/eapply-form.page/catalogue-refer?referralcode=jK5LFX3GT34";
+  "https://tjzuh.com/g/hxn4dcyutj367a3e77278bc555c0f8/";
 
 export function isSbiCard(bank: string): boolean {
   return /\bsbi\b/i.test(bank);
