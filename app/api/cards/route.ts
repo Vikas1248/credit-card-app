@@ -3,6 +3,7 @@ import {
   getOptionalCardNetworkFilter,
   parseCardNetworkParam,
 } from "@/lib/cards/networkFilter";
+import { creditCardTextSearchOrFilter } from "@/lib/search/supabaseCardTextSearch";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { CardNetwork } from "@/lib/types/card";
 
@@ -49,10 +50,9 @@ export async function GET(request: Request) {
       .order("annual_fee", { ascending: true })
       .order("card_name", { ascending: true });
 
-    if (q) {
-      query = query.or(
-        `card_name.ilike.%${q}%,bank.ilike.%${q}%,best_for.ilike.%${q}%`
-      );
+    const textOr = q ? creditCardTextSearchOrFilter(q) : null;
+    if (textOr) {
+      query = query.or(textOr);
     }
     if (bank) query = query.eq("bank", bank);
     // Query param wins so the client can force a filter even if server env is missing.

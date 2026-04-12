@@ -5,10 +5,22 @@ import { SpendCategoryIcon } from "@/components/spend-category-icons";
 import { SITE_NAME } from "@/lib/site";
 import { SPEND_CATEGORIES } from "@/lib/spendCategories";
 
+const cardsTitle = `All credit cards · ${SITE_NAME}`;
+const cardsDescription =
+  "Search and filter the full credit card catalog: fees, networks, and optional AI-assisted ordering.";
+
 export const metadata: Metadata = {
-  title: `All credit cards · ${SITE_NAME}`,
-  description:
-    "Search and filter the full credit card catalog: fees, networks, and optional AI-assisted ordering.",
+  title: cardsTitle,
+  description: cardsDescription,
+  openGraph: {
+    title: cardsTitle,
+    description: cardsDescription,
+    url: "/cards",
+  },
+  twitter: {
+    title: cardsTitle,
+    description: cardsDescription,
+  },
 };
 
 const navLinkClass =

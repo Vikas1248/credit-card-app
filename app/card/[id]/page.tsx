@@ -1,11 +1,14 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import { CardAiInsight } from "@/components/card-ai-insight";
 import { CardDetailKeySummary } from "@/components/card-detail-key-summary";
 import { CardProgramDetails } from "@/components/card-program-details";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { SITE_NAME } from "@/lib/site";
 import type { CardNetwork } from "@/lib/types/card";
 
 type CardDetailsPageProps = {
@@ -259,7 +262,7 @@ function formatInr(value: number): string {
   }).format(value);
 }
 
-async function getCardById(id: string): Promise<CreditCard | null> {
+const getCardById = cache(async (id: string): Promise<CreditCard | null> => {
   // Use the server client (service role when set), same as /api/cards — anon + RLS often blocks row reads.
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase
@@ -275,6 +278,52 @@ async function getCardById(id: string): Promise<CreditCard | null> {
   }
 
   return data as CreditCard | null;
+});
+
+function truncateMetaDescription(text: string, maxLen: number): string {
+  const t = text.replace(/\s+/g, " ").trim();
+  if (t.length <= maxLen) return t;
+  return `${t.slice(0, maxLen - 1).trimEnd()}…`;
+}
+
+type CardPageParams = { id: string };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<CardPageParams>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const card = await getCardById(id);
+  if (!card) {
+    return { title: "Card not found" };
+  }
+
+  const path = `/card/${card.id}`;
+  const title = `${card.card_name} · ${card.bank}`;
+  const rawDesc =
+    card.best_for?.trim() ||
+    card.reward_rate?.trim() ||
+    card.key_benefits?.trim() ||
+    `${card.card_name} from ${card.bank} — fees, rewards, and benefits on ${SITE_NAME}.`;
+  const description = truncateMetaDescription(rawDesc, 155);
+
+  return {
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      type: "article",
+      url: path,
+      title: `${card.card_name} · ${SITE_NAME}`,
+      description,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${card.card_name} · ${SITE_NAME}`,
+      description,
+    },
+  };
 }
 
 export default async function CardDetailsPage({ params }: CardDetailsPageProps) {

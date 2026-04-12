@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
 import { SbiApplyLink } from "@/components/sbi-apply-link";
@@ -10,6 +11,10 @@ import { isAxisBankCard } from "@/lib/cards/axisApply";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import { isSbiCard } from "@/lib/cards/sbiApply";
+import {
+  buildCatalogSearchHaystack,
+  matchesCatalogSearchQuery,
+} from "@/lib/search/catalogTextSearch";
 import type { CardNetwork } from "@/lib/types/card";
 
 type CreditCard = {
@@ -159,6 +164,10 @@ function SortIcon({ className }: { className?: string }) {
 }
 
 export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const skipNextUrlSync = useRef(true);
+
   const [cards, setCards] = useState<CreditCard[]>([]);
   const [search, setSearch] = useState(initialQuery);
   const [loading, setLoading] = useState(true);
@@ -185,7 +194,24 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
 
   useEffect(() => {
     setSearch(initialQuery);
+    skipNextUrlSync.current = true;
   }, [initialQuery]);
+
+  useEffect(() => {
+    if (pathname !== "/cards") return;
+    const timer = window.setTimeout(() => {
+      if (skipNextUrlSync.current) {
+        skipNextUrlSync.current = false;
+        return;
+      }
+      const q = search.trim();
+      const next = q
+        ? `${pathname}?q=${encodeURIComponent(q)}`
+        : pathname;
+      router.replace(next, { scroll: false });
+    }, 450);
+    return () => window.clearTimeout(timer);
+  }, [search, pathname, router]);
 
   const browseFiltersActive = useMemo(
     () =>
@@ -346,21 +372,20 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
   ]);
 
   const textFilteredCards = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) return feeTypeFilteredCards;
+    const q = search.trim();
+    if (!q) return feeTypeFilteredCards;
 
     return feeTypeFilteredCards.filter((card) => {
-      const text = [
-        card.card_name,
-        card.bank,
-        card.best_for ?? "",
-        card.key_benefits ?? "",
-        card.reward_rate ?? "",
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      return text.includes(query);
+      const haystack = buildCatalogSearchHaystack({
+        card_name: card.card_name,
+        bank: card.bank,
+        network: card.network,
+        best_for: card.best_for,
+        key_benefits: card.key_benefits,
+        reward_rate: card.reward_rate,
+        lounge_access: card.lounge_access,
+      });
+      return matchesCatalogSearchQuery(haystack, q);
     });
   }, [feeTypeFilteredCards, search]);
 

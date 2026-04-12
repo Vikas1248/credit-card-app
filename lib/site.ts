@@ -1,5 +1,20 @@
 /** Product name and copy used in metadata, PWA manifest, and UI. */
 
+/**
+ * Canonical site origin for sitemaps, Open Graph URLs, and robots.
+ * Set `NEXT_PUBLIC_SITE_URL` in production (e.g. https://yoursite.com).
+ */
+export function getSiteUrl(): string {
+  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (fromEnv) {
+    return fromEnv.replace(/\/$/, "");
+  }
+  if (process.env.VERCEL_URL?.trim()) {
+    return `https://${process.env.VERCEL_URL.trim()}`;
+  }
+  return "http://localhost:3000";
+}
+
 export const SITE_NAME = "CredGenie";
 
 /** Browser tab / PWA install title. */

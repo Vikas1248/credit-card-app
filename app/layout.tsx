@@ -1,11 +1,32 @@
 import type { Metadata, Viewport } from "next";
-import { SITE_DESCRIPTION, SITE_TITLE } from "@/lib/site";
+import {
+  getSiteUrl,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_TITLE,
+} from "@/lib/site";
 import "./globals.css";
 
+const siteUrl = getSiteUrl();
+
 export const metadata: Metadata = {
-  title: SITE_TITLE,
+  metadataBase: new URL(siteUrl),
+  title: { default: SITE_TITLE, template: `%s · ${SITE_NAME}` },
   description: SITE_DESCRIPTION,
   manifest: "/manifest.webmanifest",
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: siteUrl,
+    siteName: SITE_NAME,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
   other: {
     "verify-admitad": "367a3e7727",
   },

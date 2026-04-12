@@ -7,9 +7,10 @@ import {
 } from "@/lib/cards/networkFilter";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { fetchAiSearchRank } from "@/lib/search/aiSearchRank";
+import { creditCardTextSearchOrFilter } from "@/lib/search/supabaseCardTextSearch";
 
 const SELECT_BRIEF =
-  "id, card_name, bank, annual_fee, reward_type, dining_reward, travel_reward, shopping_reward, fuel_reward, best_for";
+  "id, card_name, bank, network, annual_fee, reward_type, reward_rate, lounge_access, dining_reward, travel_reward, shopping_reward, fuel_reward, best_for, key_benefits";
 
 export async function GET(request: Request) {
   try {
@@ -33,13 +34,19 @@ export async function GET(request: Request) {
     const paramNet = parseCardNetworkParam(searchParams.get("network"));
     const effectiveNetwork = paramNet ?? getOptionalCardNetworkFilter();
 
+    const textOr = creditCardTextSearchOrFilter(q);
+    if (!textOr) {
+      return NextResponse.json(
+        { source: "skip" as const, ordered_ids: null as string[] | null },
+        { status: 200 }
+      );
+    }
+
     let query = supabase
       .from("credit_cards")
       .select(SELECT_BRIEF)
-      .or(
-        `card_name.ilike.%${q}%,bank.ilike.%${q}%,best_for.ilike.%${q}%,key_benefits.ilike.%${q}%,reward_rate.ilike.%${q}%`
-      )
-      .limit(100);
+      .or(textOr)
+      .limit(120);
 
     if (effectiveNetwork) {
       query = query.eq("network", effectiveNetwork);
@@ -59,20 +66,18 @@ export async function GET(request: Request) {
     }
 
     const briefs = rows.map((r) =>
-      toCardBrief(
-        r as {
-          id: string;
-          card_name: string;
-          bank: string;
-          annual_fee: number;
-          reward_type: string;
-          dining_reward: number | null;
-          travel_reward: number | null;
-          shopping_reward: number | null;
-          fuel_reward: number | null;
-          best_for: string | null;
-        }
-      )
+      toCardBrief({
+        id: r.id,
+        card_name: r.card_name,
+        bank: r.bank,
+        annual_fee: r.annual_fee,
+        reward_type: r.reward_type,
+        dining_reward: r.dining_reward,
+        travel_reward: r.travel_reward,
+        shopping_reward: r.shopping_reward,
+        fuel_reward: r.fuel_reward,
+        best_for: r.best_for,
+      })
     );
 
     let ranked: string[] | null = null;
