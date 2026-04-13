@@ -10,13 +10,26 @@ import Script from "next/script";
 import "./globals.css";
 
 /**
- * Matches Cuelinks’ official paste: global `var cId`, then IIFE appends `cuelinksv2.js` to `body`.
- * `cId` defaults to channel **281873**; set `NEXT_PUBLIC_CUELINKS_CHANNEL_ID` to override.
+ * Cuelinks loads two optional pieces:
  *
- * Optional `NEXT_PUBLIC_CUELINKS_PUB_ID`: when set, emits `var pubID` first (v2 `pub_id=` mode).
+ * 1) **Site widget** (what most dashboard “JavaScript installation” checks expect):
+ *    `var cuelinks = { key: '…' }` + `cdn-widget.cuelinks.com/js/cuelinks.js`
+ *    See [Cuelinks tools](https://www.cuelinks.com/tools) and
+ *    [installation check blog](https://www.cuelinks.com/blog/latest-features-cuelinks-make-affiliate-marketing-easier/).
+ *    The old FAQ URL https://www.cuelinks.com/js-installation-faq currently 404s.
+ *
+ * 2) **Link Kit / v2** (`cdn0` + `cuelinksv2.js` + global `cId`): your pasted snippet; disable with
+ *    `NEXT_PUBLIC_CUELINKS_DISABLE_V2=true` if you only want the widget.
+ *
+ * `key` / `cId` default to channel **281873**. If the dashboard shows a different **Publisher** key for
+ * the widget, set `NEXT_PUBLIC_CUELINKS_WIDGET_KEY`.
  */
 const CUELINKS_CID =
   process.env.NEXT_PUBLIC_CUELINKS_CHANNEL_ID?.trim() || "281873";
+const CUELINKS_WIDGET_KEY =
+  process.env.NEXT_PUBLIC_CUELINKS_WIDGET_KEY?.trim() || CUELINKS_CID;
+const CUELINKS_DISABLE_V2 =
+  process.env.NEXT_PUBLIC_CUELINKS_DISABLE_V2 === "true";
 const CUELINKS_PUB_ID_RAW =
   process.env.NEXT_PUBLIC_CUELINKS_PUB_ID?.trim() ?? "";
 const CUELINKS_PUB_ID = CUELINKS_PUB_ID_RAW || null;
@@ -80,8 +93,21 @@ export default function RootLayout({
             </a>
           </p>
         </footer>
-        <Script id="cuelinks-affiliate" strategy="afterInteractive">
-          {`
+        <Script
+          id="cuelinks-widget-config"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `var cuelinks = { key: ${JSON.stringify(CUELINKS_WIDGET_KEY)} };`,
+          }}
+        />
+        <Script
+          id="cuelinks-widget"
+          src="https://cdn-widget.cuelinks.com/js/cuelinks.js"
+          strategy="afterInteractive"
+        />
+        {!CUELINKS_DISABLE_V2 ? (
+          <Script id="cuelinks-linkkit-v2" strategy="afterInteractive">
+            {`
 ${CUELINKS_PUB_ID ? `var pubID = ${JSON.stringify(CUELINKS_PUB_ID)};\n` : ""}var cId = ${JSON.stringify(CUELINKS_CID)};
 
 (function(d, t) {
@@ -91,8 +117,9 @@ ${CUELINKS_PUB_ID ? `var pubID = ${JSON.stringify(CUELINKS_PUB_ID)};\n` : ""}var
   s.src = (document.location.protocol == 'https:' ? 'https://cdn0.cuelinks.com/js/' : 'http://cdn0.cuelinks.com/js/') + 'cuelinksv2.js';
   document.getElementsByTagName('body')[0].appendChild(s);
 }());
-          `}
-        </Script>
+            `}
+          </Script>
+        ) : null}
       </body>
     </html>
   );
