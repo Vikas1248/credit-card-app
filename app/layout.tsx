@@ -5,6 +5,7 @@ import {
   SITE_NAME,
   SITE_TITLE,
 } from "@/lib/site";
+import Link from "next/link";
 import "./globals.css";
 
 const siteUrl = getSiteUrl();
@@ -43,7 +44,30 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <div className="flex-1">{children}</div>
+        <footer className="border-t border-zinc-200/80 py-10 text-center text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-500">
+          <p>
+            {SITE_NAME} uses your inputs for illustrative estimates only. Not
+            financial advice; not affiliated with banks or card networks.
+          </p>
+          <p className="mt-2">
+            <Link
+              href="/about"
+              className="font-medium text-zinc-600 hover:underline dark:text-zinc-300"
+            >
+              About CredGenie
+            </Link>{" "}
+            ·{" "}
+            <a
+              href="mailto:support@credgenie.in"
+              className="font-medium text-zinc-600 hover:underline dark:text-zinc-300"
+            >
+              support@credgenie.in
+            </a>
+          </p>
+        </footer>
+      </body>
     </html>
   );
 }

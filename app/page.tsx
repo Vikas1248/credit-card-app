@@ -1365,10 +1365,6 @@ export default function Home() {
 
         </div>
       </main>
-      <footer className="border-t border-zinc-200/80 py-14 text-center text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-500">
-        {SITE_NAME} uses your inputs for illustrative estimates only. Not
-        financial advice; not affiliated with banks or card networks.
-      </footer>
     </div>
   );
 }
