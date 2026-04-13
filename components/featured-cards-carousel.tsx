@@ -9,6 +9,9 @@ import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply"
 import { isAxisBankCard } from "@/lib/cards/axisApply";
 import { issuerHeroPlasticClass } from "@/lib/cards/issuerHeroPlastic";
 import { isSbiCard } from "@/lib/cards/sbiApply";
+import {
+  cardViewDetailsButtonOnDarkClass,
+} from "@/lib/cardCta";
 import type { CardNetwork } from "@/lib/types/card";
 
 type CardModel = {
@@ -68,15 +71,24 @@ function CardPlasticMock({ card }: { card: CardModel }) {
   );
 }
 
-function ApplyRow({ card }: { card: CardModel }) {
+function CardReferralApply({ card }: { card: CardModel }) {
+  if (isAxisBankCard(card.bank)) {
+    return <AxisApplyLink fullWidth />;
+  }
+  if (isAmexPlatinumReserveCard(card.card_name, card.bank)) {
+    return <AmexPlatinumReserveApplyLink fullWidth />;
+  }
+  if (isSbiCard(card.bank)) {
+    return <SbiApplyLink fullWidth />;
+  }
+  return null;
+}
+
+function cardHasReferralApply(card: CardModel): boolean {
   return (
-    <div className="mt-3 flex flex-wrap gap-2">
-      {isAxisBankCard(card.bank) ? <AxisApplyLink size="sm" /> : null}
-      {isAmexPlatinumReserveCard(card.card_name, card.bank) ? (
-        <AmexPlatinumReserveApplyLink size="sm" />
-      ) : null}
-      {isSbiCard(card.bank) ? <SbiApplyLink size="sm" /> : null}
-    </div>
+    isAxisBankCard(card.bank) ||
+    isAmexPlatinumReserveCard(card.card_name, card.bank) ||
+    isSbiCard(card.bank)
   );
 }
 
@@ -274,14 +286,22 @@ export function FeaturedCardsCarousel({
                     </span>
                     <span className="text-emerald-300">{rewardLine}</span>
                   </div>
-                  <div className="mt-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-center lg:justify-start">
+                  <div
+                    className={
+                      cardHasReferralApply(card)
+                        ? "mt-6 grid w-full max-w-xl grid-cols-1 gap-2 sm:max-w-2xl sm:grid-cols-2 sm:items-stretch lg:max-w-none"
+                        : "mt-6 flex w-full max-w-xl flex-col gap-2"
+                    }
+                  >
                     <Link
                       href={`/card/${card.id}`}
-                      className="inline-flex min-h-11 items-center justify-center rounded-xl bg-white px-6 text-sm font-semibold text-slate-900 shadow transition hover:bg-sky-100"
+                      className={`${cardViewDetailsButtonOnDarkClass} w-full`}
                     >
                       View details
                     </Link>
-                    <ApplyRow card={card} />
+                    {cardHasReferralApply(card) ? (
+                      <CardReferralApply card={card} />
+                    ) : null}
                   </div>
                 </div>
                 <div className="flex shrink-0 justify-center lg:justify-end lg:pr-4">

@@ -4,21 +4,17 @@ import { AXIS_BANK_APPLY_URL } from "@/lib/cards/axisApply";
 type AxisApplyLinkProps = {
   className?: string;
   fullWidth?: boolean;
-  size?: "default" | "sm";
 };
 
 export function AxisApplyLink({
   className = "",
   fullWidth,
-  size = "default",
 }: AxisApplyLinkProps) {
   return (
     <ReferralApplyButton
       href={AXIS_BANK_APPLY_URL}
-      variant="axis"
       className={className}
       fullWidth={fullWidth}
-      size={size}
     />
   );
 }

@@ -14,6 +14,7 @@ import { SpendCategoryIcon } from "@/components/spend-category-icons";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import { SITE_ABOUT_LEAD, SITE_NAME } from "@/lib/site";
+import { cardViewDetailsButtonClass } from "@/lib/cardCta";
 import {
   formatCategoryRewardPctRange,
   rewardPctForSpendCategory,
@@ -150,10 +151,6 @@ const btnPrimary =
 
 const btnGhost =
   "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800";
-
-/** Same height as referral Apply; indigo to match app accent vs issuer-colored Apply. */
-const cardDetailsButtonClass =
-  "inline-flex min-h-10 w-full items-center justify-center rounded-xl border-2 border-indigo-400/85 bg-indigo-50 px-3 text-sm font-semibold text-indigo-950 shadow-sm transition hover:border-indigo-500 hover:bg-indigo-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 dark:border-indigo-400/55 dark:bg-indigo-950/45 dark:text-indigo-100 dark:hover:border-indigo-400 dark:hover:bg-indigo-900/55";
 
 const sectionShell =
   "rounded-3xl border border-zinc-300/90 bg-white p-8 shadow-md shadow-zinc-900/[0.06] ring-1 ring-zinc-950/[0.04] dark:border-zinc-600 dark:bg-zinc-900/70 dark:shadow-black/40 dark:ring-white/[0.06] sm:p-10";
@@ -1035,21 +1032,21 @@ export default function Home() {
                         >
                           <Link
                             href={`/card/${card.id}`}
-                            className={cardDetailsButtonClass}
+                            className={`${cardViewDetailsButtonClass} w-full`}
                           >
-                            Details
+                            View details
                           </Link>
                           {isAxisBankCard(card.bank) ? (
-                            <AxisApplyLink fullWidth size="sm" />
+                            <AxisApplyLink fullWidth />
                           ) : null}
                           {isAmexPlatinumReserveCard(
                             card.card_name,
                             card.bank
                           ) ? (
-                            <AmexPlatinumReserveApplyLink fullWidth size="sm" />
+                            <AmexPlatinumReserveApplyLink fullWidth />
                           ) : null}
                           {isSbiCard(card.bank) ? (
-                            <SbiApplyLink fullWidth size="sm" />
+                            <SbiApplyLink fullWidth />
                           ) : null}
                         </div>
                       </div>
@@ -1201,19 +1198,19 @@ export default function Home() {
                         {compareLeft.bank}
                       </span>
                       {isAxisBankCard(compareLeft.bank) ? (
-                        <AxisApplyLink size="sm" className="mt-2" />
+                        <AxisApplyLink fullWidth className="mt-2" />
                       ) : null}
                       {isAmexPlatinumReserveCard(
                         compareLeft.card_name,
                         compareLeft.bank
                       ) ? (
                         <AmexPlatinumReserveApplyLink
-                          size="sm"
+                          fullWidth
                           className="mt-2"
                         />
                       ) : null}
                       {isSbiCard(compareLeft.bank) ? (
-                        <SbiApplyLink size="sm" className="mt-2" />
+                        <SbiApplyLink fullWidth className="mt-2" />
                       ) : null}
                     </th>
                     <th className="px-4 py-3 font-semibold text-zinc-700 dark:text-zinc-200">
@@ -1227,19 +1224,19 @@ export default function Home() {
                         {compareRight.bank}
                       </span>
                       {isAxisBankCard(compareRight.bank) ? (
-                        <AxisApplyLink size="sm" className="mt-2" />
+                        <AxisApplyLink fullWidth className="mt-2" />
                       ) : null}
                       {isAmexPlatinumReserveCard(
                         compareRight.card_name,
                         compareRight.bank
                       ) ? (
                         <AmexPlatinumReserveApplyLink
-                          size="sm"
+                          fullWidth
                           className="mt-2"
                         />
                       ) : null}
                       {isSbiCard(compareRight.bank) ? (
-                        <SbiApplyLink size="sm" className="mt-2" />
+                        <SbiApplyLink fullWidth className="mt-2" />
                       ) : null}
                     </th>
                   </tr>

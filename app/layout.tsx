@@ -6,8 +6,12 @@ import {
   SITE_TITLE,
 } from "@/lib/site";
 import Link from "next/link";
-import Script from "next/script";
 import "./globals.css";
+
+/** Escape for use inside a single-quoted JS string in an inline script. */
+function escapeSingleQuotedJs(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+}
 
 /**
  * Cuelinks loads two optional pieces:
@@ -21,8 +25,11 @@ import "./globals.css";
  * 2) **Link Kit / v2** (`cdn0` + `cuelinksv2.js` + global `cId`): your pasted snippet; disable with
  *    `NEXT_PUBLIC_CUELINKS_DISABLE_V2=true` if you only want the widget.
  *
- * `key` / `cId` default to channel **281873**. If the dashboard shows a different **Publisher** key for
- * the widget, set `NEXT_PUBLIC_CUELINKS_WIDGET_KEY`.
+ * `key` / `cId` default to channel **281873**. Set `NEXT_PUBLIC_CUELINKS_CHANNEL_ID` (and
+ * `NEXT_PUBLIC_CUELINKS_WIDGET_KEY` if the dashboard key differs) to your value from **Account → My Channels**.
+ * The install checker URL must match the domain registered on that channel (including www vs apex).
+ *
+ * We use plain `<script>` tags (not `next/script`) so the checker sees the same HTML shape as Cuelinks’ snippet.
  */
 const CUELINKS_CID =
   process.env.NEXT_PUBLIC_CUELINKS_CHANNEL_ID?.trim() || "281873";
@@ -33,6 +40,12 @@ const CUELINKS_DISABLE_V2 =
 const CUELINKS_PUB_ID_RAW =
   process.env.NEXT_PUBLIC_CUELINKS_PUB_ID?.trim() ?? "";
 const CUELINKS_PUB_ID = CUELINKS_PUB_ID_RAW || null;
+
+const CUELINKS_KEY_ESCAPED = escapeSingleQuotedJs(CUELINKS_WIDGET_KEY);
+const CUELINKS_CID_ESCAPED = escapeSingleQuotedJs(CUELINKS_CID);
+const CUELINKS_PUB_ID_ESCAPED = CUELINKS_PUB_ID
+  ? escapeSingleQuotedJs(CUELINKS_PUB_ID)
+  : null;
 
 const siteUrl = getSiteUrl();
 
@@ -93,23 +106,26 @@ export default function RootLayout({
             </a>
           </p>
         </footer>
-        <Script
+        {/* Plain scripts: Cuelinks’ dashboard checker parses raw HTML; next/script wrapped the config in __next_s. */}
+        <script
           id="cuelinks-widget-config"
-          strategy="beforeInteractive"
+          type="text/javascript"
           dangerouslySetInnerHTML={{
-            __html: `var cuelinks = { key: ${JSON.stringify(CUELINKS_WIDGET_KEY)} };`,
+            __html: `var cuelinks = { key: '${CUELINKS_KEY_ESCAPED}' };`,
           }}
         />
-        <Script
+        <script
           id="cuelinks-widget"
+          async
           src="https://cdn-widget.cuelinks.com/js/cuelinks.js"
-          strategy="afterInteractive"
         />
         {!CUELINKS_DISABLE_V2 ? (
-          <Script id="cuelinks-linkkit-v2" strategy="afterInteractive">
-            {`
-${CUELINKS_PUB_ID ? `var pubID = ${JSON.stringify(CUELINKS_PUB_ID)};\n` : ""}var cId = ${JSON.stringify(CUELINKS_CID)};
-
+          <script
+            id="cuelinks-linkkit-v2"
+            type="text/javascript"
+            dangerouslySetInnerHTML={{
+              __html: `
+${CUELINKS_PUB_ID_ESCAPED ? `var pubID = '${CUELINKS_PUB_ID_ESCAPED}';\n` : ""}var cId = '${CUELINKS_CID_ESCAPED}';
 (function(d, t) {
   var s = document.createElement('script');
   s.type = 'text/javascript';
@@ -117,8 +133,9 @@ ${CUELINKS_PUB_ID ? `var pubID = ${JSON.stringify(CUELINKS_PUB_ID)};\n` : ""}var
   s.src = (document.location.protocol == 'https:' ? 'https://cdn0.cuelinks.com/js/' : 'http://cdn0.cuelinks.com/js/') + 'cuelinksv2.js';
   document.getElementsByTagName('body')[0].appendChild(s);
 }());
-            `}
-          </Script>
+`.trim(),
+            }}
+          />
         ) : null}
       </body>
     </html>

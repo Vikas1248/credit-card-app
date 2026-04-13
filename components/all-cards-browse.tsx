@@ -15,6 +15,7 @@ import {
   buildCatalogSearchHaystack,
   matchesCatalogSearchQuery,
 } from "@/lib/search/catalogTextSearch";
+import { cardViewDetailsButtonClass } from "@/lib/cardCta";
 import type { CardNetwork } from "@/lib/types/card";
 
 type CreditCard = {
@@ -76,9 +77,6 @@ function sortCardsByIdOrder(
 
 const inputClass =
   "w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm transition placeholder:text-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-400";
-
-const cardDetailsButtonClass =
-  "inline-flex min-h-10 w-full items-center justify-center rounded-xl border-2 border-indigo-400/85 bg-indigo-50 px-3 text-sm font-semibold text-indigo-950 shadow-sm transition hover:border-indigo-500 hover:bg-indigo-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 dark:border-indigo-400/55 dark:bg-indigo-950/45 dark:text-indigo-100 dark:hover:border-indigo-400 dark:hover:bg-indigo-900/55";
 
 const sectionShell =
   "rounded-3xl border border-zinc-300/90 bg-white p-8 shadow-md shadow-zinc-900/[0.06] ring-1 ring-zinc-950/[0.04] dark:border-zinc-600 dark:bg-zinc-900/70 dark:shadow-black/40 dark:ring-white/[0.06] sm:p-10";
@@ -845,9 +843,9 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                   <div className="flex w-full shrink-0 flex-col gap-2 sm:ml-auto sm:w-[9.5rem]">
                     <Link
                       href={`/card/${card.id}`}
-                      className={cardDetailsButtonClass}
+                      className={`${cardViewDetailsButtonClass} w-full`}
                     >
-                      Details
+                      View details
                     </Link>
                     {isAxisBankCard(card.bank) ? (
                       <AxisApplyLink className="w-full" />

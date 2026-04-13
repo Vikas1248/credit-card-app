@@ -14,6 +14,7 @@ import {
 } from "@/lib/spendCategories";
 import type { CardNetwork } from "@/lib/types/card";
 import { SpendCategoryIcon } from "@/components/spend-category-icons";
+import { cardViewDetailsButtonClass } from "@/lib/cardCta";
 
 type CreditCard = {
   id: string;
@@ -339,7 +340,7 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                       </p>
                       <Link
                         href={`/card/${card.id}`}
-                        className="inline-flex min-h-10 w-full items-center justify-center rounded-xl border-2 border-indigo-400/85 bg-indigo-50 px-4 text-sm font-semibold text-indigo-950 shadow-sm transition hover:border-indigo-500 hover:bg-indigo-100 dark:border-indigo-400/55 dark:bg-indigo-950/45 dark:text-indigo-100 dark:hover:bg-indigo-900/55 sm:w-auto"
+                        className={`${cardViewDetailsButtonClass} w-full sm:w-auto`}
                       >
                         View details
                       </Link>
