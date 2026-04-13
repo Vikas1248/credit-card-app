@@ -271,8 +271,9 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
       return;
     }
     let cancelled = false;
-    setSearchAiLoading(true);
     const timer = window.setTimeout(() => {
+      if (cancelled) return;
+      setSearchAiLoading(true);
       void (async () => {
         try {
           const params = new URLSearchParams({ q });
@@ -299,6 +300,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
+      setSearchAiLoading(false);
     };
   }, [search, cards.length]);
 
@@ -543,12 +545,18 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search cards or banks…"
-            className={headerInputClass}
+            className={`${headerInputClass} ${searchAiLoading ? "pr-11" : ""}`}
             aria-label="Search cards"
+            aria-busy={searchAiLoading}
           />
           {searchAiLoading ? (
-            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-medium text-indigo-600 dark:text-indigo-400">
-              AI ranking…
+            <span
+              className="pointer-events-none absolute right-3.5 top-1/2 flex -translate-y-1/2 items-center text-indigo-600 dark:text-indigo-400"
+              role="status"
+              aria-live="polite"
+            >
+              <Spinner className="h-4 w-4" />
+              <span className="sr-only">Updating relevance order…</span>
             </span>
           ) : null}
         </div>
