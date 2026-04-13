@@ -61,7 +61,15 @@ function formatInr(value: number): string {
   }).format(value);
 }
 
-type AnnualFeeBand = "any" | "free" | "low" | "mid" | "high";
+type AnnualFeeBand =
+  | "any"
+  | "free"
+  | "r1_500"
+  | "r501_1000"
+  | "r1001_2500"
+  | "r2501_5000"
+  | "r5001_10000"
+  | "r10001_plus";
 
 type SpendFocus = "all" | "dining" | "travel" | "shopping" | "fuel";
 
@@ -71,12 +79,18 @@ function annualFeeMatchesBand(fee: number, band: AnnualFeeBand): boolean {
       return true;
     case "free":
       return fee === 0;
-    case "low":
-      return fee >= 1 && fee <= 2500;
-    case "mid":
+    case "r1_500":
+      return fee >= 1 && fee <= 500;
+    case "r501_1000":
+      return fee >= 501 && fee <= 1000;
+    case "r1001_2500":
+      return fee >= 1001 && fee <= 2500;
+    case "r2501_5000":
       return fee >= 2501 && fee <= 5000;
-    case "high":
-      return fee >= 5001;
+    case "r5001_10000":
+      return fee >= 5001 && fee <= 10000;
+    case "r10001_plus":
+      return fee >= 10001;
     default:
       return true;
   }
@@ -631,8 +645,12 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
     return sortCardsByIdOrder(list, null);
   }, [textFilteredCards, search, searchAiOrder, browseSort, browseAiOrder]);
 
+  const showFacetSidebar = !loading && !error && cards.length > 0;
+
+  const sidebarChipClass = `${facetChipBaseClass} w-full justify-start`;
+
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-14">
+    <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
       <section className={sectionShell}>
         <div className={sectionHeaderRowClass}>
           <div className={sectionHeaderAccentClass} aria-hidden />
@@ -660,7 +678,8 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 ) : null}
               </p>
               <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-                Refine with the chips below; open the sort menu to change order.
+                Refine from the left panel on wide screens (filters below the list
+                on mobile); open the sort menu to change order.
               </p>
             </div>
             {!loading && !error && cards.length > 0 ? (
@@ -697,57 +716,20 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
           </div>
         </div>
 
-        <div className="relative mt-6 min-w-0">
-          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-              aria-hidden
+        <div
+          className={
+            showFacetSidebar
+              ? "mt-6 flex flex-col-reverse gap-6 lg:grid lg:grid-cols-[minmax(220px,260px)_minmax(0,1fr)] lg:gap-8 lg:items-start"
+              : "mt-6"
+          }
+        >
+          {showFacetSidebar ? (
+            <aside
+              id="browse-filter-panel"
+              className="mb-6 shrink-0 rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 dark:border-zinc-700 dark:bg-zinc-950/40 sm:p-5 lg:sticky lg:top-24 lg:mb-0 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:overflow-x-hidden lg:pr-1"
+              aria-label="Catalog filters"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-5.2-5.2M11 18a7 7 0 100-14 7 7 0 000 14z"
-              />
-            </svg>
-          </span>
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search cards or banks…"
-            className={`${headerInputClass} ${searchAiLoading ? "pr-11" : ""}`}
-            aria-label="Search cards"
-            aria-busy={searchAiLoading}
-          />
-          {searchAiLoading ? (
-            <span
-              className="pointer-events-none absolute right-3.5 top-1/2 flex -translate-y-1/2 items-center text-indigo-600 dark:text-indigo-400"
-              role="status"
-              aria-live="polite"
-            >
-              <Spinner className="h-4 w-4" />
-              <span className="sr-only">Updating relevance order…</span>
-            </span>
-          ) : null}
-        </div>
-        <p className="mt-2 text-center text-xs text-zinc-500 dark:text-zinc-400">
-          <Link
-            href="/#categories"
-            className="font-medium text-blue-600 hover:underline dark:text-blue-400"
-          >
-            Browse by category (all cards on each list)
-          </Link>
-        </p>
-
-        {!loading && !error && cards.length > 0 ? (
-          <div
-            id="browse-filter-panel"
-            className="mt-6 space-y-5 rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 dark:border-zinc-700 dark:bg-zinc-950/40 sm:p-5"
-          >
+            <div className="space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                 Refine catalog
@@ -774,7 +756,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 Bank
               </p>
               <div
-                className="-mx-1 flex gap-2 overflow-x-auto pb-1 pt-0.5"
+                className="flex flex-col gap-2"
                 role="group"
                 aria-label="Filter by bank"
               >
@@ -786,7 +768,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                       type="button"
                       onClick={() => toggleBankFilter(bank)}
                       aria-pressed={on}
-                      className={`${facetChipBaseClass} shrink-0 ${
+                      className={`${sidebarChipClass} ${
                         on
                           ? "border-blue-500 bg-blue-50 text-blue-900 ring-2 ring-blue-500/25 dark:border-blue-400 dark:bg-blue-950/50 dark:text-blue-100"
                           : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-zinc-500"
@@ -797,7 +779,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                       >
                         {bankInitials(bank)}
                       </span>
-                      <span className="max-w-[9rem] truncate sm:max-w-[11rem]">
+                      <span className="min-w-0 flex-1 truncate text-left">
                         {shortBankLabel(bank)}
                       </span>
                     </button>
@@ -811,7 +793,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 Strongest category reward
               </p>
               <div
-                className="flex flex-wrap gap-2"
+                className="flex flex-col gap-2"
                 role="group"
                 aria-label="Filter by strongest reward category"
               >
@@ -851,7 +833,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                       type="button"
                       onClick={() => setFilterSpendFocus(id)}
                       aria-pressed={on}
-                      className={`${facetChipBaseClass} ${
+                      className={`${sidebarChipClass} ${
                         on
                           ? "border-indigo-500 bg-indigo-50 text-indigo-950 ring-2 ring-indigo-500/25 dark:border-indigo-400 dark:bg-indigo-950/40 dark:text-indigo-50"
                           : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
@@ -872,7 +854,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 Reward program
               </p>
               <div
-                className="flex flex-wrap gap-2"
+                className="flex flex-col gap-2"
                 role="group"
                 aria-label="Filter by reward type"
               >
@@ -898,7 +880,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                       type="button"
                       onClick={() => setFilterRewardType(id)}
                       aria-pressed={on}
-                      className={`${facetChipBaseClass} ${
+                      className={`${sidebarChipClass} ${
                         on
                           ? "border-emerald-600 bg-emerald-50 text-emerald-950 ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/35 dark:text-emerald-50"
                           : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
@@ -919,7 +901,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 Annual fee
               </p>
               <div
-                className="flex flex-wrap gap-2"
+                className="flex flex-col gap-2"
                 role="group"
                 aria-label="Filter by annual fee range"
               >
@@ -927,9 +909,12 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                   [
                     { id: "any" as const, label: "Any" },
                     { id: "free" as const, label: "Free (₹0)" },
-                    { id: "low" as const, label: "₹1 – ₹2,500" },
-                    { id: "mid" as const, label: "₹2,501 – ₹5,000" },
-                    { id: "high" as const, label: "Above ₹5,000" },
+                    { id: "r1_500" as const, label: "₹1 – ₹500" },
+                    { id: "r501_1000" as const, label: "₹501 – ₹1,000" },
+                    { id: "r1001_2500" as const, label: "₹1,001 – ₹2,500" },
+                    { id: "r2501_5000" as const, label: "₹2,501 – ₹5,000" },
+                    { id: "r5001_10000" as const, label: "₹5,001 – ₹10,000" },
+                    { id: "r10001_plus" as const, label: "₹10,001+" },
                   ] as const
                 ).map(({ id, label }) => {
                   const on = filterAnnualBand === id;
@@ -939,7 +924,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                       type="button"
                       onClick={() => setFilterAnnualBand(id)}
                       aria-pressed={on}
-                      className={`${facetChipBaseClass} ${
+                      className={`${sidebarChipClass} ${
                         on
                           ? "border-amber-600 bg-amber-50 text-amber-950 ring-2 ring-amber-500/25 dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-50"
                           : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
@@ -957,7 +942,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 Network
               </p>
               <div
-                className="flex flex-wrap gap-2"
+                className="flex flex-col gap-2"
                 role="group"
                 aria-label="Filter by card network"
               >
@@ -984,7 +969,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                         if (!netLocked) setFilterNetwork(id);
                       }}
                       aria-pressed={on}
-                      className={`${facetChipBaseClass} ${
+                      className={`${sidebarChipClass} ${
                         netLocked ? "cursor-not-allowed opacity-90" : ""
                       } ${
                         on
@@ -1008,8 +993,56 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 </p>
               ) : null}
             </div>
-          </div>
-        ) : null}
+            </div>
+          </aside>
+          ) : null}
+
+          <div className="min-w-0">
+            <div className="relative min-w-0">
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  aria-hidden
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 21l-5.2-5.2M11 18a7 7 0 100-14 7 7 0 000 14z"
+                  />
+                </svg>
+              </span>
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search cards or banks…"
+                className={`${headerInputClass} ${searchAiLoading ? "pr-11" : ""}`}
+                aria-label="Search cards"
+                aria-busy={searchAiLoading}
+              />
+              {searchAiLoading ? (
+                <span
+                  className="pointer-events-none absolute right-3.5 top-1/2 flex -translate-y-1/2 items-center text-indigo-600 dark:text-indigo-400"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <Spinner className="h-4 w-4" />
+                  <span className="sr-only">Updating relevance order…</span>
+                </span>
+              ) : null}
+            </div>
+            <p className="mt-2 text-center text-xs text-zinc-500 dark:text-zinc-400 sm:text-left">
+              <Link
+                href="/#categories"
+                className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+              >
+                Browse by category (all cards on each list)
+              </Link>
+            </p>
 
         {!loading && !error && cards.length > 0 && browseSortOpen ? (
           <div
@@ -1192,6 +1225,8 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
             ))}
           </ul>
         )}
+          </div>
+        </div>
       </section>
     </main>
   );
