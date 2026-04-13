@@ -9,8 +9,13 @@ import Link from "next/link";
 import Script from "next/script";
 import "./globals.css";
 
-/** Cuelinks publisher id (affiliate link verification / deep linking). */
-const CUELINKS_PUBLISHER_ID = "281873";
+/**
+ * Cuelinks **Channel ID** (Account → My Channels on cuelinks.com).
+ * This is not the same as a linksredirect.com `cid=` query param.
+ * Set NEXT_PUBLIC_CUELINKS_CHANNEL_ID in Vercel / .env.local if the default is wrong.
+ */
+const CUELINKS_CHANNEL_ID =
+  process.env.NEXT_PUBLIC_CUELINKS_CHANNEL_ID?.trim() || "281873";
 
 const siteUrl = getSiteUrl();
 
@@ -73,14 +78,17 @@ export default function RootLayout({
         </footer>
         <Script id="cuelinks-affiliate" strategy="afterInteractive">
           {`
-            var cId = '${CUELINKS_PUBLISHER_ID}';
-            (function() {
+            (function () {
+              var id = ${JSON.stringify(CUELINKS_CHANNEL_ID)};
+              window.cId = id;
+              if (typeof globalThis !== 'undefined') globalThis.cId = id;
               var s = document.createElement('script');
               s.type = 'text/javascript';
               s.async = true;
-              s.src = (document.location.protocol === 'https:'
-                ? 'https://cdn0.cuelinks.com/js/'
-                : 'http://cdn0.cuelinks.com/js/') + 'cuelinksv2.js';
+              s.src =
+                (document.location.protocol === 'https:'
+                  ? 'https://cdn0.cuelinks.com/js/'
+                  : 'http://cdn0.cuelinks.com/js/') + 'cuelinksv2.js';
               document.body.appendChild(s);
             })();
           `}
