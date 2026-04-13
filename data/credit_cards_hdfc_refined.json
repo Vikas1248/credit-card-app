@@ -39,6 +39,85 @@
       "source": "hdfc_bank",
       "travel_reward": 0.01,
       "welcome_offer": "Complimentary Swiggy One membership + activation benefits"
+    },
+    {
+      "affiliate_link": "https://linksredirect.com/?cid=281873&source=linkkit&url=https%3A%2F%2Fwww.tataneu.com%2Fcreditcard%2F",
+      "ai_best_for": "Frequent Tata ecosystem users (BigBasket, Croma, Air India, Tata Neu app)",
+      "ai_cons": "Rewards locked in NeuCoins ecosystem, limited flexibility outside Tata brands",
+      "ai_not_ideal_for": "Users looking for pure cashback or non-Tata ecosystem rewards",
+      "ai_pros": "High rewards within Tata ecosystem, UPI rewards, lounge access (Infinity)",
+      "annual_fee": 1499,
+      "bank": "HDFC Bank",
+      "best_for": "Tata ecosystem spending and UPI rewards",
+      "card_name": "Tata Neu Infinity HDFC Bank Credit Card",
+      "dining_reward": 0.05,
+      "travel_reward": 0.05,
+      "shopping_reward": 0.1,
+      "fuel_reward": 0.0,
+      "joining_fee": 1499,
+      "key_benefits": [
+        "Up to 10% value back as NeuCoins on Tata Neu app spends",
+        "5% NeuCoins on Tata partner brands (BigBasket, Croma, Titan, etc.)",
+        "1.5% NeuCoins on all other spends",
+        "UPI rewards via RuPay card",
+        "Airport lounge access (domestic + international)",
+        "1% fuel surcharge waiver",
+        "Annual fee waiver on ₹3L spend"
+      ],
+      "lounge_access": "Domestic + International lounge access",
+      "network": "Visa / Mastercard / RuPay",
+      "reward_conversion": {
+        "description": "NeuCoins: 1 NeuCoin = ₹1 (usable on Tata Neu platform)",
+        "points_per_rupee": 0.01
+      },
+      "reward_type": "points",
+      "membership_rewards_inr_per_point": 1.0,
+      "source": "hdfc_bank",
+      "welcome_offer": "1,499 NeuCoins on joining (fee reversal)",
+      "reward_rate": "10% Tata Neu, 5% Tata brands, 1.5% base",
+      "links": {
+        "apply": "https://linksredirect.com/?cid=281873&source=linkkit&url=https%3A%2F%2Fwww.tataneu.com%2Fcreditcard%2F",
+        "official": "https://www.tataneu.com/creditcard/"
+      }
+    },
+    {
+      "affiliate_link": "https://linksredirect.com/?cid=281873&source=linkkit&url=https%3A%2F%2Fwww.tataneu.com%2Fcreditcard%2F",
+      "ai_best_for": "Entry-level Tata ecosystem users",
+      "ai_cons": "Lower reward rate vs Infinity, limited premium benefits",
+      "ai_not_ideal_for": "High spenders wanting maximum rewards",
+      "ai_pros": "Low annual fee, good Tata rewards, UPI support",
+      "annual_fee": 499,
+      "bank": "HDFC Bank",
+      "best_for": "Affordable Tata ecosystem rewards",
+      "card_name": "Tata Neu Plus HDFC Bank Credit Card",
+      "dining_reward": 0.02,
+      "travel_reward": 0.02,
+      "shopping_reward": 0.07,
+      "fuel_reward": 0.0,
+      "joining_fee": 499,
+      "key_benefits": [
+        "Up to 7% value back as NeuCoins on Tata Neu spends",
+        "2% NeuCoins on Tata brands",
+        "1% NeuCoins on other spends",
+        "UPI rewards support",
+        "1% fuel surcharge waiver",
+        "Annual fee waiver on ₹1L spend"
+      ],
+      "lounge_access": "Milestone-based domestic lounge access",
+      "network": "Visa / Mastercard / RuPay",
+      "reward_conversion": {
+        "description": "NeuCoins: 1 NeuCoin = ₹1 (usable on Tata Neu ecosystem)",
+        "points_per_rupee": 0.01
+      },
+      "reward_type": "points",
+      "membership_rewards_inr_per_point": 1.0,
+      "source": "hdfc_bank",
+      "welcome_offer": "499 NeuCoins on activation",
+      "reward_rate": "7% Tata Neu, 2% Tata brands, 1% base",
+      "links": {
+        "apply": "https://linksredirect.com/?cid=281873&source=linkkit&url=https%3A%2F%2Fwww.tataneu.com%2Fcreditcard%2F",
+        "official": "https://www.tataneu.com/creditcard/"
+      }
     }
   ]
 }
