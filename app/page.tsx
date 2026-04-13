@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { AmexGenericApplyLink } from "@/components/amex-generic-apply-link";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
 import { FeaturedCardsCarousel } from "@/components/featured-cards-carousel";
 import { HdfcApplyLink } from "@/components/hdfc-apply-link";
 import { SbiApplyLink } from "@/components/sbi-apply-link";
+import { isAmexCardUsingGenericApply } from "@/lib/cards/amexGenericApply";
 import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
 import { isAxisBankCard } from "@/lib/cards/axisApply";
 import { hdfcCardShowsApply } from "@/lib/cards/hdfcApply";
@@ -1033,6 +1035,7 @@ export default function Home() {
                           className={
                             isAxisBankCard(card.bank) ||
                             isAmexPlatinumReserveCard(card.card_name, card.bank) ||
+                            isAmexCardUsingGenericApply(card.card_name, card.bank) ||
                             isSbiCard(card.bank) ||
                             showHdfcApply
                               ? "grid grid-cols-1 gap-2 sm:grid-cols-2"
@@ -1053,6 +1056,12 @@ export default function Home() {
                             card.bank
                           ) ? (
                             <AmexPlatinumReserveApplyLink fullWidth />
+                          ) : null}
+                          {isAmexCardUsingGenericApply(
+                            card.card_name,
+                            card.bank
+                          ) ? (
+                            <AmexGenericApplyLink fullWidth />
                           ) : null}
                           {isSbiCard(card.bank) ? (
                             <SbiApplyLink fullWidth />
@@ -1224,6 +1233,12 @@ export default function Home() {
                           className="mt-2"
                         />
                       ) : null}
+                      {isAmexCardUsingGenericApply(
+                        compareLeft.card_name,
+                        compareLeft.bank
+                      ) ? (
+                        <AmexGenericApplyLink fullWidth className="mt-2" />
+                      ) : null}
                       {isSbiCard(compareLeft.bank) ? (
                         <SbiApplyLink fullWidth className="mt-2" />
                       ) : null}
@@ -1259,6 +1274,12 @@ export default function Home() {
                           fullWidth
                           className="mt-2"
                         />
+                      ) : null}
+                      {isAmexCardUsingGenericApply(
+                        compareRight.card_name,
+                        compareRight.bank
+                      ) ? (
+                        <AmexGenericApplyLink fullWidth className="mt-2" />
                       ) : null}
                       {isSbiCard(compareRight.bank) ? (
                         <SbiApplyLink fullWidth className="mt-2" />

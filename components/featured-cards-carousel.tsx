@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AmexGenericApplyLink } from "@/components/amex-generic-apply-link";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
 import { HdfcApplyLink } from "@/components/hdfc-apply-link";
 import { SbiApplyLink } from "@/components/sbi-apply-link";
+import { isAmexCardUsingGenericApply } from "@/lib/cards/amexGenericApply";
 import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
 import { isAxisBankCard } from "@/lib/cards/axisApply";
 import { hdfcCardShowsApply } from "@/lib/cards/hdfcApply";
@@ -81,6 +83,9 @@ function CardReferralApply({ card }: { card: CardModel }) {
   if (isAmexPlatinumReserveCard(card.card_name, card.bank)) {
     return <AmexPlatinumReserveApplyLink fullWidth />;
   }
+  if (isAmexCardUsingGenericApply(card.card_name, card.bank)) {
+    return <AmexGenericApplyLink fullWidth />;
+  }
   if (isSbiCard(card.bank)) {
     return <SbiApplyLink fullWidth />;
   }
@@ -94,6 +99,7 @@ function cardHasReferralApply(card: CardModel): boolean {
   return (
     isAxisBankCard(card.bank) ||
     isAmexPlatinumReserveCard(card.card_name, card.bank) ||
+    isAmexCardUsingGenericApply(card.card_name, card.bank) ||
     isSbiCard(card.bank) ||
     hdfcCardShowsApply(card.bank, card.metadata)
   );

@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AmexGenericApplyLink } from "@/components/amex-generic-apply-link";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
 import { HdfcApplyLink } from "@/components/hdfc-apply-link";
 import { SbiApplyLink } from "@/components/sbi-apply-link";
+import { isAmexCardUsingGenericApply } from "@/lib/cards/amexGenericApply";
 import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
 import { isAxisBankCard } from "@/lib/cards/axisApply";
 import { hdfcCardShowsApply } from "@/lib/cards/hdfcApply";
@@ -855,6 +857,9 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                     ) : null}
                     {isAmexPlatinumReserveCard(card.card_name, card.bank) ? (
                       <AmexPlatinumReserveApplyLink className="w-full" />
+                    ) : null}
+                    {isAmexCardUsingGenericApply(card.card_name, card.bank) ? (
+                      <AmexGenericApplyLink className="w-full" />
                     ) : null}
                     {isSbiCard(card.bank) ? (
                       <SbiApplyLink className="w-full" />
