@@ -6,9 +6,11 @@ import { useEffect, useMemo, useState } from "react";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
 import { FeaturedCardsCarousel } from "@/components/featured-cards-carousel";
+import { HdfcApplyLink } from "@/components/hdfc-apply-link";
 import { SbiApplyLink } from "@/components/sbi-apply-link";
 import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
 import { isAxisBankCard } from "@/lib/cards/axisApply";
+import { hdfcCardShowsApply } from "@/lib/cards/hdfcApply";
 import { isSbiCard } from "@/lib/cards/sbiApply";
 import { SpendCategoryIcon } from "@/components/spend-category-icons";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
@@ -895,6 +897,12 @@ export default function Home() {
                 {recommendations.map((card, index) => {
                   const isBest = index === 0;
                   const monthlyTotal = card.yearly_reward_inr / 12;
+                  const pickMetadata =
+                    cards.find((c) => c.id === card.id)?.metadata ?? null;
+                  const showHdfcApply = hdfcCardShowsApply(
+                    card.bank,
+                    pickMetadata
+                  );
                   return (
                     <article
                       key={card.id}
@@ -1025,7 +1033,8 @@ export default function Home() {
                           className={
                             isAxisBankCard(card.bank) ||
                             isAmexPlatinumReserveCard(card.card_name, card.bank) ||
-                            isSbiCard(card.bank)
+                            isSbiCard(card.bank) ||
+                            showHdfcApply
                               ? "grid grid-cols-1 gap-2 sm:grid-cols-2"
                               : "grid grid-cols-1 gap-2"
                           }
@@ -1047,6 +1056,12 @@ export default function Home() {
                           ) : null}
                           {isSbiCard(card.bank) ? (
                             <SbiApplyLink fullWidth />
+                          ) : null}
+                          {showHdfcApply ? (
+                            <HdfcApplyLink
+                              metadata={pickMetadata}
+                              fullWidth
+                            />
                           ) : null}
                         </div>
                       </div>
@@ -1212,6 +1227,16 @@ export default function Home() {
                       {isSbiCard(compareLeft.bank) ? (
                         <SbiApplyLink fullWidth className="mt-2" />
                       ) : null}
+                      {hdfcCardShowsApply(
+                        compareLeft.bank,
+                        compareLeft.metadata
+                      ) ? (
+                        <HdfcApplyLink
+                          metadata={compareLeft.metadata}
+                          fullWidth
+                          className="mt-2"
+                        />
+                      ) : null}
                     </th>
                     <th className="px-4 py-3 font-semibold text-zinc-700 dark:text-zinc-200">
                       <Link
@@ -1237,6 +1262,16 @@ export default function Home() {
                       ) : null}
                       {isSbiCard(compareRight.bank) ? (
                         <SbiApplyLink fullWidth className="mt-2" />
+                      ) : null}
+                      {hdfcCardShowsApply(
+                        compareRight.bank,
+                        compareRight.metadata
+                      ) ? (
+                        <HdfcApplyLink
+                          metadata={compareRight.metadata}
+                          fullWidth
+                          className="mt-2"
+                        />
                       ) : null}
                     </th>
                   </tr>

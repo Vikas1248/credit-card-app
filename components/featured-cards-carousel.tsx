@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
+import { HdfcApplyLink } from "@/components/hdfc-apply-link";
 import { SbiApplyLink } from "@/components/sbi-apply-link";
 import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
 import { isAxisBankCard } from "@/lib/cards/axisApply";
+import { hdfcCardShowsApply } from "@/lib/cards/hdfcApply";
 import { issuerHeroPlasticClass } from "@/lib/cards/issuerHeroPlastic";
 import { isSbiCard } from "@/lib/cards/sbiApply";
 import {
@@ -23,6 +25,7 @@ type CardModel = {
   reward_type: string;
   best_for: string | null;
   key_benefits: string | null;
+  metadata?: Record<string, unknown> | null;
 };
 
 export type FeaturedCarouselItem = {
@@ -81,6 +84,9 @@ function CardReferralApply({ card }: { card: CardModel }) {
   if (isSbiCard(card.bank)) {
     return <SbiApplyLink fullWidth />;
   }
+  if (hdfcCardShowsApply(card.bank, card.metadata)) {
+    return <HdfcApplyLink metadata={card.metadata} fullWidth />;
+  }
   return null;
 }
 
@@ -88,7 +94,8 @@ function cardHasReferralApply(card: CardModel): boolean {
   return (
     isAxisBankCard(card.bank) ||
     isAmexPlatinumReserveCard(card.card_name, card.bank) ||
-    isSbiCard(card.bank)
+    isSbiCard(card.bank) ||
+    hdfcCardShowsApply(card.bank, card.metadata)
   );
 }
 

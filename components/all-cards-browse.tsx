@@ -5,9 +5,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
+import { HdfcApplyLink } from "@/components/hdfc-apply-link";
 import { SbiApplyLink } from "@/components/sbi-apply-link";
 import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
 import { isAxisBankCard } from "@/lib/cards/axisApply";
+import { hdfcCardShowsApply } from "@/lib/cards/hdfcApply";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import { isSbiCard } from "@/lib/cards/sbiApply";
@@ -35,6 +37,7 @@ type CreditCard = {
   travel_reward: number | null;
   shopping_reward: number | null;
   fuel_reward: number | null;
+  metadata?: Record<string, unknown> | null;
 };
 
 type BrowseSortMode =
@@ -855,6 +858,12 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                     ) : null}
                     {isSbiCard(card.bank) ? (
                       <SbiApplyLink className="w-full" />
+                    ) : null}
+                    {hdfcCardShowsApply(card.bank, card.metadata) ? (
+                      <HdfcApplyLink
+                        metadata={card.metadata}
+                        className="w-full"
+                      />
                     ) : null}
                   </div>
                 </div>
