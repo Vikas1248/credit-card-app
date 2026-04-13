@@ -52,14 +52,6 @@ type BrowseSortMode =
   | "joining_desc"
   | "ai";
 
-function parseOptionalInrBound(raw: string): number | null {
-  const t = raw.trim();
-  if (!t) return null;
-  const n = Number(t);
-  if (!Number.isFinite(n) || n < 0) return null;
-  return n;
-}
-
 function formatInr(value: number): string {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -68,6 +60,86 @@ function formatInr(value: number): string {
     maximumFractionDigits: 2,
   }).format(value);
 }
+
+type AnnualFeeBand = "any" | "free" | "low" | "mid" | "high";
+
+type SpendFocus = "all" | "dining" | "travel" | "shopping" | "fuel";
+
+function annualFeeMatchesBand(fee: number, band: AnnualFeeBand): boolean {
+  switch (band) {
+    case "any":
+      return true;
+    case "free":
+      return fee === 0;
+    case "low":
+      return fee >= 1 && fee <= 2500;
+    case "mid":
+      return fee >= 2501 && fee <= 5000;
+    case "high":
+      return fee >= 5001;
+    default:
+      return true;
+  }
+}
+
+function cardStrongInSpendFocus(
+  card: CreditCard,
+  focus: Exclude<SpendFocus, "all">
+): boolean {
+  const rates: { key: SpendFocus; v: number | null }[] = [
+    { key: "dining", v: card.dining_reward },
+    { key: "travel", v: card.travel_reward },
+    { key: "shopping", v: card.shopping_reward },
+    { key: "fuel", v: card.fuel_reward },
+  ];
+  const positive = rates.filter(
+    (x): x is { key: SpendFocus; v: number } =>
+      typeof x.v === "number" && x.v > 0
+  );
+  if (positive.length === 0) return false;
+  const m = Math.max(...positive.map((x) => x.v));
+  const mine = rates.find((x) => x.key === focus)?.v;
+  return typeof mine === "number" && mine > 0 && mine >= m - 1e-9;
+}
+
+/** Short label for bank filter chips (not official marks). */
+function shortBankLabel(bank: string): string {
+  return bank
+    .replace(/\s+Bank$/i, "")
+    .replace(/\s+Card$/i, "")
+    .trim();
+}
+
+function bankInitials(bank: string): string {
+  const words = bank.trim().split(/\s+/).filter(Boolean);
+  if (words.length >= 2) {
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
+  const w = words[0] ?? "?";
+  return w.slice(0, 2).toUpperCase();
+}
+
+function issuerChipSurfaceClass(bank: string): string {
+  const b = bank.toLowerCase();
+  if (b.includes("axis"))
+    return "border-[#97144D]/35 bg-[#97144D]/12 text-[#6b0f36] dark:border-[#c43d6b]/40 dark:bg-[#c43d6b]/15 dark:text-[#f5c4d4]";
+  if (b.includes("american express") || b === "amex")
+    return "border-[#006FCF]/35 bg-[#006FCF]/10 text-[#004a9e] dark:border-[#2e8fdf]/40 dark:bg-[#2e8fdf]/12 dark:text-[#b8daf7]";
+  if (b.includes("sbi"))
+    return "border-[#0D4580]/35 bg-[#0D4580]/10 text-[#0a3563] dark:border-[#3d7ab8]/40 dark:bg-[#3d7ab8]/12 dark:text-[#c5daf0]";
+  if (b.includes("hdfc"))
+    return "border-[#004C8F]/35 bg-[#004C8F]/10 text-[#00386a] dark:border-[#3d8fd4]/40 dark:bg-[#3d8fd4]/12 dark:text-[#c2ddf9]";
+  if (b.includes("indusind"))
+    return "border-[#C4151C]/35 bg-[#C4151C]/10 text-[#8f0f14] dark:border-[#e85c62]/40 dark:bg-[#e85c62]/12 dark:text-[#fcd4d6]";
+  if (b.includes("icici"))
+    return "border-[#F37021]/40 bg-[#F37021]/12 text-[#a34a16] dark:border-[#ff9a5c]/35 dark:bg-[#ff9a5c]/12 dark:text-[#ffd4bc]";
+  if (b.includes("kotak"))
+    return "border-[#ED232A]/35 bg-[#ED232A]/10 text-[#a0181d] dark:border-[#f56a70]/40 dark:bg-[#f56a70]/12 dark:text-[#fdd4d6]";
+  return "border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200";
+}
+
+const facetChipBaseClass =
+  "inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-left text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600";
 
 function sortCardsByIdOrder(
   list: CreditCard[],
@@ -132,24 +204,6 @@ function Spinner({ className }: { className?: string }) {
   );
 }
 
-function FilterIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      aria-hidden
-    >
-      <line x1="4" y1="6" x2="20" y2="6" />
-      <line x1="7" y1="12" x2="17" y2="12" />
-      <line x1="10" y1="18" x2="14" y2="18" />
-    </svg>
-  );
-}
-
 function SortIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -168,6 +222,132 @@ function SortIcon({ className }: { className?: string }) {
   );
 }
 
+function IconUtensils({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      aria-hidden
+    >
+      <path d="M3 3v18M8 3v9a4 4 0 004 4M21 3v18" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconPlane({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      aria-hidden
+    >
+      <path
+        d="M10.5 19.5L6 21l1.5-4.5M6 21l-3-3M17.5 4.5L22 3l-1.5 4.5M22 3l3 3M8.5 10.5L12 7l8.5 3.5-4 4L12 17l-3.5-6.5z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconShopping({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      aria-hidden
+    >
+      <path
+        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 12H6L5 9z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconFuel({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      aria-hidden
+    >
+      <path
+        d="M4 22V6a2 2 0 012-2h8a2 2 0 012 2v8M4 10h12M8 6h4M18 22V10a2 2 0 114 0v6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconPercent({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      aria-hidden
+    >
+      <path
+        d="M19 5L5 19M9.5 9.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM19.5 14.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconSparkles({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      aria-hidden
+    >
+      <path
+        d="M9.5 3.5L11 8l4.5 1.5L11 11 9.5 15.5 8 11 3.5 9.5 8 8 9.5 3.5zM19 14l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconNetworkCard({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      aria-hidden
+    >
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <path d="M2 10h20" />
+    </svg>
+  );
+}
+
 export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -182,17 +362,16 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
   const [browseSort, setBrowseSort] = useState<BrowseSortMode>("name");
   const [browseAiOrder, setBrowseAiOrder] = useState<string[] | null>(null);
   const [browseAiLoading, setBrowseAiLoading] = useState(false);
-  const [filterMinAnnual, setFilterMinAnnual] = useState("");
-  const [filterMaxAnnual, setFilterMaxAnnual] = useState("");
-  const [filterMinJoining, setFilterMinJoining] = useState("");
-  const [filterMaxJoining, setFilterMaxJoining] = useState("");
+  const [filterAnnualBand, setFilterAnnualBand] =
+    useState<AnnualFeeBand>("any");
+  const [filterBanks, setFilterBanks] = useState<string[]>([]);
+  const [filterSpendFocus, setFilterSpendFocus] = useState<SpendFocus>("all");
   const [filterRewardType, setFilterRewardType] = useState<
     "all" | "cashback" | "points"
   >("all");
   const [filterNetwork, setFilterNetwork] = useState<"all" | CardNetwork>(
     "all"
   );
-  const [browseFilterOpen, setBrowseFilterOpen] = useState(false);
   const [browseSortOpen, setBrowseSortOpen] = useState(false);
 
   const catalogNetworkLock = getOptionalCardNetworkFilter();
@@ -220,22 +399,36 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
 
   const browseFiltersActive = useMemo(
     () =>
-      filterMinAnnual.trim() !== "" ||
-      filterMaxAnnual.trim() !== "" ||
-      filterMinJoining.trim() !== "" ||
-      filterMaxJoining.trim() !== "" ||
+      filterAnnualBand !== "any" ||
+      filterBanks.length > 0 ||
+      filterSpendFocus !== "all" ||
       filterRewardType !== "all" ||
       (!catalogNetworkLock && filterNetwork !== "all"),
     [
-      filterMinAnnual,
-      filterMaxAnnual,
-      filterMinJoining,
-      filterMaxJoining,
+      filterAnnualBand,
+      filterBanks,
+      filterSpendFocus,
       filterRewardType,
       filterNetwork,
       catalogNetworkLock,
     ]
   );
+
+  const catalogBankNames = useMemo(() => {
+    const set = new Set<string>();
+    for (const c of cards) {
+      if (c.bank?.trim()) set.add(c.bank.trim());
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [cards]);
+
+  function toggleBankFilter(bank: string) {
+    setFilterBanks((prev) => {
+      const has = prev.includes(bank);
+      if (has) return prev.filter((b) => b !== bank);
+      return [...prev, bank].sort((a, b) => a.localeCompare(b));
+    });
+  }
 
   const browseSortNonDefault = browseSort !== "name";
 
@@ -345,12 +538,19 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
   }, [browseSort, cards.length]);
 
   const feeTypeFilteredCards = useMemo(() => {
-    const minA = parseOptionalInrBound(filterMinAnnual);
-    const maxA = parseOptionalInrBound(filterMaxAnnual);
-    const minJ = parseOptionalInrBound(filterMinJoining);
-    const maxJ = parseOptionalInrBound(filterMaxJoining);
-
     return cards.filter((c) => {
+      if (filterBanks.length > 0 && !filterBanks.includes(c.bank)) {
+        return false;
+      }
+      if (!annualFeeMatchesBand(c.annual_fee, filterAnnualBand)) {
+        return false;
+      }
+      if (
+        filterSpendFocus !== "all" &&
+        !cardStrongInSpendFocus(c, filterSpendFocus)
+      ) {
+        return false;
+      }
       if (filterRewardType !== "all" && c.reward_type !== filterRewardType) {
         return false;
       }
@@ -361,21 +561,16 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
       ) {
         return false;
       }
-      if (minA !== null && c.annual_fee < minA) return false;
-      if (maxA !== null && c.annual_fee > maxA) return false;
-      if (minJ !== null && c.joining_fee < minJ) return false;
-      if (maxJ !== null && c.joining_fee > maxJ) return false;
       return true;
     });
   }, [
     cards,
+    filterBanks,
+    filterAnnualBand,
+    filterSpendFocus,
     filterRewardType,
     filterNetwork,
     catalogNetworkLock,
-    filterMinAnnual,
-    filterMaxAnnual,
-    filterMinJoining,
-    filterMaxJoining,
   ]);
 
   const textFilteredCards = useMemo(() => {
@@ -465,8 +660,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 ) : null}
               </p>
               <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-                Use the filter and sort icons to narrow the list and change
-                order.
+                Refine with the chips below; open the sort menu to change order.
               </p>
             </div>
             {!loading && !error && cards.length > 0 ? (
@@ -478,32 +672,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 <button
                   type="button"
                   onClick={() => {
-                    setBrowseFilterOpen((o) => !o);
-                    setBrowseSortOpen(false);
-                  }}
-                  className={`${browseToolbarBtnClass} border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800 ${
-                    browseFilterOpen
-                      ? "border-blue-400 ring-2 ring-blue-500/30 dark:border-blue-500/50"
-                      : ""
-                  }`}
-                  aria-expanded={browseFilterOpen}
-                  aria-controls="browse-filter-panel"
-                  title="Filter cards"
-                >
-                  <FilterIcon className="h-5 w-5" />
-                  <span className="sr-only">Filter</span>
-                  {browseFiltersActive ? (
-                    <span
-                      className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-blue-500"
-                      aria-hidden
-                    />
-                  ) : null}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
                     setBrowseSortOpen((o) => !o);
-                    setBrowseFilterOpen(false);
                   }}
                   className={`${browseToolbarBtnClass} border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800 ${
                     browseSortOpen
@@ -574,132 +743,271 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
           </Link>
         </p>
 
-        {!loading && !error && cards.length > 0 && browseFilterOpen ? (
+        {!loading && !error && cards.length > 0 ? (
           <div
             id="browse-filter-panel"
-            className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50/60 p-5 dark:border-zinc-700 dark:bg-zinc-950/40"
+            className="mt-6 space-y-5 rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 dark:border-zinc-700 dark:bg-zinc-950/40 sm:p-5"
           >
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              Filter by fees, reward type &amp; network
-            </h2>
-            <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <label className="block">
-                <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                  Annual fee min (₹)
-                </span>
-                <input
-                  type="number"
-                  min={0}
-                  step={100}
-                  value={filterMinAnnual}
-                  onChange={(e) => setFilterMinAnnual(e.target.value)}
-                  placeholder="Any"
-                  className={inputClass}
-                />
-              </label>
-              <label className="block">
-                <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                  Annual fee max (₹)
-                </span>
-                <input
-                  type="number"
-                  min={0}
-                  step={100}
-                  value={filterMaxAnnual}
-                  onChange={(e) => setFilterMaxAnnual(e.target.value)}
-                  placeholder="Any"
-                  className={inputClass}
-                />
-              </label>
-              <label className="block">
-                <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                  Joining fee min (₹)
-                </span>
-                <input
-                  type="number"
-                  min={0}
-                  step={100}
-                  value={filterMinJoining}
-                  onChange={(e) => setFilterMinJoining(e.target.value)}
-                  placeholder="Any"
-                  className={inputClass}
-                />
-              </label>
-              <label className="block">
-                <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                  Joining fee max (₹)
-                </span>
-                <input
-                  type="number"
-                  min={0}
-                  step={100}
-                  value={filterMaxJoining}
-                  onChange={(e) => setFilterMaxJoining(e.target.value)}
-                  placeholder="Any"
-                  className={inputClass}
-                />
-              </label>
-              <label className="block">
-                <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                  Reward type
-                </span>
-                <select
-                  value={filterRewardType}
-                  onChange={(e) =>
-                    setFilterRewardType(
-                      e.target.value as "all" | "cashback" | "points"
-                    )
-                  }
-                  className={inputClass}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Refine catalog
+              </h2>
+              {browseFiltersActive ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilterAnnualBand("any");
+                    setFilterBanks([]);
+                    setFilterSpendFocus("all");
+                    setFilterRewardType("all");
+                    setFilterNetwork("all");
+                  }}
+                  className="text-xs font-semibold text-blue-600 underline-offset-2 hover:underline dark:text-blue-400"
                 >
-                  <option value="all">All</option>
-                  <option value="cashback">Cashback</option>
-                  <option value="points">Points</option>
-                </select>
-              </label>
-              <label className="block">
-                <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                  Card network
-                </span>
-                <select
-                  value={catalogNetworkLock ?? filterNetwork}
-                  onChange={(e) =>
-                    setFilterNetwork(e.target.value as "all" | CardNetwork)
-                  }
-                  disabled={Boolean(catalogNetworkLock)}
-                  className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-70`}
-                  title={
-                    catalogNetworkLock
-                      ? "Catalog is limited by NEXT_PUBLIC_CARD_NETWORK"
-                      : undefined
-                  }
-                >
-                  <option value="all">All networks</option>
-                  <option value="Visa">Visa</option>
-                  <option value="Mastercard">Mastercard</option>
-                  <option value="Amex">Amex</option>
-                </select>
-                {catalogNetworkLock ? (
-                  <span className="mt-1 block text-[11px] text-zinc-500">
-                    Locked to {catalogNetworkLock} via env.
-                  </span>
-                ) : null}
-              </label>
+                  Clear all
+                </button>
+              ) : null}
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                setFilterMinAnnual("");
-                setFilterMaxAnnual("");
-                setFilterMinJoining("");
-                setFilterMaxJoining("");
-                setFilterRewardType("all");
-                setFilterNetwork("all");
-              }}
-              className="mt-4 text-xs font-semibold text-blue-600 underline-offset-2 hover:underline dark:text-blue-400"
-            >
-              Clear filters
-            </button>
+
+            <div>
+              <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Bank
+              </p>
+              <div
+                className="-mx-1 flex gap-2 overflow-x-auto pb-1 pt-0.5"
+                role="group"
+                aria-label="Filter by bank"
+              >
+                {catalogBankNames.map((bank) => {
+                  const on = filterBanks.includes(bank);
+                  return (
+                    <button
+                      key={bank}
+                      type="button"
+                      onClick={() => toggleBankFilter(bank)}
+                      aria-pressed={on}
+                      className={`${facetChipBaseClass} shrink-0 ${
+                        on
+                          ? "border-blue-500 bg-blue-50 text-blue-900 ring-2 ring-blue-500/25 dark:border-blue-400 dark:bg-blue-950/50 dark:text-blue-100"
+                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-zinc-500"
+                      }`}
+                    >
+                      <span
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[10px] font-bold ${issuerChipSurfaceClass(bank)}`}
+                      >
+                        {bankInitials(bank)}
+                      </span>
+                      <span className="max-w-[9rem] truncate sm:max-w-[11rem]">
+                        {shortBankLabel(bank)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Strongest category reward
+              </p>
+              <div
+                className="flex flex-wrap gap-2"
+                role="group"
+                aria-label="Filter by strongest reward category"
+              >
+                {(
+                  [
+                    {
+                      id: "all" as const,
+                      label: "Any",
+                      icon: null,
+                    },
+                    {
+                      id: "dining" as const,
+                      label: "Dining",
+                      icon: IconUtensils,
+                    },
+                    {
+                      id: "travel" as const,
+                      label: "Travel",
+                      icon: IconPlane,
+                    },
+                    {
+                      id: "shopping" as const,
+                      label: "Shopping",
+                      icon: IconShopping,
+                    },
+                    {
+                      id: "fuel" as const,
+                      label: "Fuel",
+                      icon: IconFuel,
+                    },
+                  ] as const
+                ).map(({ id, label, icon: Icon }) => {
+                  const on = filterSpendFocus === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setFilterSpendFocus(id)}
+                      aria-pressed={on}
+                      className={`${facetChipBaseClass} ${
+                        on
+                          ? "border-indigo-500 bg-indigo-50 text-indigo-950 ring-2 ring-indigo-500/25 dark:border-indigo-400 dark:bg-indigo-950/40 dark:text-indigo-50"
+                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                      }`}
+                    >
+                      {Icon ? (
+                        <Icon className="h-4 w-4 shrink-0 text-current opacity-90" />
+                      ) : null}
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Reward program
+              </p>
+              <div
+                className="flex flex-wrap gap-2"
+                role="group"
+                aria-label="Filter by reward type"
+              >
+                {(
+                  [
+                    { id: "all" as const, label: "All", icon: null },
+                    {
+                      id: "cashback" as const,
+                      label: "Cashback",
+                      icon: IconPercent,
+                    },
+                    {
+                      id: "points" as const,
+                      label: "Points",
+                      icon: IconSparkles,
+                    },
+                  ] as const
+                ).map(({ id, label, icon: Icon }) => {
+                  const on = filterRewardType === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setFilterRewardType(id)}
+                      aria-pressed={on}
+                      className={`${facetChipBaseClass} ${
+                        on
+                          ? "border-emerald-600 bg-emerald-50 text-emerald-950 ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/35 dark:text-emerald-50"
+                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                      }`}
+                    >
+                      {Icon ? (
+                        <Icon className="h-4 w-4 shrink-0 text-current opacity-90" />
+                      ) : null}
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Annual fee
+              </p>
+              <div
+                className="flex flex-wrap gap-2"
+                role="group"
+                aria-label="Filter by annual fee range"
+              >
+                {(
+                  [
+                    { id: "any" as const, label: "Any" },
+                    { id: "free" as const, label: "Free (₹0)" },
+                    { id: "low" as const, label: "₹1 – ₹2,500" },
+                    { id: "mid" as const, label: "₹2,501 – ₹5,000" },
+                    { id: "high" as const, label: "Above ₹5,000" },
+                  ] as const
+                ).map(({ id, label }) => {
+                  const on = filterAnnualBand === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setFilterAnnualBand(id)}
+                      aria-pressed={on}
+                      className={`${facetChipBaseClass} ${
+                        on
+                          ? "border-amber-600 bg-amber-50 text-amber-950 ring-2 ring-amber-500/25 dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-50"
+                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Network
+              </p>
+              <div
+                className="flex flex-wrap gap-2"
+                role="group"
+                aria-label="Filter by card network"
+              >
+                {(
+                  [
+                    { id: "all" as const, label: "All" },
+                    { id: "Visa" as const, label: "Visa" },
+                    { id: "Mastercard" as const, label: "Mastercard" },
+                    { id: "Amex" as const, label: "Amex" },
+                  ] as const
+                ).map(({ id, label }) => {
+                  const netLocked = Boolean(catalogNetworkLock);
+                  const on = netLocked
+                    ? id === catalogNetworkLock
+                    : id === "all"
+                      ? filterNetwork === "all"
+                      : filterNetwork === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      disabled={netLocked}
+                      onClick={() => {
+                        if (!netLocked) setFilterNetwork(id);
+                      }}
+                      aria-pressed={on}
+                      className={`${facetChipBaseClass} ${
+                        netLocked ? "cursor-not-allowed opacity-90" : ""
+                      } ${
+                        on
+                          ? "border-violet-600 bg-violet-50 text-violet-950 ring-2 ring-violet-500/25 dark:border-violet-500 dark:bg-violet-950/40 dark:text-violet-50"
+                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                      }`}
+                    >
+                      <IconNetworkCard className="h-4 w-4 shrink-0 opacity-90" />
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+              {catalogNetworkLock ? (
+                <p className="mt-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+                  Network locked to {catalogNetworkLock} via{" "}
+                  <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-[10px] dark:bg-zinc-800">
+                    NEXT_PUBLIC_CARD_NETWORK
+                  </code>
+                  .
+                </p>
+              ) : null}
+            </div>
           </div>
         ) : null}
 
@@ -797,7 +1105,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 </p>
                 <p className="mt-1 text-sm text-zinc-500">
                   {feeTypeFilteredCards.length === 0
-                    ? "Widen annual or joining fee ranges, set reward type and network to All, or clear filters."
+                    ? "Widen annual fee, bank, or category filters, or tap Clear all."
                     : "Try another query, clear the search box, or adjust filters."}
                 </p>
               </>
