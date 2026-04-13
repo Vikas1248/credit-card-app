@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "source": "Refined = from_docx only (credit_cards_hdfc.json); normalized (hdfc)",
+  "cards": [
+    {
+      "affiliate_link": "https://linksredirect.com/?cid=281873&source=linkkit&url=https%3A%2F%2Fwww.financemela.in%2Fcredit-cards%2Fhdfc-swiggy",
+      "ai_best_for": "Frequent Swiggy users and online shoppers",
+      "ai_cons": "Cashback capped on Swiggy spends, limited travel benefits",
+      "ai_not_ideal_for": "Users looking for premium travel perks or lounge access",
+      "ai_pros": "High cashback on Swiggy, good online rewards, simple cashback structure",
+      "annual_fee": 500,
+      "bank": "HDFC Bank",
+      "best_for": "Food delivery and online shopping",
+      "card_name": "Swiggy HDFC Bank Credit Card",
+      "dining_reward": 0.1,
+      "fuel_reward": 0.0,
+      "joining_fee": 500,
+      "key_benefits": [
+        "10% cashback on Swiggy (Food, Instamart, Dineout, Genie)",
+        "5% cashback on online spends",
+        "1% cashback on all other spends",
+        "Complimentary Swiggy One membership",
+        "Cashback credited directly (no points conversion)"
+      ],
+      "links": {
+        "official": "https://www.hdfc.bank.in/credit-cards/swiggy-hdfc-bank-credit-card"
+      },
+      "lounge_access": "No lounge access",
+      "membership_rewards_inr_per_point": 0.0,
+      "network": "Mastercard",
+      "reward_conversion": {
+        "description": "Direct cashback card (no reward points system)",
+        "points_per_rupee": 0.0
+      },
+      "reward_rate": "10% on Swiggy, 5% online, 1% offline",
+      "reward_type": "cashback",
+      "shopping_reward": 0.05,
+      "source": "hdfc_bank",
+      "travel_reward": 0.01,
+      "welcome_offer": "Complimentary Swiggy One membership + activation benefits"
+    }
+  ]
+}

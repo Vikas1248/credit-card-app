@@ -6,6 +6,7 @@ import { cache } from "react";
 import { CardAiInsight } from "@/components/card-ai-insight";
 import { CardDetailKeySummary } from "@/components/card-detail-key-summary";
 import { CardProgramDetails } from "@/components/card-program-details";
+import { pickAdditionalDetailsMetadata } from "@/lib/cards/additionalDetailsMetadata";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { SITE_NAME } from "@/lib/site";
@@ -49,13 +50,19 @@ const HIDDEN_METADATA_KEYS = new Set([
   "apply_link",
 ]);
 
-function filterPublicMetadata(
+function stripHiddenMetadata(
   meta: Record<string, unknown> | null | undefined
 ): Record<string, unknown> {
   if (!meta || typeof meta !== "object") return {};
   return Object.fromEntries(
     Object.entries(meta).filter(([k]) => !HIDDEN_METADATA_KEYS.has(k))
   );
+}
+
+function filterPublicMetadata(
+  meta: Record<string, unknown> | null | undefined
+): Record<string, unknown> {
+  return pickAdditionalDetailsMetadata(stripHiddenMetadata(meta));
 }
 
 function metadataHasPublicEntries(
@@ -66,16 +73,11 @@ function metadataHasPublicEntries(
 
 const METADATA_LABELS: Record<string, string> = {
   eligibility: "Eligibility",
-  membership_rewards_inr_per_point: "Estimated point value (INR)",
-  reward_conversion: "Reward conversion",
   welcome_offer: "Welcome offer",
   milestone_rewards: "Milestone rewards",
-  excluded_categories: "Excluded categories",
+  excluded_categories: "Excluded spend categories",
   annual_fee_waiver_condition: "Annual fee waiver",
-  cashback_cap_monthly: "Cashback cap (monthly)",
-  finance_charges_monthly: "Finance charges (monthly)",
-  fuel_surcharge_waiver: "Fuel surcharge waiver",
-  priority_pass: "Priority Pass",
+  cashback_cap_monthly: "Cashback cap (per month)",
 };
 
 function humanizeMetadataKey(key: string): string {
@@ -208,9 +210,7 @@ function CardMetadataSection({
 }: {
   metadata: Record<string, unknown>;
 }) {
-  const entries = Object.entries(metadata).sort(([a], [b]) =>
-    a.localeCompare(b)
-  );
+  const entries = Object.entries(metadata);
   return (
     <section
       className="mt-12 border-t border-zinc-100 pt-10 dark:border-zinc-800"
@@ -228,10 +228,12 @@ function CardMetadataSection({
             id="card-additional-details-heading"
             className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
           >
-            Additional details
+            Good to know
           </h2>
           <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-            From source data. Verify important facts with the issuer.
+            Eligibility, welcome benefits, fee waivers, and common limits. We do
+            not list internal catalog or partner-only fields—always confirm with
+            your bank before you apply.
           </p>
           <dl className="mt-4 space-y-4">
             {entries.map(([key, value]) => (

@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "source": "Merged: docx source (credit_cards_sbi_from_docx.json) + refined-only rows from credit_cards_sbi_refined.json (sbi) Includes reward_points_inr_per_point / bluchip_inr for app earn estimates.",
+  "source": "Refined = from_docx only (credit_cards_sbi_from_docx.json); normalized (sbi)",
   "cards": [
     {
-      "affiliate_link": "",
+      "affiliate_link": "https://linksredirect.com/?cid=281873&source=linkkit&url=https%3A%2F%2Fwww.sbicard.com%2Fsprint%2FsimplyClickMaster",
       "ai_best_for": "Frequent online shoppers using partner platforms",
       "ai_cons": "Low offline reward rate, no lounge access, rewards capped on categories",
       "ai_not_ideal_for": "Users wanting flat cashback or travel benefits",
@@ -39,9 +39,11 @@
       "reward_points_inr_per_point": 0.25
     },
     {
+      "affiliate_link": "https://linksredirect.com/?cid=281873&source=linkkit&url=https%3A%2F%2Fwww.sbicard.com%2Fsprint%2Fcashback",
       "annual_fee": 999,
       "annual_fee_waiver_condition": "Spend ₹2,00,000 in previous year",
       "bank": "SBI Card",
+      "best_for": "Online and offline cashback (auto-credited to statement)",
       "card_name": "Cashback SBI Card",
       "cash_advance_fee": "2.5% or ₹500 (whichever is higher)",
       "cashback_cap_monthly": 5000,
@@ -72,6 +74,7 @@
         "percentage": 0.01
       },
       "joining_fee": 999,
+      "lounge_access": "No lounge access",
       "key_benefits": [
         "5% cashback on all online spends without merchant restrictions",
         "1% cashback on offline spends",
@@ -81,11 +84,11 @@
       "network": "Visa",
       "offline_cashback": 0.01,
       "online_cashback": 0.05,
-      "reward_type": "Cashback",
-      "reward_rate": "N/A"
+      "reward_type": "cashback",
+      "reward_rate": "5% cashback online, 1% offline (auto-credited); exclusions apply per issuer T&Cs"
     },
     {
-      "affiliate_link": "",
+      "affiliate_link": "https://linksredirect.com/?cid=281873&source=linkkit&url=https%3A%2F%2Fwww.sbicard.com%2Fsprint%2Felite",
       "ai_best_for": "High spenders who value lifestyle perks like movies, lounge access, and dining rewards",
       "ai_cons": "High annual fee, low base reward rate outside bonus categories, not ideal for cashback users",
       "ai_not_ideal_for": "Low spenders or users looking for simple cashback or high base reward rate cards",
@@ -165,7 +168,7 @@
       "reward_points_inr_per_point": 1.0
     },
     {
-      "affiliate_link": "",
+      "affiliate_link": "https://linksredirect.com/?cid=281873&source=linkkit&url=https%3A%2F%2Fwww.sbicard.com%2Fsprint%2Fprime",
       "ai_best_for": "Mid-to-high spenders who want a mix of rewards, lounge access, and lifestyle benefits",
       "ai_cons": "Low base reward rate outside bonus categories, average travel benefits, reward value capped at ₹0.25/point",
       "ai_not_ideal_for": "Users seeking high cashback or premium travel-focused cards",
@@ -244,54 +247,123 @@
       "reward_points_inr_per_point": 0.25
     },
     {
-      "card_name": "SBI Card CASHBACK",
-      "bank": "SBI Card",
-      "network": "Visa",
-      "joining_fee": 999,
-      "annual_fee": 999,
-      "reward_type": "cashback",
-      "reward_rate": "Cashback on online spends, utility bills and select categories; see issuer for current slabs",
-      "lounge_access": "None",
-      "best_for": "Cashback on digital and utility spends",
-      "key_benefits": "Straight cashback structure with online and bill-pay focus",
-      "dining_reward": 2,
-      "travel_reward": 1.5,
-      "shopping_reward": 3,
-      "fuel_reward": 1
-    },
-    {
-      "card_name": "SBI Card IRCTC",
-      "bank": "SBI Card",
-      "network": "Visa",
-      "joining_fee": 500,
+      "affiliate_link": "https://linksredirect.com/?cid=281873&source=linkkit&url=https%3A%2F%2Fwww.sbicard.com%2Fsprint%2FFlipkart",
+      "ai_best_for": "Frequent Flipkart, Myntra and online shoppers",
+      "ai_cons": "Cashback caps on categories, no lounge access, low base cashback",
+      "ai_not_ideal_for": "Users seeking travel perks or high flat cashback cards",
+      "ai_pros": "Strong cashback on Flipkart & Myntra, good partner ecosystem, simple cashback system",
       "annual_fee": 500,
-      "reward_type": "points",
-      "reward_rate": "Accelerated reward points on IRCTC and rail-related spends; base earn on other purchases",
-      "lounge_access": "Railway lounge access where program applies",
-      "best_for": "Train tickets and IRCTC bookings",
-      "key_benefits": "Co-branded rail rewards and fare savings per issuer campaigns",
-      "dining_reward": 1.5,
-      "travel_reward": 4,
-      "shopping_reward": 1.5,
-      "fuel_reward": 1,
-      "reward_points_inr_per_point": 0.25
+      "bank": "SBI Card",
+      "best_for": "Online shopping and cashback",
+      "card_name": "Flipkart SBI Credit Card",
+      "dining_reward": 0.04,
+      "fuel_reward": 0.0,
+      "joining_fee": 500,
+      "key_benefits": [
+        "5% cashback on Flipkart and Cleartrip",
+        "7.5% cashback on Myntra",
+        "4% cashback on preferred merchants (Zomato, Uber, Netmeds, etc.)",
+        "1% cashback on all other spends",
+        "₹250 Flipkart gift card as welcome benefit",
+        "1% fuel surcharge waiver",
+        "Annual fee waiver on ₹3.5L annual spend",
+        "Instant discounts on Cleartrip bookings"
+      ],
+      "links": {
+        "official": "https://www.sbicard.com/en/personal/credit-cards/flipkart-sbi-card.html"
+      },
+      "lounge_access": "No lounge access",
+      "network": "Visa",
+      "reward_conversion": {
+        "description": "Direct cashback card (auto-credited to statement)",
+        "points_per_rupee": 0.0
+      },
+      "reward_type": "cashback",
+      "membership_rewards_inr_per_point": 0.0,
+      "shopping_reward": 0.075,
+      "source": "sbi_card",
+      "travel_reward": 0.05,
+      "welcome_offer": "₹250 Flipkart gift voucher on joining fee payment",
+      "reward_rate": "7.5% Myntra, 5% Flipkart/Cleartrip, 4% partners, 1% base cashback"
     },
     {
-      "card_name": "SBI Card BPCL Octane",
-      "bank": "SBI Card",
-      "network": "Visa",
-      "joining_fee": 1499,
+      "affiliate_link": "https://linksredirect.com/?cid=281873&source=linkkit&url=https%3A%2F%2Fwww.sbicard.com%2Fsprint%2Firctc-platinum",
+      "ai_best_for": "Frequent train travelers booking via IRCTC",
+      "ai_cons": "Low rewards on non-travel spends, no airport lounge access",
+      "ai_not_ideal_for": "Users seeking premium travel perks or cashback cards",
+      "ai_pros": "High value on IRCTC bookings, railway lounge access, milestone rewards",
       "annual_fee": 1499,
+      "bank": "SBI Card",
+      "best_for": "Railway travel and IRCTC bookings",
+      "card_name": "IRCTC SBI Card Premier",
+      "dining_reward": 0.024,
+      "fuel_reward": 0.0,
+      "joining_fee": 1499,
+      "key_benefits": [
+        "Up to 10% value back on IRCTC railway ticket bookings",
+        "5% value back on IRCTC air tickets and e-catering",
+        "3 reward points per ₹125 on dining and utility spends",
+        "1 reward point per ₹125 on other spends",
+        "1% transaction charge waiver on railway bookings",
+        "Up to 8 complimentary railway lounge visits per year",
+        "Milestone rewards: 2,500 points on ₹50K travel spend, 5,000 points on ₹1L",
+        "1% fuel surcharge waiver"
+      ],
+      "links": {
+        "official": "https://www.sbicard.com/en/personal/credit-cards/irctc-premier-card.html"
+      },
+      "lounge_access": "8 railway lounge visits per year (no airport lounge access)",
+      "network": "Visa / Mastercard",
+      "reward_conversion": {
+        "description": "1 Reward Point = ₹1 (redeemable on IRCTC platform)",
+        "points_per_rupee": 0.008
+      },
       "reward_type": "points",
-      "reward_rate": "Accelerated reward points on fuel at BPCL outlets and partner spends; surcharge waiver per T&Cs",
-      "lounge_access": "None",
-      "best_for": "Fuel and mobility spends",
-      "key_benefits": "BPCL co-brand with strong earn on fuel and milestones",
-      "dining_reward": 1.5,
-      "travel_reward": 2,
-      "shopping_reward": 1.5,
-      "fuel_reward": 4.5,
-      "reward_points_inr_per_point": 0.25
+      "membership_rewards_inr_per_point": 1.0,
+      "shopping_reward": 0.008,
+      "source": "sbi_card",
+      "travel_reward": 0.1,
+      "welcome_offer": "1,500 reward points worth ₹1,500 on payment of joining fee",
+      "reward_rate": "10% IRCTC train bookings, 5% air/e-catering, ~2.4% dining, ~0.8% base"
+    },
+    {
+      "affiliate_link": "https://linksredirect.com/?cid=281873&source=linkkit&url=https%3A%2F%2Fwww.sbicard.com%2Fsprint%2Fbpcl",
+      "ai_best_for": "Users with high fuel spends at BPCL petrol pumps",
+      "ai_cons": "Limited benefits outside fuel categories, no lounge access",
+      "ai_not_ideal_for": "Users looking for travel perks or premium rewards",
+      "ai_pros": "Strong fuel savings, low annual fee, good everyday category rewards",
+      "annual_fee": 499,
+      "bank": "SBI Card",
+      "best_for": "Fuel savings and everyday spending",
+      "card_name": "BPCL SBI Credit Card",
+      "dining_reward": 0.0125,
+      "fuel_reward": 0.0425,
+      "joining_fee": 499,
+      "key_benefits": [
+        "4.25% value back on BPCL fuel spends (including surcharge waiver)",
+        "13X reward points on BPCL fuel purchases",
+        "5X reward points on groceries, dining, movies and departmental stores",
+        "1 reward point per ₹100 on other spends",
+        "2,000 reward points welcome bonus (₹500 value)",
+        "1% fuel surcharge waiver (up to ₹100 per billing cycle)",
+        "Annual fee waiver on ₹50,000 annual spend"
+      ],
+      "links": {
+        "official": "https://www.sbicard.com/en/personal/credit-cards/bpcl-sbi-card.html"
+      },
+      "lounge_access": "No lounge access",
+      "network": "Visa / Mastercard",
+      "reward_conversion": {
+        "description": "4 reward points = ₹1; 13X on fuel (~3.25% + 1% surcharge waiver = ~4.25%)",
+        "points_per_rupee": 0.0025
+      },
+      "reward_type": "points",
+      "membership_rewards_inr_per_point": 0.25,
+      "shopping_reward": 0.0125,
+      "source": "sbi_card",
+      "travel_reward": 0.0025,
+      "welcome_offer": "2,000 reward points worth ₹500 on payment of joining fee",
+      "reward_rate": "13X on BPCL fuel, 5X on groceries/dining/movies, 1X on other spends"
     }
   ]
 }

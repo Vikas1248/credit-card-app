@@ -5,6 +5,7 @@ End-to-end data path: local → GCS → Supabase → Vercel (reads same Supabase
   0. (Optional) convert_docx_cards_to_json.py — Word → data/credit_cards_*_from_docx.json
   0b. (Optional) merge_docx_into_refined.py — merge *_from_docx.json into *_refined.json (npm run data:merge-refined)
   1. upload_cards_to_gcs.py — every data/*.json → gs://<bucket>/<GCS_PREFIX>/
+     (includes credit_cards_hdfc.json and credit_cards_*_refined.json when present)
      Use upload_cards_to_gcs.py --mirror so GCS has exactly the same *.json set as local data/
      (removes stale objects under the prefix). run_data_pipeline.py --mirror-gcs forwards this.
   2. import_cards_from_gcs.py — each *.json at that prefix → Supabase public.credit_cards
@@ -84,6 +85,16 @@ def main() -> int:
         help="Forward to import: delete Axis bank rows before inserts.",
     )
     parser.add_argument(
+        "--purge-amex",
+        action="store_true",
+        help="Forward to import: delete American Express bank rows before inserts.",
+    )
+    parser.add_argument(
+        "--purge-hdfc",
+        action="store_true",
+        help="Forward to import: delete HDFC bank rows before inserts.",
+    )
+    parser.add_argument(
         "--purge-sbi",
         action="store_true",
         help="Forward to import: delete SBI bank rows before inserts.",
@@ -128,6 +139,10 @@ def main() -> int:
             cmd.append("--purge-non-amex")
         if args.purge_axis:
             cmd.append("--purge-axis")
+        if args.purge_amex:
+            cmd.append("--purge-amex")
+        if args.purge_hdfc:
+            cmd.append("--purge-hdfc")
         if args.purge_sbi:
             cmd.append("--purge-sbi")
         if args.replace_matching:

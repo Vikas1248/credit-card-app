@@ -273,6 +273,40 @@ def delete_axis_bank_rows(supabase_url: str, supabase_key: str) -> None:
         response.read()
 
 
+def delete_hdfc_bank_rows(supabase_url: str, supabase_key: str) -> None:
+    """Remove rows whose bank name contains 'hdfc' (case-insensitive)."""
+    base = supabase_url.rstrip("/")
+    pattern = urllib.parse.quote("%hdfc%", safe="")
+    endpoint = f"{base}/rest/v1/credit_cards?bank=ilike.{pattern}"
+    request = urllib.request.Request(
+        endpoint,
+        headers={
+            "apikey": supabase_key,
+            "Authorization": f"Bearer {supabase_key}",
+        },
+        method="DELETE",
+    )
+    with urllib.request.urlopen(request, timeout=120) as response:
+        response.read()
+
+
+def delete_amex_bank_rows(supabase_url: str, supabase_key: str) -> None:
+    """Remove rows where bank is exactly American Express (issuer import scope)."""
+    base = supabase_url.rstrip("/")
+    enc = urllib.parse.quote("American Express", safe="")
+    endpoint = f"{base}/rest/v1/credit_cards?bank=eq.{enc}"
+    request = urllib.request.Request(
+        endpoint,
+        headers={
+            "apikey": supabase_key,
+            "Authorization": f"Bearer {supabase_key}",
+        },
+        method="DELETE",
+    )
+    with urllib.request.urlopen(request, timeout=120) as response:
+        response.read()
+
+
 def delete_non_amex_rows(supabase_url: str, supabase_key: str) -> None:
     """Remove rows where network is not Amex (PostgREST neq). Service role recommended."""
     base = supabase_url.rstrip("/")
@@ -332,6 +366,16 @@ def main() -> int:
         help="Before insert, DELETE rows where bank ILIKE '%%axis%%'. Needs service role.",
     )
     parser.add_argument(
+        "--purge-amex",
+        action="store_true",
+        help="Before insert, DELETE rows where bank = 'American Express'. Needs service role.",
+    )
+    parser.add_argument(
+        "--purge-hdfc",
+        action="store_true",
+        help="Before insert, DELETE rows where bank ILIKE '%%hdfc%%'. Needs service role.",
+    )
+    parser.add_argument(
         "--purge-sbi",
         action="store_true",
         help="Before insert, DELETE rows where bank ILIKE '%%sbi%%'. Needs service role.",
@@ -371,6 +415,12 @@ def main() -> int:
         if args.purge_axis:
             delete_axis_bank_rows(supabase_url, supabase_key)
             print("Purged rows with bank matching axis.", file=sys.stderr)
+        if args.purge_amex:
+            delete_amex_bank_rows(supabase_url, supabase_key)
+            print("Purged rows with bank = American Express.", file=sys.stderr)
+        if args.purge_hdfc:
+            delete_hdfc_bank_rows(supabase_url, supabase_key)
+            print("Purged rows with bank matching hdfc.", file=sys.stderr)
         if args.purge_sbi:
             delete_sbi_bank_rows(supabase_url, supabase_key)
             print("Purged rows with bank matching sbi.", file=sys.stderr)

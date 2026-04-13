@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source": "Merged: docx source (credit_cards_amex_from_docx.json) + refined-only rows from credit_cards_amex_refined.json (amex)",
+  "source": "Refined = from_docx only (credit_cards_amex_from_docx.json); normalized (amex)",
   "cards": [
     {
       "affiliate_link": "https://americanexpress.com/en-in/referral/platinum-reserve?ref=vIKASP3DFm&CPID=100506015",

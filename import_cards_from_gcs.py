@@ -79,6 +79,16 @@ def main() -> int:
         help="Before any insert, DELETE rows where bank ILIKE '%%axis%%'.",
     )
     parser.add_argument(
+        "--purge-amex",
+        action="store_true",
+        help="Before any insert, DELETE rows where bank = 'American Express'.",
+    )
+    parser.add_argument(
+        "--purge-hdfc",
+        action="store_true",
+        help="Before any insert, DELETE rows where bank ILIKE '%%hdfc%%'.",
+    )
+    parser.add_argument(
         "--purge-sbi",
         action="store_true",
         help="Before any insert, DELETE rows where bank ILIKE '%%sbi%%'.",
@@ -140,6 +150,12 @@ def main() -> int:
         if args.purge_axis:
             ics.delete_axis_bank_rows(supabase_url, supabase_key)
             print("Purged rows with bank matching axis.", file=sys.stderr)
+        if args.purge_amex:
+            ics.delete_amex_bank_rows(supabase_url, supabase_key)
+            print("Purged rows with bank = American Express.", file=sys.stderr)
+        if args.purge_hdfc:
+            ics.delete_hdfc_bank_rows(supabase_url, supabase_key)
+            print("Purged rows with bank matching hdfc.", file=sys.stderr)
         if args.purge_sbi:
             ics.delete_sbi_bank_rows(supabase_url, supabase_key)
             print("Purged rows with bank matching sbi.", file=sys.stderr)

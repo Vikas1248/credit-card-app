@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source": "Merged: docx source (credit_cards_axis_from_docx.json) + refined-only rows from credit_cards_axis_refined.json (axis) Includes reward_points_inr_per_point / bluchip_inr for app earn estimates.",
+  "source": "Refined = from_docx only (credit_cards_axis_from_docx.json); normalized (axis)",
   "cards": [
     {
       "affiliate_link": "https://refer.axis.bank.in/retail/cards/credit-card/refer-and-earn/get-started.htm?axisreferralcode=vi7902C7",
@@ -322,40 +322,6 @@
       "travel_reward": 0.0,
       "welcome_offer": "₹500 Amazon voucher on first transaction within 30 days",
       "reward_rate": "25% cashback on Airtel services, 10% on utilities & food apps, 1% on other spends"
-    },
-    {
-      "card_name": "Axis Bank Magnus Credit Card",
-      "bank": "Axis Bank",
-      "network": "Mastercard",
-      "joining_fee": 12500,
-      "annual_fee": 12500,
-      "reward_type": "points",
-      "reward_rate": "Accelerated EDGE REWARD Points on travel and select categories; transfer partners per program rules",
-      "lounge_access": "Unlimited domestic lounge access and international lounge program where included",
-      "best_for": "Premium travel and high spend",
-      "key_benefits": "Concierge-style benefits, travel vouchers/milestones and strong earn on travel",
-      "dining_reward": 3,
-      "travel_reward": 5,
-      "shopping_reward": 2.5,
-      "fuel_reward": 1,
-      "reward_points_inr_per_point": 0.25
-    },
-    {
-      "card_name": "Axis Bank Atlas Credit Card",
-      "bank": "Axis Bank",
-      "network": "Visa",
-      "joining_fee": 5000,
-      "annual_fee": 5000,
-      "reward_type": "points",
-      "reward_rate": "Travel-focused EDGE miles/points earn; accelerated on airlines and hotels per issuer",
-      "lounge_access": "International and domestic lounge access per program",
-      "best_for": "Frequent flyers and hotel spend",
-      "key_benefits": "Travel redemptions, milestone flight vouchers and lounge network",
-      "dining_reward": 2,
-      "travel_reward": 5,
-      "shopping_reward": 2,
-      "fuel_reward": 1,
-      "reward_points_inr_per_point": 0.25
     }
   ]
 }
