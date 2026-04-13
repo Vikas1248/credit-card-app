@@ -6,11 +6,13 @@ import { AmexGenericApplyLink } from "@/components/amex-generic-apply-link";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
 import { HdfcApplyLink } from "@/components/hdfc-apply-link";
+import { IndusIndApplyLink } from "@/components/indusind-apply-link";
 import { SbiApplyLink } from "@/components/sbi-apply-link";
 import { isAmexCardUsingGenericApply } from "@/lib/cards/amexGenericApply";
 import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
 import { isAxisBankCard } from "@/lib/cards/axisApply";
 import { hdfcCardShowsApply } from "@/lib/cards/hdfcApply";
+import { indusindCardShowsApply } from "@/lib/cards/indusindApply";
 import { issuerHeroPlasticClass } from "@/lib/cards/issuerHeroPlastic";
 import { isSbiCard } from "@/lib/cards/sbiApply";
 import {
@@ -92,6 +94,9 @@ function CardReferralApply({ card }: { card: CardModel }) {
   if (hdfcCardShowsApply(card.bank, card.metadata)) {
     return <HdfcApplyLink metadata={card.metadata} fullWidth />;
   }
+  if (indusindCardShowsApply(card.bank, card.metadata)) {
+    return <IndusIndApplyLink metadata={card.metadata} fullWidth />;
+  }
   return null;
 }
 
@@ -101,7 +106,8 @@ function cardHasReferralApply(card: CardModel): boolean {
     isAmexPlatinumReserveCard(card.card_name, card.bank) ||
     isAmexCardUsingGenericApply(card.card_name, card.bank) ||
     isSbiCard(card.bank) ||
-    hdfcCardShowsApply(card.bank, card.metadata)
+    hdfcCardShowsApply(card.bank, card.metadata) ||
+    indusindCardShowsApply(card.bank, card.metadata)
   );
 }
 

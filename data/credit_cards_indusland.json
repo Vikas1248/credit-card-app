@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "source": "IndusInd Bank credit card catalog (manual JSON)",
+  "cards": [
+    {
+      "affiliate_link": "https://linksredirect.com/?cid=281873&source=linkkit&url=https%3A%2F%2Finduseasycredit.indusind.com%2Fcustomer%2Fcredit-card%2Flead",
+      "ai_best_for": "High spenders who can unlock milestone-based rewards and frequent travelers",
+      "ai_cons": "Low base reward rate initially, rewards depend heavily on annual spend milestones",
+      "ai_not_ideal_for": "Low spenders or users looking for simple flat cashback cards",
+      "ai_pros": "Lifetime free card, strong milestone rewards, lounge access, low forex markup",
+      "annual_fee": 0,
+      "bank": "IndusInd Bank",
+      "best_for": "Milestone-based rewards and travel perks",
+      "card_name": "IndusInd Bank Tiger Credit Card",
+      "dining_reward": 0.01,
+      "travel_reward": 0.012,
+      "shopping_reward": 0.012,
+      "fuel_reward": 0.0,
+      "joining_fee": 0,
+      "key_benefits": [
+        "Lifetime free credit card (no joining or annual fee)",
+        "Earn up to 6 reward points per ₹100 based on annual spends",
+        "1 reward point per ₹100 base earning rate",
+        "1 RP = ₹0.40 cash value or convertible to airmiles",
+        "Low forex markup (~1.5%)",
+        "2 international lounge visits per year (Priority Pass)",
+        "2 domestic lounge visits per quarter",
+        "1 complimentary movie ticket (₹500) every 6 months",
+        "1 complimentary golf game/lesson per quarter",
+        "1% fuel surcharge waiver"
+      ],
+      "lounge_access": "2 international per year + 2 domestic per quarter",
+      "network": "Visa",
+      "reward_conversion": {
+        "description": "1 RP = ₹0.40 (cash), 4 RP = 1 KrisFlyer mile; up to 6X rewards on high spends",
+        "points_per_rupee": 0.004
+      },
+      "reward_type": "points",
+      "membership_rewards_inr_per_point": 0.4,
+      "source": "indusind_bank",
+      "welcome_offer": "No specific welcome bonus (lifetime free benefit)",
+      "reward_rate": "Up to ~7.2% on high annual spends, ~1.2% base reward rate",
+      "links": {
+        "apply": "https://linksredirect.com/?cid=281873&source=linkkit&url=https%3A%2F%2Finduseasycredit.indusind.com%2Fcustomer%2Fcredit-card%2Flead",
+        "official": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/tiger-credit-card.html"
+      }
+    }
+  ]
+}

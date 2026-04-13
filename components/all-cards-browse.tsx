@@ -7,11 +7,13 @@ import { AmexGenericApplyLink } from "@/components/amex-generic-apply-link";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
 import { HdfcApplyLink } from "@/components/hdfc-apply-link";
+import { IndusIndApplyLink } from "@/components/indusind-apply-link";
 import { SbiApplyLink } from "@/components/sbi-apply-link";
 import { isAmexCardUsingGenericApply } from "@/lib/cards/amexGenericApply";
 import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
 import { isAxisBankCard } from "@/lib/cards/axisApply";
 import { hdfcCardShowsApply } from "@/lib/cards/hdfcApply";
+import { indusindCardShowsApply } from "@/lib/cards/indusindApply";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import { isSbiCard } from "@/lib/cards/sbiApply";
@@ -866,6 +868,12 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                     ) : null}
                     {hdfcCardShowsApply(card.bank, card.metadata) ? (
                       <HdfcApplyLink
+                        metadata={card.metadata}
+                        className="w-full"
+                      />
+                    ) : null}
+                    {indusindCardShowsApply(card.bank, card.metadata) ? (
+                      <IndusIndApplyLink
                         metadata={card.metadata}
                         className="w-full"
                       />

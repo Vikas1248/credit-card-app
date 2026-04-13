@@ -8,11 +8,13 @@ import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve
 import { AxisApplyLink } from "@/components/axis-apply-link";
 import { FeaturedCardsCarousel } from "@/components/featured-cards-carousel";
 import { HdfcApplyLink } from "@/components/hdfc-apply-link";
+import { IndusIndApplyLink } from "@/components/indusind-apply-link";
 import { SbiApplyLink } from "@/components/sbi-apply-link";
 import { isAmexCardUsingGenericApply } from "@/lib/cards/amexGenericApply";
 import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
 import { isAxisBankCard } from "@/lib/cards/axisApply";
 import { hdfcCardShowsApply } from "@/lib/cards/hdfcApply";
+import { indusindCardShowsApply } from "@/lib/cards/indusindApply";
 import { isSbiCard } from "@/lib/cards/sbiApply";
 import { SpendCategoryIcon } from "@/components/spend-category-icons";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
@@ -905,6 +907,10 @@ export default function Home() {
                     card.bank,
                     pickMetadata
                   );
+                  const showIndusindApply = indusindCardShowsApply(
+                    card.bank,
+                    pickMetadata
+                  );
                   return (
                     <article
                       key={card.id}
@@ -1037,7 +1043,8 @@ export default function Home() {
                             isAmexPlatinumReserveCard(card.card_name, card.bank) ||
                             isAmexCardUsingGenericApply(card.card_name, card.bank) ||
                             isSbiCard(card.bank) ||
-                            showHdfcApply
+                            showHdfcApply ||
+                            showIndusindApply
                               ? "grid grid-cols-1 gap-2 sm:grid-cols-2"
                               : "grid grid-cols-1 gap-2"
                           }
@@ -1068,6 +1075,12 @@ export default function Home() {
                           ) : null}
                           {showHdfcApply ? (
                             <HdfcApplyLink
+                              metadata={pickMetadata}
+                              fullWidth
+                            />
+                          ) : null}
+                          {showIndusindApply ? (
+                            <IndusIndApplyLink
                               metadata={pickMetadata}
                               fullWidth
                             />
@@ -1252,6 +1265,16 @@ export default function Home() {
                           className="mt-2"
                         />
                       ) : null}
+                      {indusindCardShowsApply(
+                        compareLeft.bank,
+                        compareLeft.metadata
+                      ) ? (
+                        <IndusIndApplyLink
+                          metadata={compareLeft.metadata}
+                          fullWidth
+                          className="mt-2"
+                        />
+                      ) : null}
                     </th>
                     <th className="px-4 py-3 font-semibold text-zinc-700 dark:text-zinc-200">
                       <Link
@@ -1289,6 +1312,16 @@ export default function Home() {
                         compareRight.metadata
                       ) ? (
                         <HdfcApplyLink
+                          metadata={compareRight.metadata}
+                          fullWidth
+                          className="mt-2"
+                        />
+                      ) : null}
+                      {indusindCardShowsApply(
+                        compareRight.bank,
+                        compareRight.metadata
+                      ) ? (
+                        <IndusIndApplyLink
                           metadata={compareRight.metadata}
                           fullWidth
                           className="mt-2"
