@@ -1,10 +1,20 @@
+/**
+ * CredGenie XML sitemap at `/sitemap.xml` (Next.js Metadata Route).
+ *
+ * URLs use the request host when opened on a custom domain (e.g. credgenie.in), so
+ * `<loc>` is not stuck on *.vercel.app. Optional: set `NEXT_PUBLIC_SITE_URL` to force
+ * one canonical origin everywhere.
+ */
 import type { MetadataRoute } from "next";
-import { getSiteUrl } from "@/lib/site";
 import { SPEND_CATEGORY_SLUGS } from "@/lib/spendCategories";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { resolvePublicOrigin } from "@/lib/siteCanonical";
+
+/** Avoid static generation with deployment hostname baked into `<loc>`. */
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = getSiteUrl();
+  const base = await resolvePublicOrigin();
   const now = new Date();
 
   const staticEntries: MetadataRoute.Sitemap = [
@@ -19,6 +29,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "daily",
       priority: 0.9,
+    },
+    {
+      url: `${base}/about`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.5,
     },
     ...SPEND_CATEGORY_SLUGS.map((slug) => ({
       url: `${base}/category/${slug}`,
@@ -38,19 +54,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       return staticEntries;
     }
 
-    const cardEntries: MetadataRoute.Sitemap = data.map((row) => {
-      let lastModified = now;
-      if (row.last_updated) {
-        const parsed = new Date(row.last_updated);
-        if (!Number.isNaN(parsed.getTime())) lastModified = parsed;
-      }
-      return {
-        url: `${base}/card/${row.id}`,
-        lastModified,
-        changeFrequency: "weekly" as const,
-        priority: 0.7,
-      };
-    });
+    const cardEntries: MetadataRoute.Sitemap = [...data]
+      .sort((a, b) => String(a.id).localeCompare(String(b.id)))
+      .map((row) => {
+        let lastModified = now;
+        if (row.last_updated) {
+          const parsed = new Date(row.last_updated);
+          if (!Number.isNaN(parsed.getTime())) lastModified = parsed;
+        }
+        return {
+          url: `${base}/card/${row.id}`,
+          lastModified,
+          changeFrequency: "weekly" as const,
+          priority: 0.7,
+        };
+      });
 
     return [...staticEntries, ...cardEntries];
   } catch {
