@@ -152,8 +152,12 @@ function issuerChipSurfaceClass(bank: string): string {
   return "border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200";
 }
 
-const facetChipBaseClass =
-  "inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-left text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600";
+/** Compact controls for the browse filter sidebar (readable at small width). */
+const browseSidebarChipBase =
+  "inline-flex w-full min-h-[2rem] items-center justify-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-left text-xs font-medium leading-snug transition active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600";
+
+const browseFilterSectionLabelClass =
+  "mb-1.5 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400";
 
 function sortCardsByIdOrder(
   list: CreditCard[],
@@ -187,10 +191,10 @@ const sectionHeaderAccentClass =
   "mt-2 h-11 w-1.5 shrink-0 rounded-full bg-gradient-to-b from-blue-500 to-indigo-600 shadow-sm shadow-blue-500/30";
 
 const headerInputClass =
-  "w-full rounded-2xl border border-zinc-200 bg-zinc-50/90 py-3 pl-11 pr-4 text-sm text-zinc-900 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-600 dark:bg-zinc-900/80 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-500";
+  "w-full rounded-xl border border-zinc-200 bg-zinc-50/90 py-2.5 pl-10 pr-3.5 text-sm text-zinc-900 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-600 dark:bg-zinc-900/80 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-500";
 
 const browseToolbarBtnClass =
-  "relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border text-zinc-700 shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:text-zinc-200";
+  "relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border text-zinc-700 shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:text-zinc-200";
 
 function Spinner({ className }: { className?: string }) {
   return (
@@ -232,6 +236,23 @@ function SortIcon({ className }: { className?: string }) {
     >
       <path d="M4 6h8M4 12h5M4 18h2" />
       <path d="M19 5v14M16 8l3-3 3 3M16 16l3 3 3-3" />
+    </svg>
+  );
+}
+
+function IconSearch({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M21 21l-5.2-5.2M11 18a7 7 0 100-14 7 7 0 000 14z" />
     </svg>
   );
 }
@@ -358,6 +379,224 @@ function IconNetworkCard({ className }: { className?: string }) {
     >
       <rect x="2" y="5" width="20" height="14" rx="2" />
       <path d="M2 10h20" />
+    </svg>
+  );
+}
+
+function IconSlidersHorizontal({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <line x1="21" y1="4" x2="14" y2="4" />
+      <line x1="10" y1="4" x2="3" y2="4" />
+      <line x1="21" y1="12" x2="12" y2="12" />
+      <line x1="8" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="20" x2="16" y2="20" />
+      <line x1="12" y1="20" x2="3" y2="20" />
+      <line x1="14" y1="2" x2="14" y2="6" />
+      <line x1="10" y1="10" x2="10" y2="14" />
+      <line x1="16" y1="18" x2="16" y2="22" />
+    </svg>
+  );
+}
+
+function IconArrowUturnLeft({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M9 14L4 9l5-5" />
+      <path d="M4 9h10.5a5.5 5.5 0 010 11H13" />
+    </svg>
+  );
+}
+
+function IconBuildingBank({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3 21h18M4 21V10l8-5 8 5v11M9 21v-4h6v4" />
+      <path d="M9 13h.01M12 13h.01M15 13h.01" />
+    </svg>
+  );
+}
+
+function IconSquares2x2({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+    </svg>
+  );
+}
+
+function IconLayers({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+    </svg>
+  );
+}
+
+function IconIndianRupee({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M6 3h12M6 8h12M8 8c2 0 3.5 1.5 4 4M6 12h6.5" />
+      <path d="M10 12L8 21" />
+    </svg>
+  );
+}
+
+function IconGift({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="3" y="11" width="18" height="11" rx="2" />
+      <path d="M12 11V22M3 15h18" />
+      <path d="M12 11H7.5a3.5 3.5 0 010-7C11 4 12 11 12 11z" />
+      <path d="M12 11h4.5a3.5 3.5 0 000-7C13 4 12 11 12 11z" />
+    </svg>
+  );
+}
+
+function IconTrendingUp({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M22 7l-8.5 8.5-5-5L2 17" />
+      <path d="M16 7h6v6" />
+    </svg>
+  );
+}
+
+/** Decorative network hints (not issuer marks). */
+function IconVisaHint({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 16l6-14h4l6 14M8 10h8" />
+    </svg>
+  );
+}
+
+function IconMastercardHint({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+    >
+      <circle
+        cx="9"
+        cy="12"
+        r="5"
+        stroke="currentColor"
+        strokeWidth={2}
+        opacity={0.45}
+      />
+      <circle
+        cx="15"
+        cy="12"
+        r="5"
+        stroke="currentColor"
+        strokeWidth={2}
+        opacity={0.85}
+      />
+    </svg>
+  );
+}
+
+function IconAmexHint({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="3" y="6" width="18" height="12" rx="2" />
+      <path d="M7 12h10M7 15h6" />
     </svg>
   );
 }
@@ -647,7 +886,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
 
   const showFacetSidebar = !loading && !error && cards.length > 0;
 
-  const sidebarChipClass = `${facetChipBaseClass} w-full justify-start`;
+  const sidebarChipClass = browseSidebarChipBase;
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
@@ -678,8 +917,9 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 ) : null}
               </p>
               <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-                Refine from the left panel on wide screens (filters below the list
-                on mobile); open the sort menu to change order.
+                Desktop: filters in the left column. Phone: filters sit under the
+                list. Tap <span className="font-medium text-zinc-600 dark:text-zinc-300">Sort</span>{" "}
+                to change order.
               </p>
             </div>
             {!loading && !error && cards.length > 0 ? (
@@ -702,7 +942,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                   aria-controls="browse-sort-panel"
                   title="Sort cards"
                 >
-                  <SortIcon className="h-5 w-5" />
+                  <SortIcon className="h-[1.15rem] w-[1.15rem]" />
                   <span className="sr-only">Sort</span>
                   {browseSortNonDefault ? (
                     <span
@@ -719,20 +959,21 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
         <div
           className={
             showFacetSidebar
-              ? "mt-6 flex flex-col-reverse gap-6 lg:grid lg:grid-cols-[minmax(220px,260px)_minmax(0,1fr)] lg:gap-8 lg:items-start"
+              ? "mt-6 flex flex-col-reverse gap-5 lg:grid lg:grid-cols-[minmax(196px,232px)_minmax(0,1fr)] lg:gap-6 lg:items-start"
               : "mt-6"
           }
         >
           {showFacetSidebar ? (
             <aside
               id="browse-filter-panel"
-              className="mb-6 shrink-0 rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 dark:border-zinc-700 dark:bg-zinc-950/40 sm:p-5 lg:sticky lg:top-24 lg:mb-0 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:overflow-x-hidden lg:pr-1"
+              className="mb-6 shrink-0 rounded-xl border border-zinc-200 bg-zinc-50/80 p-3 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/50 sm:p-3.5 lg:sticky lg:top-20 lg:mb-0 lg:max-h-[min(100vh-5.5rem,42rem)] lg:overflow-y-auto lg:overflow-x-hidden lg:pr-0.5"
               aria-label="Catalog filters"
             >
-            <div className="space-y-5">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                Refine catalog
+            <div className="flex flex-col divide-y divide-zinc-200/80 dark:divide-zinc-600/50">
+            <div className="flex items-start justify-between gap-2 pb-3">
+              <h2 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <IconSlidersHorizontal className="h-3.5 w-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" />
+                Filters
               </h2>
               {browseFiltersActive ? (
                 <button
@@ -744,19 +985,24 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                     setFilterRewardType("all");
                     setFilterNetwork("all");
                   }}
-                  className="text-xs font-semibold text-blue-600 underline-offset-2 hover:underline dark:text-blue-400"
+                  className="inline-flex shrink-0 items-center gap-1 rounded-md border border-zinc-200 bg-white px-2 py-1 text-[10px] font-semibold text-zinc-700 shadow-sm hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-zinc-500 dark:hover:bg-zinc-800"
                 >
-                  Clear all
+                  <IconArrowUturnLeft className="h-3 w-3 opacity-80" />
+                  Reset
                 </button>
               ) : null}
             </div>
 
-            <div>
-              <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            <div className="pt-3">
+              <p className={browseFilterSectionLabelClass}>
+                <IconBuildingBank className="h-3 w-3 shrink-0 opacity-70" />
                 Bank
               </p>
+              <p className="mb-1.5 text-[10px] leading-snug text-zinc-400 dark:text-zinc-500">
+                Tap one or more
+              </p>
               <div
-                className="flex flex-col gap-2"
+                className="flex flex-col gap-1.5"
                 role="group"
                 aria-label="Filter by bank"
               >
@@ -770,12 +1016,12 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                       aria-pressed={on}
                       className={`${sidebarChipClass} ${
                         on
-                          ? "border-blue-500 bg-blue-50 text-blue-900 ring-2 ring-blue-500/25 dark:border-blue-400 dark:bg-blue-950/50 dark:text-blue-100"
-                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-zinc-500"
+                          ? "border-blue-500 bg-blue-50 text-blue-900 ring-1 ring-blue-500/35 dark:border-blue-400 dark:bg-blue-950/50 dark:text-blue-100"
+                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-200 hover:bg-white dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-zinc-500"
                       }`}
                     >
                       <span
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[10px] font-bold ${issuerChipSurfaceClass(bank)}`}
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[8px] font-bold leading-none ${issuerChipSurfaceClass(bank)}`}
                       >
                         {bankInitials(bank)}
                       </span>
@@ -788,12 +1034,16 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
               </div>
             </div>
 
-            <div>
-              <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                Strongest category reward
+            <div className="pt-3">
+              <p className={browseFilterSectionLabelClass}>
+                <IconSquares2x2 className="h-3 w-3 shrink-0 opacity-70" />
+                Spend category
+              </p>
+              <p className="mb-1.5 text-[10px] leading-snug text-zinc-400 dark:text-zinc-500">
+                Where this card earns most
               </p>
               <div
-                className="flex flex-col gap-2"
+                className="flex flex-col gap-1.5"
                 role="group"
                 aria-label="Filter by strongest reward category"
               >
@@ -802,7 +1052,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                     {
                       id: "all" as const,
                       label: "Any",
-                      icon: null,
+                      icon: IconSquares2x2,
                     },
                     {
                       id: "dining" as const,
@@ -835,12 +1085,12 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                       aria-pressed={on}
                       className={`${sidebarChipClass} ${
                         on
-                          ? "border-indigo-500 bg-indigo-50 text-indigo-950 ring-2 ring-indigo-500/25 dark:border-indigo-400 dark:bg-indigo-950/40 dark:text-indigo-50"
-                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                          ? "border-indigo-500 bg-indigo-50 text-indigo-950 ring-1 ring-indigo-500/35 dark:border-indigo-400 dark:bg-indigo-950/40 dark:text-indigo-50"
+                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-200 hover:bg-white dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
                       }`}
                     >
                       {Icon ? (
-                        <Icon className="h-4 w-4 shrink-0 text-current opacity-90" />
+                        <Icon className="h-3.5 w-3.5 shrink-0 text-current opacity-90" />
                       ) : null}
                       {label}
                     </button>
@@ -849,18 +1099,19 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
               </div>
             </div>
 
-            <div>
-              <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                Reward program
+            <div className="pt-3">
+              <p className={browseFilterSectionLabelClass}>
+                <IconSparkles className="h-3 w-3 shrink-0 opacity-70" />
+                Reward type
               </p>
               <div
-                className="flex flex-col gap-2"
+                className="flex flex-col gap-1.5"
                 role="group"
                 aria-label="Filter by reward type"
               >
                 {(
                   [
-                    { id: "all" as const, label: "All", icon: null },
+                    { id: "all" as const, label: "All", icon: IconLayers },
                     {
                       id: "cashback" as const,
                       label: "Cashback",
@@ -882,12 +1133,12 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                       aria-pressed={on}
                       className={`${sidebarChipClass} ${
                         on
-                          ? "border-emerald-600 bg-emerald-50 text-emerald-950 ring-2 ring-emerald-500/25 dark:border-emerald-500 dark:bg-emerald-950/35 dark:text-emerald-50"
-                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                          ? "border-emerald-600 bg-emerald-50 text-emerald-950 ring-1 ring-emerald-500/35 dark:border-emerald-500 dark:bg-emerald-950/35 dark:text-emerald-50"
+                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-200 hover:bg-white dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
                       }`}
                     >
                       {Icon ? (
-                        <Icon className="h-4 w-4 shrink-0 text-current opacity-90" />
+                        <Icon className="h-3.5 w-3.5 shrink-0 text-current opacity-90" />
                       ) : null}
                       {label}
                     </button>
@@ -896,27 +1147,56 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
               </div>
             </div>
 
-            <div>
-              <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            <div className="pt-3">
+              <p className={browseFilterSectionLabelClass}>
+                <IconIndianRupee className="h-3 w-3 shrink-0 opacity-70" />
                 Annual fee
               </p>
               <div
-                className="flex flex-col gap-2"
+                className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-1"
                 role="group"
                 aria-label="Filter by annual fee range"
               >
                 {(
                   [
-                    { id: "any" as const, label: "Any" },
-                    { id: "free" as const, label: "Free (₹0)" },
-                    { id: "r1_500" as const, label: "₹1 – ₹500" },
-                    { id: "r501_1000" as const, label: "₹501 – ₹1,000" },
-                    { id: "r1001_2500" as const, label: "₹1,001 – ₹2,500" },
-                    { id: "r2501_5000" as const, label: "₹2,501 – ₹5,000" },
-                    { id: "r5001_10000" as const, label: "₹5,001 – ₹10,000" },
-                    { id: "r10001_plus" as const, label: "₹10,001+" },
+                    {
+                      id: "any" as const,
+                      label: "Any",
+                      Icon: IconSquares2x2,
+                    },
+                    {
+                      id: "free" as const,
+                      label: "Free (₹0)",
+                      Icon: IconGift,
+                    },
+                    { id: "r1_500" as const, label: "₹1 – ₹500", Icon: IconIndianRupee },
+                    {
+                      id: "r501_1000" as const,
+                      label: "₹501 – ₹1,000",
+                      Icon: IconIndianRupee,
+                    },
+                    {
+                      id: "r1001_2500" as const,
+                      label: "₹1,001 – ₹2,500",
+                      Icon: IconIndianRupee,
+                    },
+                    {
+                      id: "r2501_5000" as const,
+                      label: "₹2,501 – ₹5,000",
+                      Icon: IconIndianRupee,
+                    },
+                    {
+                      id: "r5001_10000" as const,
+                      label: "₹5,001 – ₹10,000",
+                      Icon: IconIndianRupee,
+                    },
+                    {
+                      id: "r10001_plus" as const,
+                      label: "₹10,001+",
+                      Icon: IconTrendingUp,
+                    },
                   ] as const
-                ).map(({ id, label }) => {
+                ).map(({ id, label, Icon: FeeIcon }) => {
                   const on = filterAnnualBand === id;
                   return (
                     <button
@@ -926,10 +1206,11 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                       aria-pressed={on}
                       className={`${sidebarChipClass} ${
                         on
-                          ? "border-amber-600 bg-amber-50 text-amber-950 ring-2 ring-amber-500/25 dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-50"
-                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                          ? "border-amber-600 bg-amber-50 text-amber-950 ring-1 ring-amber-500/35 dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-50"
+                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-200 hover:bg-white dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
                       }`}
                     >
+                      <FeeIcon className="h-3.5 w-3.5 shrink-0 opacity-90" />
                       {label}
                     </button>
                   );
@@ -937,23 +1218,28 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
               </div>
             </div>
 
-            <div>
-              <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            <div className="pt-3">
+              <p className={browseFilterSectionLabelClass}>
+                <IconNetworkCard className="h-3 w-3 shrink-0 opacity-70" />
                 Network
               </p>
               <div
-                className="flex flex-col gap-2"
+                className="flex flex-col gap-1.5"
                 role="group"
                 aria-label="Filter by card network"
               >
                 {(
                   [
-                    { id: "all" as const, label: "All" },
-                    { id: "Visa" as const, label: "Visa" },
-                    { id: "Mastercard" as const, label: "Mastercard" },
-                    { id: "Amex" as const, label: "Amex" },
+                    { id: "all" as const, label: "All", Icon: IconNetworkCard },
+                    { id: "Visa" as const, label: "Visa", Icon: IconVisaHint },
+                    {
+                      id: "Mastercard" as const,
+                      label: "Mastercard",
+                      Icon: IconMastercardHint,
+                    },
+                    { id: "Amex" as const, label: "Amex", Icon: IconAmexHint },
                   ] as const
-                ).map(({ id, label }) => {
+                ).map(({ id, label, Icon: NetIcon }) => {
                   const netLocked = Boolean(catalogNetworkLock);
                   const on = netLocked
                     ? id === catalogNetworkLock
@@ -973,18 +1259,18 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                         netLocked ? "cursor-not-allowed opacity-90" : ""
                       } ${
                         on
-                          ? "border-violet-600 bg-violet-50 text-violet-950 ring-2 ring-violet-500/25 dark:border-violet-500 dark:bg-violet-950/40 dark:text-violet-50"
-                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                          ? "border-violet-600 bg-violet-50 text-violet-950 ring-1 ring-violet-500/35 dark:border-violet-500 dark:bg-violet-950/40 dark:text-violet-50"
+                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-200 hover:bg-white dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
                       }`}
                     >
-                      <IconNetworkCard className="h-4 w-4 shrink-0 opacity-90" />
+                      <NetIcon className="h-3.5 w-3.5 shrink-0 opacity-90" />
                       {label}
                     </button>
                   );
                 })}
               </div>
               {catalogNetworkLock ? (
-                <p className="mt-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+                <p className="mt-2 text-[10px] leading-snug text-zinc-500 dark:text-zinc-400">
                   Network locked to {catalogNetworkLock} via{" "}
                   <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-[10px] dark:bg-zinc-800">
                     NEXT_PUBLIC_CARD_NETWORK
@@ -999,21 +1285,8 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
 
           <div className="min-w-0">
             <div className="relative min-w-0">
-              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  aria-hidden
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-5.2-5.2M11 18a7 7 0 100-14 7 7 0 000 14z"
-                  />
-                </svg>
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400">
+                <IconSearch className="h-4 w-4" />
               </span>
               <input
                 type="search"
@@ -1047,14 +1320,15 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
         {!loading && !error && cards.length > 0 && browseSortOpen ? (
           <div
             id="browse-sort-panel"
-            className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50/60 p-5 dark:border-zinc-700 dark:bg-zinc-950/40"
+            className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50/60 p-4 dark:border-zinc-700 dark:bg-zinc-950/40"
           >
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              Sort order
+            <h2 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <SortIcon className="h-3.5 w-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" />
+              Sort
             </h2>
-            <label className="mt-3 block sm:flex sm:items-end sm:gap-4">
+            <label className="mt-2 block sm:flex sm:items-end sm:gap-3">
               <div className="min-w-0 flex-1">
-                <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                <span className="mb-1 block text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
                   Order by
                 </span>
                 <select
@@ -1062,7 +1336,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                   onChange={(e) =>
                     setBrowseSort(e.target.value as BrowseSortMode)
                   }
-                  className={inputClass}
+                  className={`${inputClass} py-2 text-sm`}
                 >
                   <option value="name">Name (A–Z)</option>
                   <option value="annual_asc">Annual fee (low → high)</option>
@@ -1138,7 +1412,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 </p>
                 <p className="mt-1 text-sm text-zinc-500">
                   {feeTypeFilteredCards.length === 0
-                    ? "Widen annual fee, bank, or category filters, or tap Clear all."
+                    ? "Widen annual fee, bank, or category filters, or tap Reset in filters."
                     : "Try another query, clear the search box, or adjust filters."}
                 </p>
               </>
