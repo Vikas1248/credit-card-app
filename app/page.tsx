@@ -85,6 +85,32 @@ const CATEGORY_LABELS: { key: keyof RewardBreakdown; label: string }[] = [
   { key: "fuel", label: "Fuel" },
 ];
 
+type SalaryBandId =
+  | "r0_5"
+  | "r5_10"
+  | "r10_25"
+  | "r25_50"
+  | "r50_plus";
+
+const SALARY_BAND_OPTIONS: { id: SalaryBandId; label: string }[] = [
+  { id: "r0_5", label: "0-5 lakh" },
+  { id: "r5_10", label: "5-10 lakh" },
+  { id: "r10_25", label: "10-25 lakh" },
+  { id: "r25_50", label: "25-50 lakh" },
+  { id: "r50_plus", label: "50 lakh & above" },
+];
+
+const SALARY_BAND_SPEND_PRESETS: Record<
+  SalaryBandId,
+  { dining: number; travel: number; shopping: number; fuel: number }
+> = {
+  r0_5: { dining: 4000, travel: 2000, shopping: 5000, fuel: 3000 },
+  r5_10: { dining: 8000, travel: 5000, shopping: 12000, fuel: 6000 },
+  r10_25: { dining: 15000, travel: 12000, shopping: 22000, fuel: 9000 },
+  r25_50: { dining: 25000, travel: 20000, shopping: 35000, fuel: 12000 },
+  r50_plus: { dining: 40000, travel: 35000, shopping: 60000, fuel: 18000 },
+};
+
 type FeaturedGroup = {
   id: "best-overall" | "cashback" | "travel" | "lifetime-free";
   title: string;
@@ -313,6 +339,7 @@ export default function Home() {
   const router = useRouter();
   const [cards, setCards] = useState<CreditCard[]>([]);
   const [search, setSearch] = useState("");
+  const [salaryBand, setSalaryBand] = useState<SalaryBandId>("r5_10");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [spendDining, setSpendDining] = useState("8000");
@@ -339,6 +366,14 @@ export default function Home() {
   } | null>(null);
   const [compareAiLoading, setCompareAiLoading] = useState(false);
   const [compareAiError, setCompareAiError] = useState<string | null>(null);
+
+  const applySalaryBandPreset = (band: SalaryBandId) => {
+    const preset = SALARY_BAND_SPEND_PRESETS[band];
+    setSpendDining(String(preset.dining));
+    setSpendTravel(String(preset.travel));
+    setSpendShopping(String(preset.shopping));
+    setSpendFuel(String(preset.fuel));
+  };
 
   const loadCards = async () => {
     try {
@@ -833,6 +868,30 @@ export default function Home() {
             </div>
 
             <div className="mt-8 rounded-2xl border border-zinc-100 bg-zinc-50/60 p-5 dark:border-zinc-800 dark:bg-zinc-950/40 sm:p-6">
+              <label className="mb-4 block">
+                <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                  Annual salary band
+                </span>
+                <select
+                  value={salaryBand}
+                  onChange={(e) => {
+                    const band = e.target.value as SalaryBandId;
+                    setSalaryBand(band);
+                    applySalaryBandPreset(band);
+                  }}
+                  className={inputClass}
+                >
+                  {SALARY_BAND_OPTIONS.map((opt) => (
+                    <option key={opt.id} value={opt.id}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                <span className="mt-1.5 block text-xs text-zinc-500 dark:text-zinc-400">
+                  Selecting a band auto-fills monthly spends below. You can still
+                  edit each category manually.
+                </span>
+              </label>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {(
                   [
