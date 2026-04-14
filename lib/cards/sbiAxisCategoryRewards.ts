@@ -385,6 +385,9 @@ export function deriveSbiAxisCategoryRange(
   if (cardNameNorm.includes("cashback sbi card")) {
     if (slug === "fuel") return { min: 1, max: 1 };
   }
+  if (cardNameNorm.includes("indigo axis bank credit card")) {
+    if (slug === "dining") return { min: 1, max: 2 };
+  }
   if (cardNameNorm.includes("bpcl sbi credit card")) {
     if (slug === "fuel") return { min: 0.25, max: 4.25 };
     if (slug === "shopping") return { min: 0.25, max: 0.25 };
