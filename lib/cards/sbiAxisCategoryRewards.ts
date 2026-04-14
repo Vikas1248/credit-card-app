@@ -85,36 +85,40 @@ function parsePercentHints(text: string): number[] {
 
 function parseCategorySpecificPercentHints(
   text: string,
-  slug: CategorySlug
+  slug: CategorySlug,
+  basePct: number | null
 ): number[] {
-  const bucket: Record<CategorySlug, RegExp[]> = {
-    dining: [
-      /(?:dining|restaurant|food\s+delivery|swiggy|zomato|grocer|movies?|departmental)[^()%]{0,90}\(\s*~?\s*([\d.]+)\s*%\s*\)/gi,
-      /\(\s*~?\s*([\d.]+)\s*%\s*\)[^.\n]{0,90}(?:dining|restaurant|food\s+delivery|swiggy|zomato|grocer|movies?|departmental)/gi,
-    ],
-    travel: [
-      /(?:travel|flight|hotel|cleartrip|yatra|makemytrip|goibibo|indigo|irctc|rail|train|airline)[^()%]{0,90}\(\s*~?\s*([\d.]+)\s*%\s*\)/gi,
-      /\(\s*~?\s*([\d.]+)\s*%\s*\)[^.\n]{0,90}(?:travel|flight|hotel|cleartrip|yatra|makemytrip|goibibo|indigo|irctc|rail|train|airline)/gi,
-    ],
-    shopping: [
-      /(?:shopping|amazon|flipkart|myntra|retail|online\s+spend|online\s+shopping)[^()%]{0,90}\(\s*~?\s*([\d.]+)\s*%\s*\)/gi,
-      /\(\s*~?\s*([\d.]+)\s*%\s*\)[^.\n]{0,90}(?:shopping|amazon|flipkart|myntra|retail|online\s+spend|online\s+shopping)/gi,
-    ],
-    fuel: [
-      /(?:fuel|petrol|diesel|bpcl|hpcl|iocl|indian\s*oil)[^()%]{0,90}\(\s*~?\s*([\d.]+)\s*%\s*\)/gi,
-      /\(\s*~?\s*([\d.]+)\s*%\s*\)[^.\n]{0,90}(?:fuel|petrol|diesel|bpcl|hpcl|iocl|indian\s*oil)/gi,
-    ],
-  };
-
+  const chunks = text
+    .split(/[\n.;]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
   const out: number[] = [];
-  for (const re of bucket[slug]) {
-    let m: RegExpExecArray | null;
-    while ((m = re.exec(text)) !== null) {
-      const v = Number(m[1]);
-      if (Number.isFinite(v) && v > 0 && v <= MAX_REASONABLE_PCT) out.push(v);
+
+  for (const chunk of chunks) {
+    const lower = chunk.toLowerCase();
+    if (!slugMatchesCorpus(slug, lower)) continue;
+
+    // Generic partner-brand lines overstate non-shopping categories.
+    if (slug !== "shopping" && lower.includes("partner brands")) continue;
+    // Surcharge-waiver text is not a fuel reward multiplier.
+    if (slug === "fuel" && /fuel\s+surcharge\s+waiver/.test(lower)) continue;
+
+    const pctHints = parsePercentHints(chunk);
+    for (const v of pctHints) out.push(v);
+
+    // Allow X-multiplier cues only when explicitly tied to this category chunk.
+    if (basePct != null && basePct > 0) {
+      const reX = /(\d+(?:\.\d+)?)\s*[xX]\b/g;
+      let m: RegExpExecArray | null;
+      while ((m = reX.exec(chunk)) !== null) {
+        const mult = Number(m[1]);
+        if (Number.isFinite(mult) && mult > 0 && mult <= 50) {
+          out.push(basePct * mult);
+        }
+      }
     }
   }
-  return out;
+  return out.filter((v) => Number.isFinite(v) && v > 0 && v <= MAX_REASONABLE_PCT);
 }
 
 function getPointsPerRupee(meta: Record<string, unknown>): number | null {
@@ -186,6 +190,21 @@ function fuelCashbackExcluded(meta: Record<string, unknown>, corpus: string): bo
 
 function slugMatchesCorpus(slug: CategorySlug, corpus: string): boolean {
   return SLUG_PATTERNS[slug].some((re) => re.test(corpus));
+}
+
+function hasFuelSurchargeWaiverOnly(corpus: string): boolean {
+  const t = corpus.toLowerCase();
+  const hasWaiver = /fuel\s+surcharge\s+waiver/.test(t);
+  if (!hasWaiver) return false;
+  // Treat as "waiver-only" when no explicit fuel earn/cashback/value-back style signal exists.
+  const hasExplicitFuelEarn =
+    /(?:fuel|petrol|diesel|bpcl|hpcl|iocl|indian\s*oil)[^.\n]{0,90}(?:cashback|value\s*back|reward|points?|travel\s*credits?|x)/i.test(
+      t
+    ) ||
+    /(?:cashback|value\s*back|reward|points?|travel\s*credits?|x)[^.\n]{0,90}(?:fuel|petrol|diesel|bpcl|hpcl|iocl|indian\s*oil)/i.test(
+      t
+    );
+  return !hasExplicitFuelEarn;
 }
 
 /**
@@ -288,7 +307,6 @@ export function deriveSbiAxisCategoryRange(
   }
 
   const hints = parsePercentHints(corpus);
-  const categoryHints = parseCategorySpecificPercentHints(corpus, slug);
   const ppr = getPointsPerRupee(meta);
   const metaInr = inrPerPointFromMeta(meta);
   const textInr = parseInrPerPointFromText(corpus);
@@ -299,6 +317,7 @@ export function deriveSbiAxisCategoryRange(
   if (ppr != null && ppr > 0 && inr > 0) {
     basePct = ppr * inr * 100;
   }
+  const categoryHints = parseCategorySpecificPercentHints(corpus, slug, basePct);
 
   const bands = parsePointsPerRupeeBands(corpus, inr);
 
@@ -343,6 +362,16 @@ export function deriveSbiAxisCategoryRange(
   if (slug === "fuel") {
     if (fuelCashbackExcluded(meta, corpus)) return null;
     const colFuel = card.fuel_reward_column;
+    if (
+      hasFuelSurchargeWaiverOnly(corpus) &&
+      !(typeof colFuel === "number" && Number.isFinite(colFuel) && colFuel > 0)
+    ) {
+      if (basePct == null) return null;
+      return {
+        min: roundDisplayPct(basePct),
+        max: roundDisplayPct(basePct),
+      };
+    }
     const hasFuelSignal =
       slugMatchesCorpus("fuel", corpus) ||
       (typeof colFuel === "number" && Number.isFinite(colFuel) && colFuel > 0);
@@ -365,10 +394,15 @@ export function deriveSbiAxisCategoryRange(
         max: roundDisplayPct(Math.max(maxCat, minCat)),
       };
     }
-    return {
-      min: roundDisplayPct(floorPct),
-      max: roundDisplayPct(Math.max(ceilPct, floorPct)),
-    };
+    // Conservative fallback: if category text exists but no category-tied earn signal,
+    // show base earn only (instead of inheriting card-level max hints).
+    if (basePct != null) {
+      return {
+        min: roundDisplayPct(basePct),
+        max: roundDisplayPct(basePct),
+      };
+    }
+    return null;
   }
 
   if (basePct == null) {
