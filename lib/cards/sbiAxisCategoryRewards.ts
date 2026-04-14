@@ -135,8 +135,6 @@ function parseCategorySpecificPercentHints(
       if (Number.isFinite(v) && v > 0 && v <= MAX_REASONABLE_PCT)
         pctHints.push(v);
     }
-    for (const v of pctHints) out.push(v);
-
     // Parse category-tied "points per ₹" (e.g., "10 points per ₹100 on dining").
     // When explicit points-per-₹ is present, prefer it over X-multiplier cues from
     // the same chunk to avoid double-amplifying cards like SBI PRIME.
@@ -152,6 +150,8 @@ function parseCategorySpecificPercentHints(
       );
       let mPts: RegExpExecArray | null;
       while ((mPts = rePtsNearA.exec(chunk)) !== null) {
+        const matched = String(mPts[0] ?? "").toLowerCase();
+        if (/other\s+spends?/.test(matched)) continue;
         const pts = Number(mPts[1]);
         const rs = Number(String(mPts[2]).replace(/,/g, ""));
         if (Number.isFinite(pts) && Number.isFinite(rs) && pts > 0 && rs > 0) {
@@ -159,12 +159,17 @@ function parseCategorySpecificPercentHints(
         }
       }
       while ((mPts = rePtsNearB.exec(chunk)) !== null) {
+        const matched = String(mPts[0] ?? "").toLowerCase();
+        if (/other\s+spends?/.test(matched)) continue;
         const pts = Number(mPts[1]);
         const rs = Number(String(mPts[2]).replace(/,/g, ""));
         if (Number.isFinite(pts) && Number.isFinite(rs) && pts > 0 && rs > 0) {
           pointsHints.push((pts / rs) * inrPerPoint * 100);
         }
       }
+    }
+    if (pointsHints.length === 0) {
+      for (const v of pctHints) out.push(v);
     }
     for (const v of pointsHints) out.push(v);
 
