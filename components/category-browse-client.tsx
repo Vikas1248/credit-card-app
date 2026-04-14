@@ -21,8 +21,8 @@ import { isSbiCard } from "@/lib/cards/sbiApply";
 import {
   compareCardsBySpendCategory,
   rewardPctForSpendCategory,
-  spendCategoryBySlug,
   type SpendCategorySlug,
+  spendCategoryBySlug,
 } from "@/lib/spendCategories";
 import type { CardNetwork } from "@/lib/types/card";
 import { SpendCategoryIcon } from "@/components/spend-category-icons";
@@ -175,9 +175,30 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
     };
   }, [listSort, slug]);
 
-  const sortedByEarn = useMemo(() => {
-    return [...cards].sort((a, b) => compareCardsBySpendCategory(slug, a, b));
+  const PRIMARY_SPEND_CATEGORY_ORDER: SpendCategorySlug[] = [
+    "travel",
+    "dining",
+    "shopping",
+    "fuel",
+  ];
+
+  const primaryCategoryCards = useMemo(() => {
+    return cards.filter((card) => {
+      let best: { slug: SpendCategorySlug; pct: number } | null = null;
+      for (const s of PRIMARY_SPEND_CATEGORY_ORDER) {
+        const pct = rewardPctForSpendCategory(card, s);
+        if (pct == null || pct <= 0) continue;
+        if (!best || pct > best.pct) best = { slug: s, pct };
+      }
+      return best?.slug === slug;
+    });
   }, [cards, slug]);
+
+  const sortedByEarn = useMemo(() => {
+    return [...primaryCategoryCards].sort((a, b) =>
+      compareCardsBySpendCategory(slug, a, b)
+    );
+  }, [primaryCategoryCards, slug]);
 
   const sorted = useMemo(() => {
     if (
@@ -186,12 +207,12 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
       categoryAiOrder.length > 0
     ) {
       const idx = new Map(categoryAiOrder.map((id, i) => [id, i]));
-      return [...cards].sort(
+      return [...primaryCategoryCards].sort(
         (a, b) => (idx.get(a.id) ?? 1e9) - (idx.get(b.id) ?? 1e9)
       );
     }
     return sortedByEarn;
-  }, [listSort, categoryAiOrder, cards, sortedByEarn]);
+  }, [listSort, categoryAiOrder, primaryCategoryCards, sortedByEarn]);
 
   const withRate = sorted.filter((c) => rewardPctForSpendCategory(c, slug) != null)
     .length;
@@ -282,7 +303,8 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
 
             {!loading && !error ? (
               <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-500">
-                {cards.length} {cards.length === 1 ? "card" : "cards"}
+                {primaryCategoryCards.length}{" "}
+                {primaryCategoryCards.length === 1 ? "card" : "cards"}
                 {withRate > 0
                   ? ` · ${withRate} with a ${meta.label.toLowerCase()} rate`
                   : ""}
@@ -341,6 +363,21 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                         <CardTopRewardTag card={card} />
                       </div>
                       <CardKeyBenefits card={card} />
+                      <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-zinc-600 dark:text-zinc-300">
+                        <div>
+                          <span className="text-zinc-500">Annual fee </span>
+                          <span className="text-base font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                            {formatInr(card.annual_fee)}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-zinc-500">Joining fee </span>
+                          <span className="text-base font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                            {formatInr(card.joining_fee)}
+                          </span>
+                        </div>
+                        <div className="font-medium capitalize">{card.reward_type}</div>
+                      </dl>
                     </div>
                     <div className="flex w-full shrink-0 flex-col gap-2 sm:ml-auto sm:w-[9.5rem]">
                       <Link
