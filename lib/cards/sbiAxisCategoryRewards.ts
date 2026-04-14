@@ -88,6 +88,16 @@ function parseCategorySpecificPercentHints(
   slug: CategorySlug,
   basePct: number | null
 ): number[] {
+  const keywords: Record<CategorySlug, string> = {
+    dining:
+      "dining|restaurant|food\\s+delivery|swiggy|zomato|grocer|groceries|movies?|departmental",
+    travel:
+      "travel|flight|hotel|cleartrip|yatra|makemytrip|goibibo|indigo|irctc|rail|train|airline",
+    shopping:
+      "shopping|amazon|flipkart|myntra|retail|online\\s+spend|online\\s+shopping",
+    fuel: "fuel|petrol|diesel|bpcl|hpcl|iocl|indian\\s*oil",
+  };
+  const kw = keywords[slug];
   const chunks = text
     .split(/[\n.;]+/)
     .map((s) => s.trim())
@@ -103,14 +113,41 @@ function parseCategorySpecificPercentHints(
     // Surcharge-waiver text is not a fuel reward multiplier.
     if (slug === "fuel" && /fuel\s+surcharge\s+waiver/.test(lower)) continue;
 
-    const pctHints = parsePercentHints(chunk);
+    // Extract only % hints tied to this category keyword, not every % in the line.
+    const pctHints: number[] = [];
+    const reNearA = new RegExp(
+      `(?:${kw})[^()%]{0,90}\\(\\s*~?\\s*([\\d.]+)\\s*%\\s*\\)`,
+      "gi"
+    );
+    const reNearB = new RegExp(
+      `\\(\\s*~?\\s*([\\d.]+)\\s*%\\s*\\)[^.\\n]{0,90}(?:${kw})`,
+      "gi"
+    );
+    let mPct: RegExpExecArray | null;
+    while ((mPct = reNearA.exec(chunk)) !== null) {
+      const v = Number(mPct[1]);
+      if (Number.isFinite(v) && v > 0 && v <= MAX_REASONABLE_PCT)
+        pctHints.push(v);
+    }
+    while ((mPct = reNearB.exec(chunk)) !== null) {
+      const v = Number(mPct[1]);
+      if (Number.isFinite(v) && v > 0 && v <= MAX_REASONABLE_PCT)
+        pctHints.push(v);
+    }
     for (const v of pctHints) out.push(v);
 
     // Allow X-multiplier cues only when explicitly tied to this category chunk.
     if (basePct != null && basePct > 0) {
-      const reX = /(\d+(?:\.\d+)?)\s*[xX]\b/g;
+      const reXNearA = new RegExp(`(\\d+(?:\\.\\d+)?)\\s*[xX][^.\\n]{0,90}(?:${kw})`, "gi");
+      const reXNearB = new RegExp(`(?:${kw})[^.\\n]{0,90}(\\d+(?:\\.\\d+)?)\\s*[xX]`, "gi");
       let m: RegExpExecArray | null;
-      while ((m = reX.exec(chunk)) !== null) {
+      while ((m = reXNearA.exec(chunk)) !== null) {
+        const mult = Number(m[1]);
+        if (Number.isFinite(mult) && mult > 0 && mult <= 50) {
+          out.push(basePct * mult);
+        }
+      }
+      while ((m = reXNearB.exec(chunk)) !== null) {
         const mult = Number(m[1]);
         if (Number.isFinite(mult) && mult > 0 && mult <= 50) {
           out.push(basePct * mult);
@@ -320,6 +357,11 @@ export function deriveSbiAxisCategoryRange(
   const categoryHints = parseCategorySpecificPercentHints(corpus, slug, basePct);
 
   const bands = parsePointsPerRupeeBands(corpus, inr);
+  if (bands) {
+    // Prefer parsed bands for "other/base" earn when present (e.g. PRIME/ELITE:
+    // "2 points per ₹100"), since catalog points_per_rupee can reflect promo tiers.
+    basePct = bands.minPct;
+  }
 
   let floorPct: number;
   let ceilPct: number;
