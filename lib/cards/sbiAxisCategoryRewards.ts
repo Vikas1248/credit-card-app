@@ -125,11 +125,11 @@ function parseCategorySpecificPercentHints(
       "gi"
     );
     const rePlainNearA = new RegExp(
-      `(?:${kw})[^%\\n]{0,90}([\\d.]+)\\s*%`,
+      `(?:${kw})[^,%\\n]{0,60}([\\d.]+)\\s*%`,
       "gi"
     );
     const rePlainNearB = new RegExp(
-      `([\\d.]+)\\s*%[^.\\n]{0,90}(?:${kw})`,
+      `([\\d.]+)\\s*%[^,%\\n]{0,60}(?:${kw})`,
       "gi"
     );
     let mPct: RegExpExecArray | null;
