@@ -282,7 +282,7 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
         </header>
 
         {loading ? (
-          <ul className="space-y-4">
+          <ul className="space-y-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <li
                 key={i}

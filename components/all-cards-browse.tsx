@@ -1421,7 +1421,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
             )}
           </div>
         ) : (
-          <ul className="mt-8 space-y-4">
+          <ul className="mt-8 space-y-6">
             {displayBrowseCards.map((card) => (
               <li
                 key={card.id}
