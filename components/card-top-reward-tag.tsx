@@ -9,18 +9,46 @@ import {
   type CardWithCategoryRewardsInput,
 } from "@/lib/spendCategories";
 
+type CardTopRewardTagInput = Omit<
+  CardWithCategoryRewardsInput,
+  "dining_reward" | "travel_reward" | "shopping_reward" | "fuel_reward"
+> & {
+  dining_reward?: number | null;
+  travel_reward?: number | null;
+  shopping_reward?: number | null;
+  fuel_reward?: number | null;
+  category_reward_pct?: {
+    dining: number | null;
+    travel: number | null;
+    shopping: number | null;
+    fuel: number | null;
+  };
+};
+
 type TopRewardTag = {
   slug: (typeof SPEND_CATEGORY_SLUGS)[number];
   label: string;
   rewardText: string;
 };
 
-function resolveTopRewardTag(card: CardWithCategoryRewardsInput): TopRewardTag | null {
+function normalizedCardInput(card: CardTopRewardTagInput): CardWithCategoryRewardsInput {
+  return {
+    ...card,
+    dining_reward: card.dining_reward ?? card.category_reward_pct?.dining ?? null,
+    travel_reward: card.travel_reward ?? card.category_reward_pct?.travel ?? null,
+    shopping_reward:
+      card.shopping_reward ?? card.category_reward_pct?.shopping ?? null,
+    fuel_reward: card.fuel_reward ?? card.category_reward_pct?.fuel ?? null,
+  };
+}
+
+function resolveTopRewardTag(card: CardTopRewardTagInput): TopRewardTag | null {
+  const input = normalizedCardInput(card);
   let best: { slug: (typeof SPEND_CATEGORY_SLUGS)[number]; max: number; min: number } | null =
     null;
 
   for (const slug of SPEND_CATEGORY_SLUGS) {
-    const range = rewardPctRangeForSpendCategory(card, slug);
+    const range = rewardPctRangeForSpendCategory(input, slug);
     if (!range || range.max <= 0) continue;
     if (
       !best ||
@@ -33,7 +61,7 @@ function resolveTopRewardTag(card: CardWithCategoryRewardsInput): TopRewardTag |
 
   if (!best) return null;
 
-  const range = rewardPctRangeForSpendCategory(card, best.slug);
+  const range = rewardPctRangeForSpendCategory(input, best.slug);
   if (!range) return null;
   return {
     slug: best.slug,
@@ -46,7 +74,7 @@ export function CardTopRewardTag({
   card,
   tone = "light",
 }: {
-  card: CardWithCategoryRewardsInput;
+  card: CardTopRewardTagInput;
   tone?: "light" | "dark";
 }) {
   const top = resolveTopRewardTag(card);
