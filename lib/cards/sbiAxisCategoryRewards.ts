@@ -136,6 +136,35 @@ function parseCategorySpecificPercentHints(
     }
     for (const v of pctHints) out.push(v);
 
+    // Parse category-tied "points per ₹" (e.g., "10 points per ₹100 on dining")
+    // so we can derive higher dining/travel rates even when % isn't written explicitly.
+    if (basePct != null && basePct > 0) {
+      const inrPerPoint = basePct / 100;
+      const rePtsNearA = new RegExp(
+        `(\\d+(?:\\.\\d+)?)\\s*(?:reward\\s*)?points?\\s+per\\s+₹?\\s*([\\d,]+)[^.\\n]{0,90}(?:${kw})`,
+        "gi"
+      );
+      const rePtsNearB = new RegExp(
+        `(?:${kw})[^.\\n]{0,90}(\\d+(?:\\.\\d+)?)\\s*(?:reward\\s*)?points?\\s+per\\s+₹?\\s*([\\d,]+)`,
+        "gi"
+      );
+      let mPts: RegExpExecArray | null;
+      while ((mPts = rePtsNearA.exec(chunk)) !== null) {
+        const pts = Number(mPts[1]);
+        const rs = Number(String(mPts[2]).replace(/,/g, ""));
+        if (Number.isFinite(pts) && Number.isFinite(rs) && pts > 0 && rs > 0) {
+          out.push((pts / rs) * inrPerPoint * 100);
+        }
+      }
+      while ((mPts = rePtsNearB.exec(chunk)) !== null) {
+        const pts = Number(mPts[1]);
+        const rs = Number(String(mPts[2]).replace(/,/g, ""));
+        if (Number.isFinite(pts) && Number.isFinite(rs) && pts > 0 && rs > 0) {
+          out.push((pts / rs) * inrPerPoint * 100);
+        }
+      }
+    }
+
     // Allow X-multiplier cues only when explicitly tied to this category chunk.
     if (basePct != null && basePct > 0) {
       const reXNearA = new RegExp(`(\\d+(?:\\.\\d+)?)\\s*[xX][^.\\n]{0,90}(?:${kw})`, "gi");
