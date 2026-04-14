@@ -460,6 +460,18 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
                 {card.network}
               </span>
             </div>
+            <div className="mt-5 hidden sm:flex">
+              {hasApply ? (
+                <DetailApplyCta card={card} />
+              ) : (
+                <Link
+                  href="/cards"
+                  className="inline-flex min-h-10 items-center justify-center rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+                >
+                  Check eligibility
+                </Link>
+              )}
+            </div>
           </header>
 
           <div className="pt-10">
