@@ -382,6 +382,9 @@ export function deriveSbiAxisCategoryRange(
     if (slug === "shopping") return { min: 1, max: 7.5 };
     if (slug === "fuel") return { min: 1, max: 1 };
   }
+  if (cardNameNorm.includes("cashback sbi card")) {
+    if (slug === "fuel") return { min: 1, max: 1 };
+  }
 
   const meta =
     card.metadata && typeof card.metadata === "object"
