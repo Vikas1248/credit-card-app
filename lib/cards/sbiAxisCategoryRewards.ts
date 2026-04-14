@@ -370,6 +370,12 @@ export function deriveSbiAxisCategoryRange(
   slug: CategorySlug
 ): CategoryPctRange | null {
   if (!isSbiAxisCatalogBank(card.bank)) return null;
+  const cardNameNorm = String(card.card_name ?? "").toLowerCase();
+  if (cardNameNorm.includes("irctc sbi card premier")) {
+    if (slug === "travel") return { min: 5, max: 5 };
+    if (slug === "dining") return { min: 0.6, max: 0.6 };
+    if (slug === "shopping") return { min: 0.2, max: 0.2 };
+  }
 
   const meta =
     card.metadata && typeof card.metadata === "object"
