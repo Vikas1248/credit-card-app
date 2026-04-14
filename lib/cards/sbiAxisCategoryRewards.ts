@@ -86,7 +86,8 @@ function parsePercentHints(text: string): number[] {
 function parseCategorySpecificPercentHints(
   text: string,
   slug: CategorySlug,
-  basePct: number | null
+  basePct: number | null,
+  inrPerPoint: number
 ): number[] {
   const keywords: Record<CategorySlug, string> = {
     dining:
@@ -138,8 +139,7 @@ function parseCategorySpecificPercentHints(
 
     // Parse category-tied "points per ₹" (e.g., "10 points per ₹100 on dining")
     // so we can derive higher dining/travel rates even when % isn't written explicitly.
-    if (basePct != null && basePct > 0) {
-      const inrPerPoint = basePct / 100;
+    if (basePct != null && basePct > 0 && inrPerPoint > 0) {
       const rePtsNearA = new RegExp(
         `(\\d+(?:\\.\\d+)?)\\s*(?:reward\\s*)?points?\\s+per\\s+₹?\\s*([\\d,]+)[^.\\n]{0,90}(?:${kw})`,
         "gi"
@@ -383,7 +383,12 @@ export function deriveSbiAxisCategoryRange(
   if (ppr != null && ppr > 0 && inr > 0) {
     basePct = ppr * inr * 100;
   }
-  const categoryHints = parseCategorySpecificPercentHints(corpus, slug, basePct);
+  const categoryHints = parseCategorySpecificPercentHints(
+    corpus,
+    slug,
+    basePct,
+    inr
+  );
 
   const bands = parsePointsPerRupeeBands(corpus, inr);
   if (bands) {
