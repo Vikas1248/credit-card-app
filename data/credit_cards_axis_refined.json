@@ -279,7 +279,7 @@
       "network": "Visa",
       "reward_conversion": {
         "description": "10 EDGE Reward points per ₹200 spent (~1–2% value depending on redemption via vouchers)",
-        "points_per_rupee": 0.02
+        "points_per_rupee": 0.05
       },
       "reward_type": "points",
       "shopping_reward": 0.02,
