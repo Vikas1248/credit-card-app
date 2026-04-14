@@ -90,6 +90,23 @@ export default function RootLayout({
             {SITE_NAME} uses your inputs for illustrative estimates only. Not
             financial advice; not affiliated with banks or card networks.
           </p>
+          <div className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-800 dark:border-emerald-800/60 dark:bg-emerald-950/40 dark:text-emerald-200">
+            <svg
+              className="h-3.5 w-3.5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              aria-hidden
+            >
+              <path
+                d="M7 11V8a5 5 0 0110 0v3M5 11h14v9H5z"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            SSL Secured
+          </div>
           <p className="mt-2">
             <Link
               href="/about"
