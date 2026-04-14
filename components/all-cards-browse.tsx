@@ -1470,7 +1470,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                       href={`/card/${card.id}`}
                       className={`${cardViewDetailsButtonClass} w-full`}
                     >
-                      View details
+                      Learn more
                     </Link>
                     {isAxisBankCard(card.bank) ? (
                       <AxisApplyLink className="w-full" />

@@ -1118,7 +1118,7 @@ export default function Home() {
                             href={`/card/${card.id}`}
                             className={`${cardViewDetailsButtonClass} w-full`}
                           >
-                            View details
+                            Learn more
                           </Link>
                           {isAxisBankCard(card.bank) ? (
                             <AxisApplyLink fullWidth />

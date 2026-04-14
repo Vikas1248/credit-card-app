@@ -353,7 +353,7 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                         href={`/card/${card.id}`}
                         className={`${cardViewDetailsButtonClass} w-full sm:w-auto`}
                       >
-                        View details
+                        Learn more
                       </Link>
                     </div>
                   </div>

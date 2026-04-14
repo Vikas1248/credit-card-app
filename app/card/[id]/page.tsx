@@ -3,11 +3,23 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
+import { AmexGenericApplyLink } from "@/components/amex-generic-apply-link";
+import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
+import { AxisApplyLink } from "@/components/axis-apply-link";
 import { CardAiInsight } from "@/components/card-ai-insight";
 import { CardDetailKeySummary } from "@/components/card-detail-key-summary";
 import { CardProgramDetails } from "@/components/card-program-details";
+import { HdfcApplyLink } from "@/components/hdfc-apply-link";
+import { IndusIndApplyLink } from "@/components/indusind-apply-link";
+import { SbiApplyLink } from "@/components/sbi-apply-link";
 import { pickAdditionalDetailsMetadata } from "@/lib/cards/additionalDetailsMetadata";
+import { isAmexCardUsingGenericApply } from "@/lib/cards/amexGenericApply";
+import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
+import { isAxisBankCard } from "@/lib/cards/axisApply";
+import { hdfcCardShowsApply } from "@/lib/cards/hdfcApply";
+import { indusindCardShowsApply } from "@/lib/cards/indusindApply";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
+import { isSbiCard } from "@/lib/cards/sbiApply";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { SITE_NAME } from "@/lib/site";
 import type { CardNetwork } from "@/lib/types/card";
@@ -233,6 +245,61 @@ function parseKeyBenefitsList(raw: string | null | undefined): string[] {
   return lines;
 }
 
+function cardHasDetailApply(card: CreditCard): boolean {
+  return (
+    isAxisBankCard(card.bank) ||
+    isAmexPlatinumReserveCard(card.card_name, card.bank) ||
+    isAmexCardUsingGenericApply(card.card_name, card.bank) ||
+    isSbiCard(card.bank) ||
+    hdfcCardShowsApply(card.bank, card.metadata) ||
+    indusindCardShowsApply(card.bank, card.metadata)
+  );
+}
+
+function DetailApplyCta({
+  card,
+  fullWidth = false,
+  className,
+}: {
+  card: CreditCard;
+  fullWidth?: boolean;
+  className?: string;
+}) {
+  if (isAxisBankCard(card.bank)) {
+    return <AxisApplyLink fullWidth={fullWidth} className={className} />;
+  }
+  if (isAmexPlatinumReserveCard(card.card_name, card.bank)) {
+    return (
+      <AmexPlatinumReserveApplyLink fullWidth={fullWidth} className={className} />
+    );
+  }
+  if (isAmexCardUsingGenericApply(card.card_name, card.bank)) {
+    return <AmexGenericApplyLink fullWidth={fullWidth} className={className} />;
+  }
+  if (isSbiCard(card.bank)) {
+    return <SbiApplyLink fullWidth={fullWidth} className={className} />;
+  }
+  if (hdfcCardShowsApply(card.bank, card.metadata)) {
+    return (
+      <HdfcApplyLink
+        metadata={card.metadata}
+        fullWidth={fullWidth}
+        className={className}
+      />
+    );
+  }
+  if (indusindCardShowsApply(card.bank, card.metadata)) {
+    return (
+      <IndusIndApplyLink
+        metadata={card.metadata}
+        fullWidth={fullWidth}
+        className={className}
+      />
+    );
+  }
+  return null;
+}
+
 function CardMetadataSection({
   metadata,
 }: {
@@ -364,9 +431,10 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
     notFound();
   }
   const keyBenefitsList = parseKeyBenefitsList(card.key_benefits);
+  const hasApply = cardHasDetailApply(card);
 
   return (
-    <main className="min-h-screen bg-zinc-50 px-4 py-12 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 sm:px-6 sm:py-16">
+    <main className="min-h-screen bg-zinc-50 px-4 py-12 pb-28 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 sm:px-6 sm:py-16 sm:pb-16">
       <div className="mx-auto w-full max-w-3xl lg:max-w-4xl">
         <Link
           href="/cards"
@@ -475,6 +543,26 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
           ) : null}
           </div>
         </article>
+      </div>
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200/80 bg-white/95 p-3 backdrop-blur sm:hidden dark:border-zinc-700 dark:bg-zinc-950/95">
+        <div className="mx-auto flex w-full max-w-3xl items-center gap-2">
+          <Link
+            href="/cards"
+            className="inline-flex min-h-10 flex-1 items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-800 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+          >
+            Learn more
+          </Link>
+          {hasApply ? (
+            <DetailApplyCta card={card} fullWidth className="flex-1" />
+          ) : (
+            <Link
+              href="/cards"
+              className="inline-flex min-h-10 flex-1 items-center justify-center rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+            >
+              Check eligibility
+            </Link>
+          )}
+        </div>
       </div>
     </main>
   );

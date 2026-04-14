@@ -19,7 +19,7 @@ export function ReferralApplyButton({
       rel="noopener noreferrer sponsored"
       className={cls}
     >
-      Apply
+      Apply now
     </a>
   );
 }

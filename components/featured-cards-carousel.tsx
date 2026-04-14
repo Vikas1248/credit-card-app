@@ -320,7 +320,7 @@ export function FeaturedCardsCarousel({
                       href={`/card/${card.id}`}
                       className={`${cardViewDetailsButtonOnDarkClass} w-full`}
                     >
-                      View details
+                      Learn more
                     </Link>
                     {cardHasReferralApply(card) ? (
                       <CardReferralApply card={card} />
