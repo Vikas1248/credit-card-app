@@ -196,7 +196,7 @@
       "network": "Visa / Mastercard / American Express",
       "reward_conversion": {
         "description": "10 points per ₹100 on dining, groceries, movies (~2.5%), 2 points per ₹100 on other spends (~0.5%), 4 points = ₹1",
-        "points_per_rupee": 0.0025
+        "points_per_rupee": 0.02
       },
       "reward_type": "points",
       "shopping_reward": 0.005,
