@@ -380,6 +380,7 @@ export function deriveSbiAxisCategoryRange(
     if (slug === "dining") return { min: 1, max: 4 };
     if (slug === "travel") return { min: 1, max: 5 };
     if (slug === "shopping") return { min: 1, max: 7.5 };
+    if (slug === "fuel") return { min: 1, max: 1 };
   }
 
   const meta =
