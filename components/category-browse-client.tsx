@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { CardListTile } from "@/components/card-list-tile";
+import { CardKeyBenefits } from "@/components/card-key-benefits";
+import { CardTopRewardTag } from "@/components/card-top-reward-tag";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
+import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import {
   compareCardsBySpendCategory,
   formatCategoryRewardPctRange,
@@ -35,6 +37,15 @@ type CreditCard = {
   fuel_reward: number | null;
   metadata: Record<string, unknown> | null;
 };
+
+function formatInr(value: number): string {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
 
 export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
   const meta = spendCategoryBySlug(slug);
@@ -291,15 +302,39 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
             No cards in the catalog yet.
           </p>
         ) : (
-          <ul className="space-y-6">
+          <ul className="space-y-4">
             {sorted.map((card) => {
               const range = rewardPctRangeForSpendCategory(card, slug);
               return (
-                <CardListTile
+                <li
                   key={card.id}
-                  card={card}
-                  rightSummary={
-                    <div className="rounded-xl bg-white/80 px-3 py-2 text-right shadow-sm ring-1 ring-zinc-200/70 dark:bg-zinc-950/50 dark:ring-zinc-600/50">
+                  className={`rounded-2xl border p-5 shadow-sm sm:p-6 ${issuerBrandTileClass(card.bank, card.network)}`}
+                >
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-2 flex items-center gap-2">
+                        <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-700 shadow-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200">
+                          {card.network}
+                        </span>
+                        <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold tracking-wide text-zinc-700 shadow-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200">
+                          {card.bank}
+                        </span>
+                      </div>
+                      <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+                        <Link
+                          href={`/card/${card.id}`}
+                          className="hover:text-blue-600 dark:hover:text-blue-400"
+                        >
+                          {card.card_name}
+                        </Link>
+                      </h2>
+                      <div className="mt-2">
+                        <CardTopRewardTag card={card} />
+                      </div>
+                      <CardKeyBenefits card={card} />
+                    </div>
+                    <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+                      <div className="rounded-xl bg-white/80 px-3 py-2 text-right shadow-sm ring-1 ring-zinc-200/70 dark:bg-zinc-950/50 dark:ring-zinc-600/50">
                         <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                           {meta.label} earn
                         </p>
@@ -307,18 +342,22 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                           {formatCategoryRewardPctRange(range)}
                         </p>
                       </div>
-                  }
-                  actions={
-                    <>
+                      <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                        Annual fee{" "}
+                        <span className="text-base font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                          {formatInr(card.annual_fee)}
+                        </span>{" "}
+                        · <span className="font-medium capitalize">{card.reward_type}</span>
+                      </p>
                       <Link
                         href={`/card/${card.id}`}
-                        className={`${cardViewDetailsButtonClass} w-full`}
+                        className={`${cardViewDetailsButtonClass} w-full sm:w-auto`}
                       >
                         Learn more
                       </Link>
-                    </>
-                  }
-                />
+                    </div>
+                  </div>
+                </li>
               );
             })}
           </ul>
