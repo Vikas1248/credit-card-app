@@ -124,13 +124,39 @@ function parseCategorySpecificPercentHints(
       `\\(\\s*~?\\s*([\\d.]+)\\s*%\\s*\\)[^.\\n]{0,90}(?:${kw})`,
       "gi"
     );
+    const rePlainNearA = new RegExp(
+      `(?:${kw})[^%\\n]{0,90}([\\d.]+)\\s*%`,
+      "gi"
+    );
+    const rePlainNearB = new RegExp(
+      `([\\d.]+)\\s*%[^.\\n]{0,90}(?:${kw})`,
+      "gi"
+    );
     let mPct: RegExpExecArray | null;
     while ((mPct = reNearA.exec(chunk)) !== null) {
+      const matched = String(mPct[0] ?? "").toLowerCase();
+      if (matched.includes("base")) continue;
       const v = Number(mPct[1]);
       if (Number.isFinite(v) && v > 0 && v <= MAX_REASONABLE_PCT)
         pctHints.push(v);
     }
     while ((mPct = reNearB.exec(chunk)) !== null) {
+      const matched = String(mPct[0] ?? "").toLowerCase();
+      if (matched.includes("base")) continue;
+      const v = Number(mPct[1]);
+      if (Number.isFinite(v) && v > 0 && v <= MAX_REASONABLE_PCT)
+        pctHints.push(v);
+    }
+    while ((mPct = rePlainNearA.exec(chunk)) !== null) {
+      const matched = String(mPct[0] ?? "").toLowerCase();
+      if (matched.includes("base")) continue;
+      const v = Number(mPct[1]);
+      if (Number.isFinite(v) && v > 0 && v <= MAX_REASONABLE_PCT)
+        pctHints.push(v);
+    }
+    while ((mPct = rePlainNearB.exec(chunk)) !== null) {
+      const matched = String(mPct[0] ?? "").toLowerCase();
+      if (matched.includes("base")) continue;
       const v = Number(mPct[1]);
       if (Number.isFinite(v) && v > 0 && v <= MAX_REASONABLE_PCT)
         pctHints.push(v);

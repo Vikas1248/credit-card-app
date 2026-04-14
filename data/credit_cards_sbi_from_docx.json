@@ -296,7 +296,7 @@
       "bank": "SBI Card",
       "best_for": "Railway travel and IRCTC bookings",
       "card_name": "IRCTC SBI Card Premier",
-      "dining_reward": 0.024,
+      "dining_reward": 0.006,
       "fuel_reward": 0.0,
       "joining_fee": 1499,
       "key_benefits": [
@@ -315,16 +315,16 @@
       "lounge_access": "8 railway lounge visits per year (no airport lounge access)",
       "network": "Visa / Mastercard",
       "reward_conversion": {
-        "description": "1 Reward Point = ₹1 (redeemable on IRCTC platform)",
+        "description": "3 reward points per ₹125 on dining/utility (~0.6%), 1 point per ₹125 on other spends (~0.2%), 4 points = ₹1",
         "points_per_rupee": 0.008
       },
       "reward_type": "points",
-      "membership_rewards_inr_per_point": 1.0,
-      "shopping_reward": 0.008,
+      "membership_rewards_inr_per_point": 0.25,
+      "shopping_reward": 0.002,
       "source": "sbi_card",
       "travel_reward": 0.1,
       "welcome_offer": "1,500 reward points worth ₹1,500 on payment of joining fee",
-      "reward_rate": "10% IRCTC train bookings, 5% air/e-catering, ~2.4% dining, ~0.8% base"
+      "reward_rate": "10% IRCTC train bookings, 5% air/e-catering, ~0.6% dining/utility, ~0.2% base (4 points = ₹1)"
     },
     {
       "affiliate_link": "https://linksredirect.com/?cid=281873&source=linkkit&url=https%3A%2F%2Fwww.sbicard.com%2Fsprint%2Fbpcl",
