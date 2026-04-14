@@ -30,6 +30,13 @@ type TopRewardTag = {
   rewardPct: number;
 };
 
+const PRIMARY_TAG_CATEGORY_ORDER: (typeof SPEND_CATEGORY_SLUGS)[number][] = [
+  "travel",
+  "dining",
+  "shopping",
+  "fuel",
+];
+
 function normalizedCardInput(card: CardTopRewardTagInput): CardWithCategoryRewardsInput {
   return {
     ...card,
@@ -43,19 +50,12 @@ function normalizedCardInput(card: CardTopRewardTagInput): CardWithCategoryRewar
 
 function resolveTopRewardTag(card: CardTopRewardTagInput): TopRewardTag | null {
   const input = normalizedCardInput(card);
-  let best: { slug: (typeof SPEND_CATEGORY_SLUGS)[number]; max: number; min: number } | null =
-    null;
+  let best: { slug: (typeof SPEND_CATEGORY_SLUGS)[number]; max: number } | null = null;
 
-  for (const slug of SPEND_CATEGORY_SLUGS) {
+  for (const slug of PRIMARY_TAG_CATEGORY_ORDER) {
     const range = rewardPctRangeForSpendCategory(input, slug);
     if (!range || range.max <= 0) continue;
-    if (
-      !best ||
-      range.max > best.max ||
-      (Math.abs(range.max - best.max) < 1e-9 && range.min > best.min)
-    ) {
-      best = { slug, max: range.max, min: range.min };
-    }
+    if (!best || range.max > best.max) best = { slug, max: range.max };
   }
 
   if (!best) return null;

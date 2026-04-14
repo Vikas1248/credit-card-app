@@ -18,6 +18,7 @@ import { hdfcCardShowsApply } from "@/lib/cards/hdfcApply";
 import { indusindCardShowsApply } from "@/lib/cards/indusindApply";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
+import { rewardPctForSpendCategory, type SpendCategorySlug } from "@/lib/spendCategories";
 import { isSbiCard } from "@/lib/cards/sbiApply";
 import {
   buildCatalogSearchHaystack,
@@ -75,6 +76,13 @@ type AnnualFeeBand =
 
 type SpendFocus = "all" | "dining" | "travel" | "shopping" | "fuel";
 
+const PRIMARY_SPEND_CATEGORY_ORDER: SpendCategorySlug[] = [
+  "travel",
+  "dining",
+  "shopping",
+  "fuel",
+];
+
 function annualFeeMatchesBand(fee: number, band: AnnualFeeBand): boolean {
   switch (band) {
     case "any":
@@ -102,20 +110,29 @@ function cardStrongInSpendFocus(
   card: CreditCard,
   focus: Exclude<SpendFocus, "all">
 ): boolean {
-  const rates: { key: SpendFocus; v: number | null }[] = [
-    { key: "dining", v: card.dining_reward },
-    { key: "travel", v: card.travel_reward },
-    { key: "shopping", v: card.shopping_reward },
-    { key: "fuel", v: card.fuel_reward },
-  ];
-  const positive = rates.filter(
-    (x): x is { key: SpendFocus; v: number } =>
-      typeof x.v === "number" && x.v > 0
-  );
-  if (positive.length === 0) return false;
-  const m = Math.max(...positive.map((x) => x.v));
-  const mine = rates.find((x) => x.key === focus)?.v;
-  return typeof mine === "number" && mine > 0 && mine >= m - 1e-9;
+  let best: { slug: SpendCategorySlug; pct: number } | null = null;
+  for (const slug of PRIMARY_SPEND_CATEGORY_ORDER) {
+    const pct = rewardPctForSpendCategory(
+      {
+        card_name: card.card_name,
+        bank: card.bank,
+        network: card.network,
+        reward_type: card.reward_type,
+        best_for: card.best_for,
+        reward_rate: card.reward_rate,
+        key_benefits: card.key_benefits,
+        metadata: card.metadata ?? null,
+        dining_reward: card.dining_reward,
+        travel_reward: card.travel_reward,
+        shopping_reward: card.shopping_reward,
+        fuel_reward: card.fuel_reward,
+      },
+      slug
+    );
+    if (pct == null || pct <= 0) continue;
+    if (!best || pct > best.pct) best = { slug, pct };
+  }
+  return best ? best.slug === focus : false;
 }
 
 /** Short label for bank filter chips (not official marks). */
