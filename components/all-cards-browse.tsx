@@ -1433,6 +1433,9 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                       <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-700 shadow-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200">
                         {card.network}
                       </span>
+                      <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold tracking-wide text-zinc-700 shadow-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200">
+                        {card.bank}
+                      </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
@@ -1445,9 +1448,6 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                       </h2>
                       <CardTopRewardTag card={card} />
                     </div>
-                    <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                      {card.bank}
-                    </p>
                     <CardKeyBenefits card={card} />
                     <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-zinc-600 dark:text-zinc-300">
                       <div>

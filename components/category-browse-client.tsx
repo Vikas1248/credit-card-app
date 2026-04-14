@@ -312,9 +312,12 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0 flex-1">
-                      <div className="mb-2">
+                      <div className="mb-2 flex items-center gap-2">
                         <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-700 shadow-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200">
                           {card.network}
+                        </span>
+                        <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold tracking-wide text-zinc-700 shadow-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200">
+                          {card.bank}
                         </span>
                       </div>
                       <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
@@ -325,9 +328,6 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                           {card.card_name}
                         </Link>
                       </h2>
-                      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                        {card.bank} · {card.network}
-                      </p>
                       <div className="mt-2">
                         <CardTopRewardTag card={card} />
                       </div>
