@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AmexGenericApplyLink } from "@/components/amex-generic-apply-link";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
+import { CardTopRewardTag } from "@/components/card-top-reward-tag";
 import { HdfcApplyLink } from "@/components/hdfc-apply-link";
 import { IndusIndApplyLink } from "@/components/indusind-apply-link";
 import { SbiApplyLink } from "@/components/sbi-apply-link";
@@ -293,6 +294,9 @@ export function FeaturedCardsCarousel({
                     {card.bank} · {card.network} ·{" "}
                     <span className="capitalize">{card.reward_type}</span>
                   </p>
+                  <div className="mt-3 flex justify-center lg:justify-start">
+                    <CardTopRewardTag card={card} tone="dark" />
+                  </div>
                   <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-slate-200">
                     {card.best_for ?? card.key_benefits ?? "—"}
                   </p>

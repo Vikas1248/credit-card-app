@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { CardTopRewardTag } from "@/components/card-top-reward-tag";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import {
@@ -321,6 +322,9 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                       <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
                         {card.bank} · {card.network}
                       </p>
+                      <div className="mt-2">
+                        <CardTopRewardTag card={card} />
+                      </div>
                       <p className="mt-2 line-clamp-2 text-sm text-zinc-600 dark:text-zinc-300">
                         {card.best_for ?? card.reward_rate ?? "—"}
                       </p>

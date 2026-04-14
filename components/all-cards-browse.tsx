@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AmexGenericApplyLink } from "@/components/amex-generic-apply-link";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
+import { CardTopRewardTag } from "@/components/card-top-reward-tag";
 import { HdfcApplyLink } from "@/components/hdfc-apply-link";
 import { IndusIndApplyLink } from "@/components/indusind-apply-link";
 import { SbiApplyLink } from "@/components/sbi-apply-link";
@@ -1439,6 +1440,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                       <span className="rounded-md bg-white/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-700 shadow-sm ring-1 ring-zinc-200/80 dark:bg-zinc-950/50 dark:text-zinc-300 dark:ring-zinc-600/60">
                         {card.network}
                       </span>
+                      <CardTopRewardTag card={card} />
                     </div>
                     <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
                       {card.bank}
