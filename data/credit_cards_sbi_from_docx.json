@@ -118,7 +118,7 @@
       "network": "Visa / Mastercard / American Express",
       "reward_conversion": {
         "description": "5X rewards on dining, grocery & departmental stores (~2.5%), 2 points per ₹100 on other spends (~0.5%), 1 point = ₹0.25",
-        "points_per_rupee": 0.0025
+        "points_per_rupee": 0.02
       },
       "reward_type": "points",
       "shopping_reward": 0.005,
