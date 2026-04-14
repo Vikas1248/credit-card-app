@@ -386,7 +386,10 @@ export function deriveSbiAxisCategoryRange(
     if (slug === "fuel") return { min: 1, max: 1 };
   }
   if (cardNameNorm.includes("indigo axis bank credit card")) {
+    if (slug === "travel") return { min: 3, max: 3 };
     if (slug === "dining") return { min: 1, max: 2 };
+    if (slug === "shopping") return { min: 1, max: 1 };
+    if (slug === "fuel") return { min: 0, max: 0 };
   }
   if (cardNameNorm.includes("indigo axis bank premium credit card")) {
     if (slug === "travel") return { min: 3.5, max: 3.5 };
@@ -397,6 +400,12 @@ export function deriveSbiAxisCategoryRange(
   if (cardNameNorm.includes("bpcl sbi credit card")) {
     if (slug === "fuel") return { min: 0.25, max: 4.25 };
     if (slug === "shopping") return { min: 0.25, max: 0.25 };
+  }
+  if (cardNameNorm.includes("indianoil axis bank credit card")) {
+    if (slug === "fuel") return { min: 4, max: 4 };
+    if (slug === "dining") return { min: 1, max: 1 };
+    if (slug === "shopping") return { min: 1, max: 1 };
+    if (slug === "travel") return { min: 0.25, max: 0.25 };
   }
 
   const meta =
