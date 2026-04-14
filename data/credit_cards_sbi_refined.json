@@ -322,7 +322,7 @@
       "membership_rewards_inr_per_point": 0.25,
       "shopping_reward": 0.002,
       "source": "sbi_card",
-      "travel_reward": 0.1,
+      "travel_reward": 0.05,
       "welcome_offer": "1,500 reward points worth ₹1,500 on payment of joining fee",
       "reward_rate": "10% IRCTC train bookings, 5% air/e-catering, ~0.6% dining/utility, ~0.2% base (4 points = ₹1)"
     },
