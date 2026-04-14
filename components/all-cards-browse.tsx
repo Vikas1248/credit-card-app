@@ -1458,7 +1458,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                       </div>
                       <div>
                         <span className="text-zinc-500">Joining fee </span>
-                        <span className="font-semibold tabular-nums text-zinc-800 dark:text-zinc-200">
+                        <span className="text-base font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
                           {formatInr(card.joining_fee)}
                         </span>
                       </div>
