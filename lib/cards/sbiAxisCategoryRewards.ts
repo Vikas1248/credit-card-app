@@ -143,11 +143,11 @@ function parseCategorySpecificPercentHints(
     const pointsHints: number[] = [];
     if (basePct != null && basePct > 0 && inrPerPoint > 0) {
       const rePtsNearA = new RegExp(
-        `(\\d+(?:\\.\\d+)?)\\s*(?:reward\\s*)?points?\\s+per\\s+₹?\\s*([\\d,]+)[^.\\n]{0,90}(?:${kw})`,
+        `(\\d+(?:\\.\\d+)?)\\s*(?:reward\\s*)?(?:points?|travel\\s*credits?)\\s+per\\s+₹?\\s*([\\d,]+)[^.\\n]{0,90}(?:${kw})`,
         "gi"
       );
       const rePtsNearB = new RegExp(
-        `(?:${kw})[^.\\n]{0,90}(\\d+(?:\\.\\d+)?)\\s*(?:reward\\s*)?points?\\s+per\\s+₹?\\s*([\\d,]+)`,
+        `(?:${kw})[^.\\n]{0,90}(\\d+(?:\\.\\d+)?)\\s*(?:reward\\s*)?(?:points?|travel\\s*credits?)\\s+per\\s+₹?\\s*([\\d,]+)`,
         "gi"
       );
       let mPts: RegExpExecArray | null;
