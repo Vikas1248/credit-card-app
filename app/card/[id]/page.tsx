@@ -205,6 +205,34 @@ function KeyBenefitsIcon({ className }: { className?: string }) {
   );
 }
 
+function KeyBenefitPointerIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className ?? "h-4 w-4"}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M20 7L9 18l-5-5" />
+    </svg>
+  );
+}
+
+function parseKeyBenefitsList(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  const lines = raw
+    .split(/\r?\n+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => s.replace(/^[•\-\u2022]+\s*/, "").trim())
+    .filter(Boolean);
+  return lines;
+}
+
 function CardMetadataSection({
   metadata,
 }: {
@@ -335,6 +363,7 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
   if (!card) {
     notFound();
   }
+  const keyBenefitsList = parseKeyBenefitsList(card.key_benefits);
 
   return (
     <main className="min-h-screen bg-zinc-50 px-4 py-12 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 sm:px-6 sm:py-16">
@@ -418,9 +447,25 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
                   Highlights from the issuer listing; confirm live offers on the
                   bank’s site.
                 </p>
-                <p className="mt-4 text-base leading-relaxed text-zinc-700 dark:text-zinc-300">
-                  {card.key_benefits?.trim() ? card.key_benefits : "—"}
-                </p>
+                {keyBenefitsList.length > 0 ? (
+                  <ul className="mt-4 space-y-2.5">
+                    {keyBenefitsList.map((benefit, index) => (
+                      <li
+                        key={`${benefit}-${index}`}
+                        className="flex items-start gap-2.5 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300"
+                      >
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-600/10 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300">
+                          <KeyBenefitPointerIcon className="h-3.5 w-3.5" />
+                        </span>
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-4 text-base leading-relaxed text-zinc-700 dark:text-zinc-300">
+                    —
+                  </p>
+                )}
               </div>
             </div>
           </section>

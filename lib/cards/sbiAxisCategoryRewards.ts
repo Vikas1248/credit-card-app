@@ -83,6 +83,40 @@ function parsePercentHints(text: string): number[] {
   return out;
 }
 
+function parseCategorySpecificPercentHints(
+  text: string,
+  slug: CategorySlug
+): number[] {
+  const bucket: Record<CategorySlug, RegExp[]> = {
+    dining: [
+      /(?:dining|restaurant|food\s+delivery|swiggy|zomato|grocer|movies?|departmental)[^()%]{0,90}\(\s*~?\s*([\d.]+)\s*%\s*\)/gi,
+      /\(\s*~?\s*([\d.]+)\s*%\s*\)[^.\n]{0,90}(?:dining|restaurant|food\s+delivery|swiggy|zomato|grocer|movies?|departmental)/gi,
+    ],
+    travel: [
+      /(?:travel|flight|hotel|cleartrip|yatra|makemytrip|goibibo|indigo|irctc|rail|train|airline)[^()%]{0,90}\(\s*~?\s*([\d.]+)\s*%\s*\)/gi,
+      /\(\s*~?\s*([\d.]+)\s*%\s*\)[^.\n]{0,90}(?:travel|flight|hotel|cleartrip|yatra|makemytrip|goibibo|indigo|irctc|rail|train|airline)/gi,
+    ],
+    shopping: [
+      /(?:shopping|amazon|flipkart|myntra|retail|online\s+spend|online\s+shopping)[^()%]{0,90}\(\s*~?\s*([\d.]+)\s*%\s*\)/gi,
+      /\(\s*~?\s*([\d.]+)\s*%\s*\)[^.\n]{0,90}(?:shopping|amazon|flipkart|myntra|retail|online\s+spend|online\s+shopping)/gi,
+    ],
+    fuel: [
+      /(?:fuel|petrol|diesel|bpcl|hpcl|iocl|indian\s*oil)[^()%]{0,90}\(\s*~?\s*([\d.]+)\s*%\s*\)/gi,
+      /\(\s*~?\s*([\d.]+)\s*%\s*\)[^.\n]{0,90}(?:fuel|petrol|diesel|bpcl|hpcl|iocl|indian\s*oil)/gi,
+    ],
+  };
+
+  const out: number[] = [];
+  for (const re of bucket[slug]) {
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(text)) !== null) {
+      const v = Number(m[1]);
+      if (Number.isFinite(v) && v > 0 && v <= MAX_REASONABLE_PCT) out.push(v);
+    }
+  }
+  return out;
+}
+
 function getPointsPerRupee(meta: Record<string, unknown>): number | null {
   const rc = meta.reward_conversion;
   if (!rc || typeof rc !== "object") return null;
@@ -254,6 +288,7 @@ export function deriveSbiAxisCategoryRange(
   }
 
   const hints = parsePercentHints(corpus);
+  const categoryHints = parseCategorySpecificPercentHints(corpus, slug);
   const ppr = getPointsPerRupee(meta);
   const metaInr = inrPerPointFromMeta(meta);
   const textInr = parseInrPerPointFromText(corpus);
@@ -322,6 +357,14 @@ export function deriveSbiAxisCategoryRange(
 
   const matches = slugMatchesCorpus(slug, corpus);
   if (matches) {
+    if (categoryHints.length > 0) {
+      const minCat = Math.min(...categoryHints);
+      const maxCat = Math.max(...categoryHints);
+      return {
+        min: roundDisplayPct(minCat),
+        max: roundDisplayPct(Math.max(maxCat, minCat)),
+      };
+    }
     return {
       min: roundDisplayPct(floorPct),
       max: roundDisplayPct(Math.max(ceilPct, floorPct)),
