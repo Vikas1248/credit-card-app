@@ -355,7 +355,7 @@
       "network": "Visa / Mastercard",
       "reward_conversion": {
         "description": "4 reward points = ₹1; 13X on fuel (~3.25% + 1% surcharge waiver = ~4.25%)",
-        "points_per_rupee": 0.0025
+        "points_per_rupee": 0.01
       },
       "reward_type": "points",
       "membership_rewards_inr_per_point": 0.25,
