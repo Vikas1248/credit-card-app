@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { CardKeyBenefits } from "@/components/card-key-benefits";
 import { CardTopRewardTag } from "@/components/card-top-reward-tag";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
@@ -311,6 +312,11 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0 flex-1">
+                      <div className="mb-2">
+                        <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-700 shadow-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200">
+                          {card.network}
+                        </span>
+                      </div>
                       <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
                         <Link
                           href={`/card/${card.id}`}
@@ -325,9 +331,7 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                       <div className="mt-2">
                         <CardTopRewardTag card={card} />
                       </div>
-                      <p className="mt-2 line-clamp-2 text-sm text-zinc-600 dark:text-zinc-300">
-                        {card.best_for ?? card.reward_rate ?? "—"}
-                      </p>
+                      <CardKeyBenefits card={card} />
                     </div>
                     <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
                       <div className="rounded-xl bg-white/80 px-3 py-2 text-right shadow-sm ring-1 ring-zinc-200/70 dark:bg-zinc-950/50 dark:ring-zinc-600/50">
@@ -338,9 +342,12 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                           {formatCategoryRewardPctRange(range)}
                         </p>
                       </div>
-                      <p className="text-xs text-zinc-500">
-                        Fee {formatInr(card.annual_fee)}/yr ·{" "}
-                        <span className="capitalize">{card.reward_type}</span>
+                      <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                        Annual fee{" "}
+                        <span className="text-base font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                          {formatInr(card.annual_fee)}
+                        </span>{" "}
+                        · <span className="font-medium capitalize">{card.reward_type}</span>
                       </p>
                       <Link
                         href={`/card/${card.id}`}

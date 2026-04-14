@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AmexGenericApplyLink } from "@/components/amex-generic-apply-link";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
+import { CardKeyBenefits } from "@/components/card-key-benefits";
 import { CardTopRewardTag } from "@/components/card-top-reward-tag";
 import { HdfcApplyLink } from "@/components/hdfc-apply-link";
 import { IndusIndApplyLink } from "@/components/indusind-apply-link";
@@ -1428,6 +1429,11 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0 flex-1">
+                    <div className="mb-2 flex items-center gap-2">
+                      <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-700 shadow-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200">
+                        {card.network}
+                      </span>
+                    </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
                         <Link
@@ -1437,31 +1443,26 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                           {card.card_name}
                         </Link>
                       </h2>
-                      <span className="rounded-md bg-white/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-700 shadow-sm ring-1 ring-zinc-200/80 dark:bg-zinc-950/50 dark:text-zinc-300 dark:ring-zinc-600/60">
-                        {card.network}
-                      </span>
                       <CardTopRewardTag card={card} />
                     </div>
                     <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
                       {card.bank}
                     </p>
-                    <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                      {card.best_for ?? card.reward_rate ?? "—"}
-                    </p>
-                    <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-zinc-500">
+                    <CardKeyBenefits card={card} />
+                    <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-zinc-600 dark:text-zinc-300">
                       <div>
-                        <span className="text-zinc-400">Annual </span>
-                        <span className="font-medium tabular-nums text-zinc-700 dark:text-zinc-300">
+                        <span className="text-zinc-500">Annual fee </span>
+                        <span className="text-base font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
                           {formatInr(card.annual_fee)}
                         </span>
                       </div>
                       <div>
-                        <span className="text-zinc-400">Joining </span>
-                        <span className="font-medium tabular-nums text-zinc-700 dark:text-zinc-300">
+                        <span className="text-zinc-500">Joining fee </span>
+                        <span className="font-semibold tabular-nums text-zinc-800 dark:text-zinc-200">
                           {formatInr(card.joining_fee)}
                         </span>
                       </div>
-                      <div className="capitalize">{card.reward_type}</div>
+                      <div className="font-medium capitalize">{card.reward_type}</div>
                     </dl>
                   </div>
                   <div className="flex w-full shrink-0 flex-col gap-2 sm:ml-auto sm:w-[9.5rem]">

@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AmexGenericApplyLink } from "@/components/amex-generic-apply-link";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
+import { CardKeyBenefits } from "@/components/card-key-benefits";
 import { CardTopRewardTag } from "@/components/card-top-reward-tag";
 import { FeaturedCardsCarousel } from "@/components/featured-cards-carousel";
 import { HdfcApplyLink } from "@/components/hdfc-apply-link";
@@ -1005,13 +1006,14 @@ export default function Home() {
                       <div className="mt-2">
                         <CardTopRewardTag card={card} />
                       </div>
+                      <CardKeyBenefits card={card} />
 
                       <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
                         <div className="rounded-xl bg-white/75 p-3 shadow-sm dark:bg-zinc-950/45">
                           <dt className="text-xs font-medium text-zinc-500">
                             Monthly reward
                           </dt>
-                          <dd className="mt-0.5 font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+                          <dd className="mt-0.5 text-lg font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
                             {formatInr(monthlyTotal)}
                           </dd>
                         </div>
@@ -1019,7 +1021,7 @@ export default function Home() {
                           <dt className="text-xs font-medium text-zinc-500">
                             Yearly reward
                           </dt>
-                          <dd className="mt-0.5 font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+                          <dd className="mt-0.5 text-lg font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
                             {formatInr(card.yearly_reward_inr)}
                           </dd>
                         </div>
