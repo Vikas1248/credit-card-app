@@ -137,8 +137,10 @@ function parseCategorySpecificPercentHints(
     }
     for (const v of pctHints) out.push(v);
 
-    // Parse category-tied "points per ₹" (e.g., "10 points per ₹100 on dining")
-    // so we can derive higher dining/travel rates even when % isn't written explicitly.
+    // Parse category-tied "points per ₹" (e.g., "10 points per ₹100 on dining").
+    // When explicit points-per-₹ is present, prefer it over X-multiplier cues from
+    // the same chunk to avoid double-amplifying cards like SBI PRIME.
+    const pointsHints: number[] = [];
     if (basePct != null && basePct > 0 && inrPerPoint > 0) {
       const rePtsNearA = new RegExp(
         `(\\d+(?:\\.\\d+)?)\\s*(?:reward\\s*)?points?\\s+per\\s+₹?\\s*([\\d,]+)[^.\\n]{0,90}(?:${kw})`,
@@ -153,20 +155,21 @@ function parseCategorySpecificPercentHints(
         const pts = Number(mPts[1]);
         const rs = Number(String(mPts[2]).replace(/,/g, ""));
         if (Number.isFinite(pts) && Number.isFinite(rs) && pts > 0 && rs > 0) {
-          out.push((pts / rs) * inrPerPoint * 100);
+          pointsHints.push((pts / rs) * inrPerPoint * 100);
         }
       }
       while ((mPts = rePtsNearB.exec(chunk)) !== null) {
         const pts = Number(mPts[1]);
         const rs = Number(String(mPts[2]).replace(/,/g, ""));
         if (Number.isFinite(pts) && Number.isFinite(rs) && pts > 0 && rs > 0) {
-          out.push((pts / rs) * inrPerPoint * 100);
+          pointsHints.push((pts / rs) * inrPerPoint * 100);
         }
       }
     }
+    for (const v of pointsHints) out.push(v);
 
     // Allow X-multiplier cues only when explicitly tied to this category chunk.
-    if (basePct != null && basePct > 0) {
+    if (basePct != null && basePct > 0 && pointsHints.length === 0) {
       const reXNearA = new RegExp(`(\\d+(?:\\.\\d+)?)\\s*[xX][^.\\n]{0,90}(?:${kw})`, "gi");
       const reXNearB = new RegExp(`(?:${kw})[^.\\n]{0,90}(\\d+(?:\\.\\d+)?)\\s*[xX]`, "gi");
       let m: RegExpExecArray | null;
