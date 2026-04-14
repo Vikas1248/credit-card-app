@@ -2,15 +2,25 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { AmexGenericApplyLink } from "@/components/amex-generic-apply-link";
+import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
+import { AxisApplyLink } from "@/components/axis-apply-link";
 import { CardKeyBenefits } from "@/components/card-key-benefits";
 import { CardTopRewardTag } from "@/components/card-top-reward-tag";
+import { HdfcApplyLink } from "@/components/hdfc-apply-link";
+import { IndusIndApplyLink } from "@/components/indusind-apply-link";
+import { SbiApplyLink } from "@/components/sbi-apply-link";
+import { isAmexCardUsingGenericApply } from "@/lib/cards/amexGenericApply";
+import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
+import { isAxisBankCard } from "@/lib/cards/axisApply";
+import { hdfcCardShowsApply } from "@/lib/cards/hdfcApply";
+import { indusindCardShowsApply } from "@/lib/cards/indusindApply";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
+import { isSbiCard } from "@/lib/cards/sbiApply";
 import {
   compareCardsBySpendCategory,
-  formatCategoryRewardPctRange,
   rewardPctForSpendCategory,
-  rewardPctRangeForSpendCategory,
   spendCategoryBySlug,
   type SpendCategorySlug,
 } from "@/lib/spendCategories";
@@ -302,9 +312,8 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
             No cards in the catalog yet.
           </p>
         ) : (
-          <ul className="space-y-4">
+          <ul className="space-y-6">
             {sorted.map((card) => {
-              const range = rewardPctRangeForSpendCategory(card, slug);
               return (
                 <li
                   key={card.id}
@@ -333,28 +342,37 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                       </div>
                       <CardKeyBenefits card={card} />
                     </div>
-                    <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
-                      <div className="rounded-xl bg-white/80 px-3 py-2 text-right shadow-sm ring-1 ring-zinc-200/70 dark:bg-zinc-950/50 dark:ring-zinc-600/50">
-                        <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                          {meta.label} earn
-                        </p>
-                        <p className="text-lg font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
-                          {formatCategoryRewardPctRange(range)}
-                        </p>
-                      </div>
-                      <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                        Annual fee{" "}
-                        <span className="text-base font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-                          {formatInr(card.annual_fee)}
-                        </span>{" "}
-                        · <span className="font-medium capitalize">{card.reward_type}</span>
-                      </p>
+                    <div className="flex w-full shrink-0 flex-col gap-2 sm:ml-auto sm:w-[9.5rem]">
                       <Link
                         href={`/card/${card.id}`}
-                        className={`${cardViewDetailsButtonClass} w-full sm:w-auto`}
+                        className={`${cardViewDetailsButtonClass} w-full`}
                       >
                         Learn more
                       </Link>
+                      {isAxisBankCard(card.bank) ? (
+                        <AxisApplyLink className="w-full" />
+                      ) : null}
+                      {isAmexPlatinumReserveCard(card.card_name, card.bank) ? (
+                        <AmexPlatinumReserveApplyLink className="w-full" />
+                      ) : null}
+                      {isAmexCardUsingGenericApply(card.card_name, card.bank) ? (
+                        <AmexGenericApplyLink className="w-full" />
+                      ) : null}
+                      {isSbiCard(card.bank) ? (
+                        <SbiApplyLink className="w-full" />
+                      ) : null}
+                      {hdfcCardShowsApply(card.bank, card.metadata) ? (
+                        <HdfcApplyLink
+                          metadata={card.metadata}
+                          className="w-full"
+                        />
+                      ) : null}
+                      {indusindCardShowsApply(card.bank, card.metadata) ? (
+                        <IndusIndApplyLink
+                          metadata={card.metadata}
+                          className="w-full"
+                        />
+                      ) : null}
                     </div>
                   </div>
                 </li>
