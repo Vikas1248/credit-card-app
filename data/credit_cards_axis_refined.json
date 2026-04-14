@@ -12,7 +12,7 @@
       "bank": "Axis Bank",
       "best_for": "Budget travelers and occasional IndiGo flyers",
       "card_name": "IndiGo Axis Bank Credit Card",
-      "dining_reward": 0.0,
+      "dining_reward": 0.02,
       "eligibility": "₹3L+ annual income (indicative)",
       "fuel_reward": 0.0,
       "joining_fee": 500,
@@ -25,15 +25,15 @@
       "lounge_access": "1 complimentary domestic lounge visit per quarter",
       "network": "Visa",
       "reward_conversion": {
-        "description": "2 IndiGo BluChips per ₹200 on travel, 1 BluChip per ₹200 on other spends",
+        "description": "3 IndiGo BluChips per ₹100 on IndiGo spends (~3%), 2 BluChips per ₹100 on dining and grocery (~2%), 1 BluChip per ₹100 on other spends (~1%)",
         "points_per_rupee": 0.01
       },
       "reward_type": "points",
       "shopping_reward": 0.01,
       "source": "axis_bank",
-      "travel_reward": 0.02,
+      "travel_reward": 0.03,
       "welcome_offer": "Complimentary IndiGo ticket voucher worth ₹1,500 on first transaction",
-      "reward_rate": "2 IndiGo BluChips per ₹200 on travel, 1 BluChip per ₹200 on other spends",
+      "reward_rate": "3 IndiGo BluChips per ₹100 on IndiGo spends (~3%), 2 BluChips per ₹100 on dining and grocery (~2%), 1 BluChip per ₹100 on other spends (~1%)",
       "bluchip_inr": 1.0
     },
     {
