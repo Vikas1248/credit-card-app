@@ -55,20 +55,21 @@
         "Free seat selection and priority check-in",
         "Complimentary meal benefits on IndiGo flights",
         "Fuel surcharge waiver",
-        "Dining and lifestyle offers via Axis Bank"
+        "Dining and lifestyle offers via Axis Bank",
+        "Unlock 4 vouchers worth 5,000 IndiGo BluChips on milestone spends at ₹2 lakh, ₹5 lakh, ₹8 lakh and ₹12 lakh"
       ],
       "lounge_access": "2 complimentary domestic lounge visits per quarter",
       "network": "Visa",
       "reward_conversion": {
-        "description": "6 BluChips per ₹200 on IndiGo, 2 BluChips per ₹200 on other spends",
-        "points_per_rupee": 0.02
+        "description": "7 BluChips per ₹200 on IndiGo (~3.5%), 2 BluChips per ₹200 on other spends (~1%)",
+        "points_per_rupee": 0.01
       },
       "reward_type": "points",
-      "shopping_reward": 0.02,
+      "shopping_reward": 0.01,
       "source": "axis_bank",
-      "travel_reward": 0.04,
-      "welcome_offer": "IndiGo voucher worth ₹3,000 + BluChips on card activation",
-      "reward_rate": "6 BluChips per ₹200 on IndiGo, 2 BluChips per ₹200 on other spends",
+      "travel_reward": 0.035,
+      "welcome_offer": "Voucher worth 5,000 IndiGo BluChips along with one complimentary 6E Eats voucher as a welcome gift on payment of joining fee",
+      "reward_rate": "7 BluChips per ₹200 on IndiGo (~3.5%), 2 BluChips per ₹200 on other spends (~1%)",
       "bluchip_inr": 1.0
     },
     {
