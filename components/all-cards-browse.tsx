@@ -1292,7 +1292,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 type="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search cards or banks…"
+                placeholder="Search credit cards…"
                 className={`${headerInputClass} ${searchAiLoading ? "pr-11" : ""}`}
                 aria-label="Search cards"
                 aria-busy={searchAiLoading}

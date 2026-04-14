@@ -12,7 +12,6 @@ export type CardSearchTextFields = {
 export function buildCatalogSearchHaystack(card: CardSearchTextFields): string {
   return [
     card.card_name,
-    card.bank,
     card.network,
     card.best_for ?? "",
     card.key_benefits ?? "",
