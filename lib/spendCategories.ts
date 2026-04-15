@@ -104,6 +104,13 @@ export function rewardPctRangeForSpendCategory(
   slug: SpendCategorySlug
 ): CategoryPctRange | null {
   const extended = card as CardWithCategoryRewardsInput;
+  const cardNameNorm = String(extended.card_name ?? "").toLowerCase();
+
+  // Conservative Tata Neu Infinity cap: show partner-brand tier, not app-max tier.
+  if (cardNameNorm.includes("tata neu infinity hdfc bank credit card")) {
+    if (slug === "shopping") return { min: 1.5, max: 5 };
+  }
+
   const bankStr = String(extended.bank ?? "");
   if (isSbiAxisCatalogBank(bankStr)) {
     const sbiAxis = deriveSbiAxisCategoryRange(

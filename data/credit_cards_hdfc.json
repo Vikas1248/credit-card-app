@@ -50,9 +50,9 @@
       "bank": "HDFC Bank",
       "best_for": "Tata ecosystem spending and UPI rewards",
       "card_name": "Tata Neu Infinity HDFC Bank Credit Card",
-      "dining_reward": 0.05,
+      "dining_reward": 0.015,
       "travel_reward": 0.05,
-      "shopping_reward": 0.1,
+      "shopping_reward": 0.05,
       "fuel_reward": 0.0,
       "joining_fee": 1499,
       "key_benefits": [
