@@ -419,6 +419,12 @@ export function deriveSbiAxisCategoryRange(
     if (slug === "shopping") return { min: 1, max: 2 };
     if (slug === "fuel") return { min: 0, max: 1 };
   }
+  if (cardNameNorm.includes("axis bank ace credit card")) {
+    if (slug === "dining") return { min: 1.5, max: 4 };
+    if (slug === "travel") return { min: 1.5, max: 1.5 };
+    if (slug === "shopping") return { min: 1.5, max: 4 };
+    if (slug === "fuel") return { min: 1, max: 1 };
+  }
   if (cardNameNorm.includes("airtel axis bank credit card")) {
     if (slug === "dining") return { min: 1, max: 10 };
     if (slug === "travel") return { min: 1, max: 1 };
