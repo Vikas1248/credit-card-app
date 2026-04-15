@@ -31,6 +31,18 @@ type CreditCardRow = {
   metadata: Record<string, unknown> | null;
 };
 
+export type RecommendationProfile = {
+  top_categories?: SpendCategorySlug[];
+  fee_preference?: "lifetime_free" | "low_fee" | "premium_ok";
+  lifestyle_needs?: (
+    | "movie_offer"
+    | "lounge_domestic"
+    | "lounge_international"
+    | "golf"
+  )[];
+  exclude_card_ids?: string[];
+};
+
 export type SpendRecommendationRow = {
   id: string;
   card_name: string;
@@ -55,6 +67,17 @@ export type SpendRecommendationRow = {
     fuel: number | null;
   };
   explanation?: string | null;
+};
+
+type RecommendationRequestOptions = {
+  profile?: RecommendationProfile;
+};
+
+type TopSpendRecommendationPayload = {
+  assumptions: Record<string, string>;
+  input_monthly_inr: SpendByCategory;
+  recommendations: SpendRecommendationRow[];
+  summary_text?: string | null;
 };
 
 export function parseSpendInput(
@@ -83,6 +106,56 @@ function roundInr(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
+function profileFitScore(
+  card: SpendRecommendationRow,
+  profile?: RecommendationProfile
+): number {
+  if (!profile) return 0;
+
+  let score = 0;
+  const topCategories = profile.top_categories ?? [];
+  const lifestyleNeeds = profile.lifestyle_needs ?? [];
+  const categoryPct = card.category_reward_pct;
+
+  if (profile.fee_preference === "lifetime_free") {
+    score += card.annual_fee === 0 ? 2400 : -6000;
+  } else if (profile.fee_preference === "low_fee") {
+    if (card.annual_fee === 0) score += 2200;
+    else if (card.annual_fee <= 500) score += 1600;
+    else if (card.annual_fee <= 1000) score += 900;
+    else if (card.annual_fee > 2500) score -= 1200;
+  }
+
+  for (const slug of topCategories) {
+    const pct = categoryPct[slug];
+    if (typeof pct === "number" && Number.isFinite(pct) && pct > 0) {
+      score += Math.min(2200, pct * 500);
+    }
+  }
+
+  const haystack =
+    `${card.card_name} ${card.bank} ${card.reward_rate ?? ""} ${card.best_for ?? ""} ${card.lounge_access ?? ""}`.toLowerCase();
+  for (const need of lifestyleNeeds) {
+    if (
+      (need === "movie_offer" &&
+        (haystack.includes("movie") ||
+          haystack.includes("bookmyshow") ||
+          haystack.includes("cinema"))) ||
+      (need === "lounge_domestic" &&
+        (haystack.includes("domestic lounge") || haystack.includes("domestic"))) ||
+      (need === "lounge_international" &&
+        (haystack.includes("international lounge") ||
+          haystack.includes("priority pass") ||
+          haystack.includes("international"))) ||
+      (need === "golf" && haystack.includes("golf"))
+    ) {
+      score += 1200;
+    }
+  }
+
+  return score;
+}
+
 function categoryMidpointOrNull(
   card: CreditCardRow,
   slug: SpendCategorySlug
@@ -109,12 +182,9 @@ function categoryMidpointOrNull(
 
 export async function topSpendRecommendations(
   monthlySpend: SpendByCategory,
-  limit = 3
-): Promise<{
-  assumptions: Record<string, string>;
-  input_monthly_inr: SpendByCategory;
-  recommendations: SpendRecommendationRow[];
-}> {
+  limit = 3,
+  options?: RecommendationRequestOptions
+): Promise<TopSpendRecommendationPayload> {
   const supabase = getSupabaseServerClient();
   const envNetwork = getOptionalCardNetworkFilter();
   let q = supabase.from("credit_cards").select(SELECT_FIELDS);
@@ -128,6 +198,8 @@ export async function topSpendRecommendations(
   }
 
   const cards = (data ?? []) as CreditCardRow[];
+
+  const excluded = new Set(options?.profile?.exclude_card_ids ?? []);
 
   const recommendations: SpendRecommendationRow[] = cards
     .map((card) => {
@@ -170,9 +242,12 @@ export async function topSpendRecommendations(
         },
       };
     })
+    .filter((card) => !excluded.has(card.id))
     .sort((a, b) => {
-      if (b.yearly_reward_inr !== a.yearly_reward_inr) {
-        return b.yearly_reward_inr - a.yearly_reward_inr;
+      const aScore = a.yearly_reward_inr + profileFitScore(a, options?.profile);
+      const bScore = b.yearly_reward_inr + profileFitScore(b, options?.profile);
+      if (bScore !== aScore) {
+        return bScore - aScore;
       }
       if (a.annual_fee !== b.annual_fee) return a.annual_fee - b.annual_fee;
       return a.card_name.localeCompare(b.card_name);
@@ -185,8 +260,11 @@ export async function topSpendRecommendations(
         "dining, travel, shopping, fuel are interpreted as average monthly spend in INR.",
       reward_columns_are_percent:
         "Category % uses issuer-specific rules when available (SBI/Axis from catalog copy; else DB columns; Amex from MR metadata). Midpoint used for summary numbers.",
+      profile_matching:
+        "When profile preferences are provided, ranking adds a preference-fit score for fee comfort, top categories, lifestyle needs, and excluded cards.",
     },
     input_monthly_inr: monthlySpend,
     recommendations,
+    summary_text: null,
   };
 }

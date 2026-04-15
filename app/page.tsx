@@ -399,9 +399,15 @@ export default function Home() {
   const [recommendationError, setRecommendationError] = useState<string | null>(
     null
   );
+  const [recommendationNotice, setRecommendationNotice] = useState<string | null>(
+    null
+  );
   const [recommendations, setRecommendations] = useState<SpendRecommendation[]>(
     []
   );
+  const [recommendationSummary, setRecommendationSummary] = useState<
+    string | null
+  >(null);
   const [compareIdA, setCompareIdA] = useState("");
   const [compareIdB, setCompareIdB] = useState("");
   const [featuredFromAi, setFeaturedFromAi] = useState<
@@ -649,6 +655,8 @@ export default function Home() {
     try {
       setRecommendationLoading(true);
       setRecommendationError(null);
+      setRecommendationNotice(null);
+      setRecommendationSummary(null);
 
       const wizardSpend = buildWizardSpendPlan();
       const dining = wizardSpend.dining;
@@ -677,14 +685,29 @@ export default function Home() {
         method: "POST",
         cache: "no-store",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dining, travel, shopping, fuel }),
+        body: JSON.stringify({
+          dining,
+          travel,
+          shopping,
+          fuel,
+          profile: {
+            top_categories: topCategories,
+            fee_preference: feePreference,
+            lifestyle_needs: lifestyleNeeds,
+            exclude_card_ids: existingCardIds,
+          },
+        }),
       });
 
-      const result: { recommendations?: SpendRecommendation[]; error?: string } =
-        await response.json();
+      const result: {
+        recommendations?: SpendRecommendation[];
+        summary_text?: string | null;
+        error?: string;
+      } = await response.json();
       if (!response.ok) {
         throw new Error(result.error ?? "Failed to fetch recommendations.");
       }
+      setRecommendationSummary(result.summary_text ?? null);
 
       const raw = result.recommendations ?? [];
       const sourceCardById = new Map(cards.map((c) => [c.id, c] as const));
@@ -704,8 +727,8 @@ export default function Home() {
       if (finalMatches.length === 0) finalMatches = filtered;
 
       if (strictMatches.length === 0) {
-        setRecommendationError(
-          "Showing closest matches from available cards for your selected preferences."
+        setRecommendationNotice(
+          "No exact matches found. Showing nearest matches based on your spend and preferences."
         );
       }
 
@@ -719,6 +742,8 @@ export default function Home() {
       const message =
         fetchError instanceof Error ? fetchError.message : "Unexpected error";
       setRecommendationError(message);
+      setRecommendationNotice(null);
+      setRecommendationSummary(null);
     } finally {
       setRecommendationLoading(false);
     }
@@ -1314,11 +1339,23 @@ export default function Home() {
                 <span>{recommendationError}</span>
               </div>
             ) : null}
+            {recommendationNotice ? (
+              <div className="mt-4 flex gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-900/50 dark:bg-blue-950/50 dark:text-blue-200">
+                <span className="shrink-0 font-semibold">Note</span>
+                <span>{recommendationNotice}</span>
+              </div>
+            ) : null}
 
             {recommendationLoading ? (
               <PicksSkeleton />
             ) : recommendations.length > 0 ? (
-              <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-3">
+              <div className="mt-10">
+                {recommendationSummary ? (
+                  <div className="mb-6 rounded-xl border border-indigo-200 bg-indigo-50/80 px-4 py-3 text-sm text-indigo-900 dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-indigo-100">
+                    {recommendationSummary}
+                  </div>
+                ) : null}
+              <div className="grid grid-cols-1 items-stretch gap-8 lg:grid-cols-3">
                 {recommendations.map((card, index) => {
                   const isBest = index === 0;
                   const monthlyTotal = card.yearly_reward_inr / 12;
@@ -1335,13 +1372,13 @@ export default function Home() {
                   return (
                     <article
                       key={card.id}
-                      className={`flex flex-col rounded-2xl border p-6 shadow-md ${issuerBrandTileClass(card.bank, card.network)} ${
+                      className={`flex h-full flex-col rounded-2xl border p-6 shadow-md ${issuerBrandTileClass(card.bank, card.network)} ${
                         isBest
                           ? "ring-2 ring-emerald-400/45 dark:ring-emerald-500/35"
                           : ""
                       }`}
                     >
-                      <div className="flex flex-col">
+                      <div className="flex h-full flex-col">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                           Recommended #{index + 1}
@@ -1410,7 +1447,7 @@ export default function Home() {
                         </div>
                       ) : null}
 
-                      <div className="mt-4 flex flex-col gap-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+                      <div className="mt-auto flex flex-col gap-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
                         <div
                           className={
                             isAxisBankCard(card.bank) ||
@@ -1419,8 +1456,8 @@ export default function Home() {
                             isSbiCard(card.bank) ||
                             showHdfcApply ||
                             showIndusindApply
-                              ? "grid grid-cols-1 gap-2 sm:grid-cols-2"
-                              : "grid grid-cols-1 gap-2"
+                              ? "grid grid-cols-1 gap-2 sm:grid-cols-2 [&>*]:min-h-11"
+                              : "grid grid-cols-1 gap-2 [&>*]:min-h-11"
                           }
                         >
                           <Link
@@ -1465,6 +1502,7 @@ export default function Home() {
                     </article>
                   );
                 })}
+              </div>
               </div>
             ) : null}
           </section>

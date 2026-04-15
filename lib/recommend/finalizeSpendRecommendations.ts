@@ -1,11 +1,13 @@
 import { isOpenAiConfigured } from "@/lib/ai/openaiClient";
 import { fetchAiSpendTopPicks } from "@/lib/recommend/aiSpendPicks";
+import { fetchSpendRecommendationSummary } from "@/lib/recommend/spendRecommendationSummaryOpenAI";
 import {
   fetchSpendRecommendationExplanations,
   mergeSpendExplanations,
 } from "@/lib/recommend/spendExplanationOpenAI";
 import type { SpendByCategory } from "@/lib/recommend/rewardCalculator";
 import {
+  type RecommendationProfile,
   topSpendRecommendations,
   type SpendRecommendationRow,
 } from "@/lib/recommend/topSpendRecommendations";
@@ -25,11 +27,13 @@ const CANDIDATE_POOL = 40;
  */
 export async function finalizeSpendRecommendations(
   monthlySpend: SpendByCategory,
-  limit = 3
+  limit = 3,
+  profile?: RecommendationProfile
 ): Promise<Awaited<ReturnType<typeof topSpendRecommendations>>> {
   const pool = await topSpendRecommendations(
     monthlySpend,
-    Math.max(limit, CANDIDATE_POOL)
+    Math.max(limit, CANDIDATE_POOL),
+    { profile }
   );
 
   if (isOpenAiConfigured() && pool.recommendations.length >= limit) {
@@ -39,9 +43,15 @@ export async function finalizeSpendRecommendations(
         pool.recommendations
       );
       if (aiTop && aiTop.length >= limit) {
+        const summaryText = await fetchSpendRecommendationSummary(
+          monthlySpend,
+          aiTop.slice(0, limit),
+          profile
+        ).catch(() => null);
         return {
           ...pool,
           recommendations: aiTop.slice(0, limit),
+          summary_text: summaryText,
         };
       }
     } catch {
@@ -59,22 +69,25 @@ export async function finalizeSpendRecommendations(
     return {
       ...payloadN,
       recommendations: withNullExplanations(payloadN.recommendations),
+      summary_text: null,
     };
   }
 
   try {
-    const byId = await fetchSpendRecommendationExplanations(
-      monthlySpend,
-      topN
-    );
+    const [byId, summaryText] = await Promise.all([
+      fetchSpendRecommendationExplanations(monthlySpend, topN),
+      fetchSpendRecommendationSummary(monthlySpend, topN, profile),
+    ]);
     return {
       ...payloadN,
       recommendations: mergeSpendExplanations(topN, byId),
+      summary_text: summaryText,
     };
   } catch {
     return {
       ...payloadN,
       recommendations: withNullExplanations(topN),
+      summary_text: null,
     };
   }
 }
