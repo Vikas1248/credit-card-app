@@ -831,6 +831,11 @@ export default function Home() {
     });
   }, [displayFeaturedCarouselItems]);
 
+  const topPicksCards = useMemo(() => {
+    const bestOverall = featuredGroups.find((g) => g.id === "best-overall");
+    return (bestOverall?.cards ?? []).slice(0, 3);
+  }, [featuredGroups]);
+
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <SiteHeader />
@@ -845,7 +850,7 @@ export default function Home() {
               Find your next credit card faster
             </h1>
             <p className="mt-4 text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-              {SITE_ABOUT_LEAD}
+              Compare and get the best card based on your spend.
             </p>
           </div>
 
@@ -864,13 +869,13 @@ export default function Home() {
             />
             <div className="mt-4 flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-3 sm:gap-y-2">
               <button type="submit" className={btnPrimary}>
-                Search full catalog
+                Get Personalized Recommendations
               </button>
               <Link
                 href="/cards"
                 className={btnGhost}
               >
-                Explore all cards
+                Browse All Cards
               </Link>
             </div>
           </form>
@@ -878,8 +883,8 @@ export default function Home() {
 
         <div className="mt-12 flex flex-col gap-16 sm:mt-16 sm:gap-20">
         <section
-          id="categories"
-          className={`order-2 scroll-mt-28 ${sectionShell}`}
+          id="categories-legacy"
+          className={`order-2 hidden scroll-mt-28 ${sectionShell}`}
           aria-labelledby="categories-heading"
         >
           <div className={sectionHeaderRowClass}>
@@ -954,8 +959,8 @@ export default function Home() {
 
         <div className="order-1 space-y-24 sm:space-y-28">
           <section
-            id="featured"
-            className={`scroll-mt-28 ${sectionShell}`}
+            id="featured-legacy"
+            className={`hidden scroll-mt-28 ${sectionShell}`}
             aria-labelledby="featured-heading"
           >
             <div className={sectionHeaderRowClass}>
@@ -1433,6 +1438,143 @@ export default function Home() {
             ) : null}
           </section>
 
+          <section className={sectionShell} aria-labelledby="trust-heading">
+            <div className={sectionHeaderRowClass}>
+              <div className={sectionHeaderAccentClass} aria-hidden />
+              <div className="min-w-0 flex-1">
+                <h2 id="trust-heading" className={sectionTitleClass}>
+                  Why users trust these recommendations
+                </h2>
+                <p className={sectionLeadClass}>
+                  We rank cards using your spend mix and show a transparent
+                  breakdown by category, plus fees and reward type, so users can
+                  compare with confidence.
+                </p>
+              </div>
+            </div>
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-4 text-sm dark:border-zinc-700 dark:bg-zinc-900/50">
+                <p className="font-semibold text-zinc-900 dark:text-zinc-100">Personalized math</p>
+                <p className="mt-1 text-zinc-600 dark:text-zinc-400">Based on monthly spend split across dining, travel, shopping, and fuel.</p>
+              </div>
+              <div className="rounded-2xl border border-zinc-200 bg-white p-4 text-sm dark:border-zinc-700 dark:bg-zinc-900/50">
+                <p className="font-semibold text-zinc-900 dark:text-zinc-100">Fee-aware ranking</p>
+                <p className="mt-1 text-zinc-600 dark:text-zinc-400">Annual fee, joining fee, and reward type stay visible in every recommendation.</p>
+              </div>
+              <div className="rounded-2xl border border-zinc-200 bg-white p-4 text-sm dark:border-zinc-700 dark:bg-zinc-900/50">
+                <p className="font-semibold text-zinc-900 dark:text-zinc-100">Actionable picks</p>
+                <p className="mt-1 text-zinc-600 dark:text-zinc-400">Direct Learn more / Apply actions help users move from discovery to decision.</p>
+              </div>
+            </div>
+          </section>
+
+          <section className={sectionShell} aria-labelledby="top-picks-heading">
+            <div className={sectionHeaderRowClass}>
+              <div className={sectionHeaderAccentClass} aria-hidden />
+              <div className="min-w-0 flex-1">
+                <h2 id="top-picks-heading" className={sectionTitleClass}>
+                  Top picks
+                </h2>
+                <p className={sectionLeadClass}>
+                  Quick shortlist of high-value cards to start exploring right away.
+                </p>
+              </div>
+            </div>
+            <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+              {topPicksCards.map((card) => (
+                <article
+                  key={card.id}
+                  className={`rounded-2xl border p-4 shadow-sm ${issuerBrandTileClass(card.bank, card.network)}`}
+                >
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">{card.bank}</p>
+                  <h3 className="mt-1 line-clamp-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    {card.card_name}
+                  </h3>
+                  <div className="mt-2">
+                    <CardTopRewardTag card={card} />
+                  </div>
+                  <div className="mt-3">
+                    <Link href={`/card/${card.id}`} className={`${cardViewDetailsButtonClass} w-full`}>
+                      Learn more
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section
+            id="categories"
+            className={sectionShell}
+            aria-labelledby="categories-heading-main"
+          >
+            <div className={sectionHeaderRowClass}>
+              <div className={sectionHeaderAccentClass} aria-hidden />
+              <div className="min-w-0 flex-1">
+                <h2 id="categories-heading-main" className={sectionTitleClass}>
+                  Categories
+                </h2>
+                <p className={`${sectionLeadClass} max-w-2xl`}>
+                  Explore all cards by category and compare where each card earns most.
+                </p>
+              </div>
+            </div>
+            <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-5 sm:gap-4">
+              {SPEND_CATEGORIES.map((c) => (
+                <li key={c.slug}>
+                  <Link
+                    href={`/category/${c.slug}`}
+                    className="group flex h-full flex-col items-center rounded-2xl border border-zinc-200/80 bg-white px-4 py-5 text-center shadow-sm transition hover:border-blue-300/80 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:hover:border-blue-700/50"
+                  >
+                    <span
+                      className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600/10 text-blue-700 transition group-hover:bg-blue-600/15 dark:bg-blue-500/15 dark:text-blue-300"
+                      aria-hidden
+                    >
+                      <SpendCategoryIcon slug={c.slug} className="h-6 w-6" />
+                    </span>
+                    <span className="mt-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                      {c.label}
+                    </span>
+                    <span className="mt-1 text-xs leading-snug text-zinc-500 dark:text-zinc-400">
+                      {c.tileHint}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link
+                  href="/cards"
+                  className="group flex h-full flex-col items-center rounded-2xl border border-zinc-200/80 bg-white px-4 py-5 text-center shadow-sm transition hover:border-indigo-300/80 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:hover:border-indigo-600/50"
+                >
+                  <span
+                    className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600/10 text-indigo-700 transition group-hover:bg-indigo-600/15 dark:bg-indigo-500/15 dark:text-indigo-300"
+                    aria-hidden
+                  >
+                    <svg
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                      />
+                    </svg>
+                  </span>
+                  <span className="mt-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    All cards
+                  </span>
+                  <span className="mt-1 text-xs leading-snug text-zinc-500 dark:text-zinc-400">
+                    Search, sort &amp; filters
+                  </span>
+                </Link>
+              </li>
+            </ul>
+          </section>
+
           <section id="compare" className={`scroll-mt-28 ${sectionShell}`}>
             <div className={sectionHeaderRowClass}>
               <div className={sectionHeaderAccentClass} aria-hidden />
@@ -1787,7 +1929,35 @@ export default function Home() {
           ) : null}
         </section>
 
+          <section
+            id="featured"
+            className={`scroll-mt-28 ${sectionShell}`}
+            aria-labelledby="featured-heading-main"
+          >
+            <div className={sectionHeaderRowClass}>
+              <div className={sectionHeaderAccentClass} aria-hidden />
+              <div className="min-w-0 flex-1">
+                <h2 id="featured-heading-main" className={sectionTitleClass}>
+                  Featured
+                </h2>
+                <p className={sectionLeadClass}>
+                  Rotating highlights from the catalog—up to five picks at a time.
+                </p>
+              </div>
+            </div>
+            <FeaturedCardsCarousel
+              items={featuredCarouselSlides}
+              loading={loading}
+            />
+          </section>
+
         </div>
+
+        <footer className="mt-16 border-t border-zinc-200 pt-6 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+          <p>
+            {SITE_NAME} · Compare cards by spend, fees, and benefits.
+          </p>
+        </footer>
         </div>
       </main>
     </div>
