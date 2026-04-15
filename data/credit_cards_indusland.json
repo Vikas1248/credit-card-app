@@ -12,9 +12,9 @@
       "bank": "IndusInd Bank",
       "best_for": "Milestone-based rewards and travel perks",
       "card_name": "IndusInd Bank Tiger Credit Card",
-      "dining_reward": 0.004,
-      "travel_reward": 0.004,
-      "shopping_reward": 0.004,
+      "dining_reward": 0.4,
+      "travel_reward": 0.4,
+      "shopping_reward": 0.4,
       "fuel_reward": 0.0,
       "joining_fee": 0,
       "key_benefits": [
