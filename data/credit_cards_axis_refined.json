@@ -117,7 +117,7 @@
       "bank": "Axis Bank",
       "best_for": "Entertainment, dining and lifestyle discounts",
       "card_name": "Axis Bank My Zone Credit Card",
-      "dining_reward": 0.01,
+      "dining_reward": 0.001,
       "eligibility": "18–70 years, Indian resident, income-based approval",
       "fuel_reward": 0.0,
       "joining_fee": 500,
@@ -169,16 +169,16 @@
       "lounge_access": "No lounge access",
       "network": "Visa",
       "reward_conversion": {
-        "description": "1 EDGE Reward point per ₹200 spent (~0.5% return)",
+        "description": "1 EDGE Reward point per ₹200 spent",
         "points_per_rupee": 0.005
       },
       "reward_type": "points",
-      "shopping_reward": 0.01,
+      "shopping_reward": 0.001,
       "source": "axis_bank",
       "travel_reward": 0.0,
       "welcome_offer": "100% cashback up to ₹300 on first utility bill payment within 30 days",
-      "reward_rate": "1 EDGE Reward point per ₹200 spent (~0.5% return)",
-      "reward_points_inr_per_point": 0.25
+      "reward_rate": "1 EDGE Reward point per ₹200 spent",
+      "reward_points_inr_per_point": 0.2
     },
     {
       "affiliate_link": "",
