@@ -504,6 +504,94 @@ export default function Home() {
     return score;
   };
 
+  const recommendationText = (
+    card: SpendRecommendation,
+    sourceCard: CreditCard | null
+  ): string => {
+    const metaText =
+      sourceCard?.metadata != null ? JSON.stringify(sourceCard.metadata) : "";
+    return [
+      card.card_name,
+      card.bank,
+      card.reward_rate ?? "",
+      card.best_for ?? "",
+      card.lounge_access ?? "",
+      sourceCard?.key_benefits ?? "",
+      metaText,
+    ]
+      .join(" ")
+      .toLowerCase();
+  };
+
+  const cardMatchesLifestyleNeeds = (
+    card: SpendRecommendation,
+    sourceCard: CreditCard | null
+  ): boolean => {
+    if (lifestyleNeeds.length === 0) return true;
+    const text = recommendationText(card, sourceCard);
+    for (const need of lifestyleNeeds) {
+      const matched =
+        (need === "movie_offer" &&
+          (text.includes("movie") ||
+            text.includes("bookmyshow") ||
+            text.includes("cinema"))) ||
+        (need === "lounge_domestic" &&
+          (text.includes("domestic lounge") || text.includes("domestic"))) ||
+        (need === "lounge_international" &&
+          (text.includes("international lounge") ||
+            text.includes("priority pass") ||
+            text.includes("international"))) ||
+        (need === "golf" && text.includes("golf"));
+      if (!matched) return false;
+    }
+    return true;
+  };
+
+  const cardMatchesTopCategorySelection = (card: SpendRecommendation): boolean => {
+    if (topCategories.length === 0) return true;
+    const pct = card.category_reward_pct;
+    if (!pct) return false;
+    const hasSelectedCategoryEarn = topCategories.some(
+      (slug) => typeof pct[slug] === "number" && (pct[slug] ?? 0) > 0
+    );
+    if (!hasSelectedCategoryEarn) return false;
+
+    const primaryOrder: SpendCategorySlug[] = [
+      "travel",
+      "dining",
+      "shopping",
+      "fuel",
+    ];
+    let primary: SpendCategorySlug | null = null;
+    let best = -1;
+    for (const slug of primaryOrder) {
+      const value = pct[slug];
+      if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) continue;
+      if (value > best) {
+        best = value;
+        primary = slug;
+      }
+    }
+    return primary ? topCategories.includes(primary) : false;
+  };
+
+  const cardMatchesFeePreference = (card: SpendRecommendation): boolean => {
+    if (feePreference === "lifetime_free") return card.annual_fee === 0;
+    if (feePreference === "low_fee") return card.annual_fee <= 1000;
+    return true;
+  };
+
+  const recommendationMatchesSelections = (
+    card: SpendRecommendation,
+    sourceCard: CreditCard | null
+  ): boolean => {
+    return (
+      cardMatchesFeePreference(card) &&
+      cardMatchesTopCategorySelection(card) &&
+      cardMatchesLifestyleNeeds(card, sourceCard)
+    );
+  };
+
   const loadCards = async () => {
     try {
       setLoading(true);
@@ -618,8 +706,21 @@ export default function Home() {
       }
 
       const raw = result.recommendations ?? [];
+      const sourceCardById = new Map(cards.map((c) => [c.id, c] as const));
       const filtered = raw.filter((rec) => !existingCardIds.includes(rec.id));
-      const ranked = [...filtered].sort((a, b) => {
+      const strictMatches = filtered.filter((rec) =>
+        recommendationMatchesSelections(rec, sourceCardById.get(rec.id) ?? null)
+      );
+
+      if (strictMatches.length === 0) {
+        setRecommendations([]);
+        setRecommendationError(
+          "No cards match all selected preferences. Try relaxing one selection."
+        );
+        return;
+      }
+
+      const ranked = [...strictMatches].sort((a, b) => {
         const scoreA = a.yearly_reward_inr + recommendationPreferenceScore(a) * 1200;
         const scoreB = b.yearly_reward_inr + recommendationPreferenceScore(b) * 1200;
         return scoreB - scoreA;
@@ -994,16 +1095,13 @@ export default function Home() {
                 <div className="mt-3 rounded-2xl border border-blue-200/70 bg-blue-50/70 p-4 dark:border-blue-900/40 dark:bg-blue-950/30">
                   <div className="flex flex-col gap-3">
                     <div className="min-w-0">
-                      <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-300">
-                        Takes ~30 seconds · Step 1 of 6
-                      </p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-8 rounded-2xl border border-zinc-100 bg-zinc-50/60 p-5 dark:border-zinc-800 dark:bg-zinc-950/40 sm:p-6">
+            <div className="mt-4 rounded-2xl border border-zinc-100 bg-zinc-50/60 p-5 dark:border-zinc-800 dark:bg-zinc-950/40 sm:p-6">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
                   Step {wizardStep} of 6
