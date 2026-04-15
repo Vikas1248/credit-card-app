@@ -994,17 +994,8 @@ export default function Home() {
                 <div className="mt-3 rounded-2xl border border-blue-200/70 bg-blue-50/70 p-4 dark:border-blue-900/40 dark:bg-blue-950/30">
                   <div className="flex flex-col gap-3">
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                        Find cards by your top spends
-                      </p>
                       <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-300">
-                        Takes 60 seconds · Step 1 of 6
-                      </p>
-                      <p className="mt-2 text-sm leading-relaxed text-zinc-700 dark:text-zinc-200">
-                        Tell us where you spend most, and we rank the best matching
-                        cards first. The wizard uses income, spend mix, fee comfort,
-                        and lifestyle needs so users can discover cards aligned to
-                        real usage.
+                        Takes ~30 seconds · Step 1 of 6
                       </p>
                     </div>
                   </div>
@@ -1191,7 +1182,11 @@ export default function Home() {
                   type="button"
                   onClick={() => setWizardStep((s) => Math.max(1, s - 1))}
                   disabled={wizardStep === 1}
-                  className={btnGhost}
+                  className={
+                    wizardStep === 1
+                      ? btnGhost
+                      : "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                  }
                 >
                   Back
                 </button>
@@ -1199,19 +1194,15 @@ export default function Home() {
                   type="button"
                   onClick={() => setWizardStep((s) => Math.min(6, s + 1))}
                   disabled={wizardStep === 6}
-                  className={btnGhost}
+                  className={
+                    wizardStep === 6
+                      ? btnGhost
+                      : "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-blue-500 bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-blue-400 dark:bg-blue-500 dark:hover:bg-blue-400"
+                  }
                 >
                   Next
                 </button>
               </div>
-            </div>
-
-            <div className="mt-5 rounded-xl border border-blue-100 bg-blue-50/70 px-4 py-3 text-xs text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-200">
-              Estimated monthly spend split based on your inputs:{" "}
-              <span className="font-semibold">
-                D {formatInr(buildWizardSpendPlan().dining)} · T {formatInr(buildWizardSpendPlan().travel)} · S{" "}
-                {formatInr(buildWizardSpendPlan().shopping)} · F {formatInr(buildWizardSpendPlan().fuel)}
-              </span>
             </div>
 
             <div className="mt-8">
