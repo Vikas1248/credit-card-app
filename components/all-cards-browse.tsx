@@ -1438,51 +1438,56 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
             )}
           </div>
         ) : (
-          <ul className="mt-8 space-y-6">
+          <ul className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
             {displayBrowseCards.map((card) => (
               <li
                 key={card.id}
-                className={`rounded-2xl border p-5 shadow-sm sm:p-6 ${issuerBrandTileClass(card.bank, card.network)}`}
+                className={`group flex h-full flex-col rounded-2xl border p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-6 ${issuerBrandTileClass(card.bank, card.network)}`}
               >
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-2 flex items-center gap-2">
-                      <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-700 shadow-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200">
-                        {card.network}
-                      </span>
-                      <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold tracking-wide text-zinc-700 shadow-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200">
-                        {card.bank}
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-                        <Link
-                          href={`/card/${card.id}`}
-                          className="hover:text-blue-600 dark:hover:text-blue-400"
-                        >
-                          {card.card_name}
-                        </Link>
-                      </h2>
-                      <CardTopRewardTag card={card} />
-                    </div>
-                    <CardKeyBenefits card={card} />
-                    <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-zinc-600 dark:text-zinc-300">
-                      <div>
-                        <span className="text-zinc-500">Annual fee </span>
-                        <span className="text-base font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-                          {formatInr(card.annual_fee)}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-zinc-500">Joining fee </span>
-                        <span className="text-base font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-                          {formatInr(card.joining_fee)}
-                        </span>
-                      </div>
-                      <div className="font-medium capitalize">{card.reward_type}</div>
-                    </dl>
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-700 shadow-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200">
+                    {card.network}
+                  </span>
+                  <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold tracking-wide text-zinc-700 shadow-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200">
+                    {card.bank}
+                  </span>
+                </div>
+
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <div className="flex flex-wrap items-start gap-2">
+                    <h2 className="text-base font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
+                      <Link
+                        href={`/card/${card.id}`}
+                        className="hover:text-blue-600 dark:hover:text-blue-400"
+                      >
+                        {card.card_name}
+                      </Link>
+                    </h2>
+                    <CardTopRewardTag card={card} />
                   </div>
-                  <div className="flex w-full shrink-0 flex-col gap-2 sm:ml-auto sm:w-[9.5rem]">
+
+                  <CardKeyBenefits card={card} />
+
+                  <dl className="mt-3 grid grid-cols-2 gap-2 text-sm text-zinc-600 dark:text-zinc-300">
+                    <div className="rounded-xl border border-zinc-200/70 bg-white/80 px-3 py-2 dark:border-zinc-700/70 dark:bg-zinc-900/60">
+                      <dt className="text-[11px] text-zinc-500">Annual fee</dt>
+                      <dd className="text-sm font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                        {formatInr(card.annual_fee)}
+                      </dd>
+                    </div>
+                    <div className="rounded-xl border border-zinc-200/70 bg-white/80 px-3 py-2 dark:border-zinc-700/70 dark:bg-zinc-900/60">
+                      <dt className="text-[11px] text-zinc-500">Joining fee</dt>
+                      <dd className="text-sm font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                        {formatInr(card.joining_fee)}
+                      </dd>
+                    </div>
+                  </dl>
+
+                  <p className="mt-3 text-xs font-medium capitalize text-zinc-500 dark:text-zinc-400">
+                    Reward type: {card.reward_type}
+                  </p>
+
+                  <div className="mt-4 grid gap-2">
                     <Link
                       href={`/card/${card.id}`}
                       className={`${cardViewDetailsButtonClass} w-full`}
