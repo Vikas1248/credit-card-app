@@ -868,9 +868,9 @@ export default function Home() {
               onSearchChange={setSearch}
             />
             <div className="mt-4 flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-3 sm:gap-y-2">
-              <button type="submit" className={btnPrimary}>
+              <a href="#spend-picks" className={btnPrimary}>
                 Get Personalized Recommendations
-              </button>
+              </a>
               <Link
                 href="/cards"
                 className={btnGhost}
@@ -881,7 +881,7 @@ export default function Home() {
           </form>
         </header>
 
-        <div className="mt-6 flex flex-col gap-16 sm:mt-8 sm:gap-20">
+        <div className="mt-2 flex flex-col gap-16 sm:mt-3 sm:gap-20">
         <section
           id="categories-legacy"
           className={`order-2 hidden scroll-mt-28 ${sectionShell}`}
@@ -992,7 +992,7 @@ export default function Home() {
                   Personalized recommendation
                 </h2>
                 <div className="mt-3 rounded-2xl border border-blue-200/70 bg-blue-50/70 p-4 dark:border-blue-900/40 dark:bg-blue-950/30">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-col gap-3">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                         Find cards by your top spends
@@ -1007,12 +1007,6 @@ export default function Home() {
                         real usage.
                       </p>
                     </div>
-                    <a
-                      href="#spend-picks"
-                      className="inline-flex h-10 items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 dark:hover:bg-blue-500"
-                    >
-                      Start personalization
-                    </a>
                   </div>
                 </div>
               </div>
@@ -1224,7 +1218,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => void loadRecommendations()}
-                disabled={recommendationLoading}
+                disabled={recommendationLoading || wizardStep !== 6}
                 className={btnPrimary}
                 aria-busy={recommendationLoading}
               >
@@ -1234,7 +1228,7 @@ export default function Home() {
                     Finding your best cards...
                   </>
                 ) : (
-                  "Get personalized top 3"
+                  "View personalized recommendation"
                 )}
               </button>
             </div>
