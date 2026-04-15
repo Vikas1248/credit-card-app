@@ -554,25 +554,7 @@ export default function Home() {
     const hasSelectedCategoryEarn = topCategories.some(
       (slug) => typeof pct[slug] === "number" && (pct[slug] ?? 0) > 0
     );
-    if (!hasSelectedCategoryEarn) return false;
-
-    const primaryOrder: SpendCategorySlug[] = [
-      "travel",
-      "dining",
-      "shopping",
-      "fuel",
-    ];
-    let primary: SpendCategorySlug | null = null;
-    let best = -1;
-    for (const slug of primaryOrder) {
-      const value = pct[slug];
-      if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) continue;
-      if (value > best) {
-        best = value;
-        primary = slug;
-      }
-    }
-    return primary ? topCategories.includes(primary) : false;
+    return hasSelectedCategoryEarn;
   };
 
   const cardMatchesFeePreference = (card: SpendRecommendation): boolean => {
@@ -711,16 +693,24 @@ export default function Home() {
       const strictMatches = filtered.filter((rec) =>
         recommendationMatchesSelections(rec, sourceCardById.get(rec.id) ?? null)
       );
+      const feeAndCategoryMatches = filtered.filter(
+        (rec) =>
+          cardMatchesFeePreference(rec) && cardMatchesTopCategorySelection(rec)
+      );
+      const feeOnlyMatches = filtered.filter((rec) => cardMatchesFeePreference(rec));
+
+      let finalMatches = strictMatches;
+      if (finalMatches.length === 0) finalMatches = feeAndCategoryMatches;
+      if (finalMatches.length === 0) finalMatches = feeOnlyMatches;
+      if (finalMatches.length === 0) finalMatches = filtered;
 
       if (strictMatches.length === 0) {
-        setRecommendations([]);
         setRecommendationError(
-          "No cards match all selected preferences. Try relaxing one selection."
+          "Showing closest matches from available cards for your selected preferences."
         );
-        return;
       }
 
-      const ranked = [...strictMatches].sort((a, b) => {
+      const ranked = [...finalMatches].sort((a, b) => {
         const scoreA = a.yearly_reward_inr + recommendationPreferenceScore(a) * 1200;
         const scoreB = b.yearly_reward_inr + recommendationPreferenceScore(b) * 1200;
         return scoreB - scoreA;
@@ -1092,12 +1082,6 @@ export default function Home() {
                 <h2 id="spend-picks-heading" className={sectionTitleClass}>
                   Personalized recommendation
                 </h2>
-                <div className="mt-3 rounded-2xl border border-blue-200/70 bg-blue-50/70 p-4 dark:border-blue-900/40 dark:bg-blue-950/30">
-                  <div className="flex flex-col gap-3">
-                    <div className="min-w-0">
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -1300,26 +1284,23 @@ export default function Home() {
                 >
                   Next
                 </button>
+                <button
+                  type="button"
+                  onClick={() => void loadRecommendations()}
+                  disabled={recommendationLoading || wizardStep !== 6}
+                  className={btnPrimary}
+                  aria-busy={recommendationLoading}
+                >
+                  {recommendationLoading ? (
+                    <>
+                      <Spinner className="h-4 w-4 text-white" />
+                      Finding your best cards...
+                    </>
+                  ) : (
+                    "View personalized recommendation"
+                  )}
+                </button>
               </div>
-            </div>
-
-            <div className="mt-8">
-              <button
-                type="button"
-                onClick={() => void loadRecommendations()}
-                disabled={recommendationLoading || wizardStep !== 6}
-                className={btnPrimary}
-                aria-busy={recommendationLoading}
-              >
-                {recommendationLoading ? (
-                  <>
-                    <Spinner className="h-4 w-4 text-white" />
-                    Finding your best cards...
-                  </>
-                ) : (
-                  "View personalized recommendation"
-                )}
-              </button>
             </div>
 
             <div className="sr-only" aria-live="polite">
