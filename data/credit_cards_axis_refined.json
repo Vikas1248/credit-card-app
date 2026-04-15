@@ -82,7 +82,7 @@
       "bank": "Axis Bank",
       "best_for": "Online shopping and cashback",
       "card_name": "Flipkart Axis Bank Credit Card",
-      "dining_reward": 0.01,
+      "dining_reward": 0.004,
       "eligibility": "18–70 years, Indian resident, income-based approval",
       "fuel_reward": 0.0,
       "joining_fee": 500,
@@ -132,16 +132,16 @@
       "lounge_access": "1 complimentary domestic lounge visit per quarter (on ₹50,000 spend in last 3 months)",
       "network": "Visa",
       "reward_conversion": {
-        "description": "4 EDGE Reward points per ₹200 spent (~1% return)",
-        "points_per_rupee": 0.01
+        "description": "4 EDGE Reward points per ₹200 spent",
+        "points_per_rupee": 0.02
       },
       "reward_type": "points",
-      "shopping_reward": 0.01,
+      "shopping_reward": 0.004,
       "source": "axis_bank",
       "travel_reward": 0.0,
       "welcome_offer": "SonyLIV Premium subscription worth ₹1,499 on first transaction",
-      "reward_rate": "4 EDGE Reward points per ₹200 spent (~1% return)",
-      "reward_points_inr_per_point": 0.25
+      "reward_rate": "4 EDGE Reward points per ₹200 spent",
+      "reward_points_inr_per_point": 0.2
     },
     {
       "affiliate_link": "",
