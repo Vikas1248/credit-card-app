@@ -881,6 +881,25 @@ export default function Home() {
           </form>
         </header>
 
+        <section className="mt-6 rounded-2xl border border-blue-200/70 bg-blue-50/70 p-4 dark:border-blue-900/40 dark:bg-blue-950/30">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Find cards by your top spends
+              </p>
+              <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-300">
+                Takes 60 seconds · Step 1 of 6
+              </p>
+            </div>
+            <a
+              href="#spend-picks"
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 dark:hover:bg-blue-500"
+            >
+              Start personalization
+            </a>
+          </div>
+        </section>
+
         <div className="mt-12 flex flex-col gap-16 sm:mt-16 sm:gap-20">
         <section
           id="categories-legacy"
@@ -991,6 +1010,14 @@ export default function Home() {
                 <h2 id="spend-picks-heading" className={sectionTitleClass}>
                   Find cards by your top spends
                 </h2>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-300">
+                    Takes 60 seconds
+                  </span>
+                  <span className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+                    Step 1 of 6
+                  </span>
+                </div>
                 <p className={sectionLeadClass}>
                   Tell us where you spend most, and we rank the best matching cards
                   first. The wizard uses income, spend mix, fee comfort, and
