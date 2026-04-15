@@ -109,13 +109,13 @@ export function rewardPctRangeForSpendCategory(
   // Conservative Tata Neu Infinity cap: show partner-brand tier, not app-max tier.
   if (cardNameNorm.includes("tata neu infinity hdfc bank credit card")) {
     if (slug === "dining") return { min: 1.5, max: 1.5 };
-    if (slug === "travel") return { min: 5, max: 5 };
+    if (slug === "travel") return { min: 1.5, max: 1.5 };
     if (slug === "shopping") return { min: 1.5, max: 5 };
     if (slug === "fuel") return { min: 0, max: 0 };
   }
   if (cardNameNorm.includes("tata neu plus hdfc bank credit card")) {
     if (slug === "dining") return { min: 1, max: 1 };
-    if (slug === "travel") return { min: 2, max: 2 };
+    if (slug === "travel") return { min: 1, max: 1 };
     if (slug === "shopping") return { min: 1, max: 2 };
     if (slug === "fuel") return { min: 0, max: 0 };
   }
