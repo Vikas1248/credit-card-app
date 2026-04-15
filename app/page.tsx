@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 import { AmexGenericApplyLink } from "@/components/amex-generic-apply-link";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
-import { CardKeyBenefits } from "@/components/card-key-benefits";
 import { CardTopRewardTag } from "@/components/card-top-reward-tag";
 import { FeaturedCardsCarousel } from "@/components/featured-cards-carousel";
 import { HdfcApplyLink } from "@/components/hdfc-apply-link";
@@ -1080,7 +1079,7 @@ export default function Home() {
               <div className={sectionHeaderAccentClass} aria-hidden />
               <div className="min-w-0 flex-1">
                 <h2 id="spend-picks-heading" className={sectionTitleClass}>
-                  Personalized recommendation
+                  Recommended cards for you
                 </h2>
               </div>
             </div>
@@ -1297,7 +1296,7 @@ export default function Home() {
                       Finding your best cards...
                     </>
                   ) : (
-                    "View personalized recommendation"
+                    "Show my recommendations"
                   )}
                 </button>
               </div>
@@ -1345,15 +1344,15 @@ export default function Home() {
                       <div className="flex flex-col">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                          #{index + 1}
+                          Recommended #{index + 1}
                         </span>
                         {isBest ? (
                           <span className="rounded-full bg-emerald-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
-                            Best for you
+                            Top match
                           </span>
                         ) : null}
                       </div>
-                      <h3 className="mt-3 text-lg font-semibold leading-snug tracking-tight">
+                      <h3 className="mt-3 line-clamp-2 text-lg font-semibold leading-snug tracking-tight">
                         <Link
                           href={`/card/${card.id}`}
                           className="text-zinc-900 transition hover:text-blue-600 dark:text-zinc-50 dark:hover:text-blue-400"
@@ -1361,13 +1360,12 @@ export default function Home() {
                           {card.card_name}
                         </Link>
                       </h3>
-                      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                        {card.bank} · {card.network}
+                      <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                        {card.bank}
                       </p>
                       <div className="mt-2">
                         <CardTopRewardTag card={card} />
                       </div>
-                      <CardKeyBenefits card={card} />
 
                       <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
                         <div className="rounded-xl bg-white/75 p-3 shadow-sm dark:bg-zinc-950/45">
@@ -1380,10 +1378,10 @@ export default function Home() {
                         </div>
                         <div className="rounded-xl bg-white/75 p-3 shadow-sm dark:bg-zinc-950/45">
                           <dt className="text-xs font-medium text-zinc-500">
-                            Yearly reward
+                            Annual fee
                           </dt>
                           <dd className="mt-0.5 text-lg font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-                            {formatInr(card.yearly_reward_inr)}
+                            {formatInr(card.annual_fee)}
                           </dd>
                         </div>
                       </dl>
@@ -1412,57 +1410,7 @@ export default function Home() {
                         </div>
                       ) : null}
 
-                      <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                        By category
-                      </p>
-                      <div className="mt-2 overflow-hidden rounded-xl border border-zinc-200 text-sm dark:border-zinc-700">
-                        <table className="w-full text-left">
-                          <thead>
-                            <tr className="border-b border-zinc-200 bg-zinc-50 text-xs dark:border-zinc-700 dark:bg-zinc-900">
-                              <th className="px-3 py-2 font-medium text-zinc-600 dark:text-zinc-400">
-                                Category
-                              </th>
-                              <th className="px-3 py-2 font-medium text-zinc-600 dark:text-zinc-400">
-                                / mo
-                              </th>
-                              <th className="px-3 py-2 font-medium text-zinc-600 dark:text-zinc-400">
-                                / yr
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {CATEGORY_LABELS.map(({ key, label }) => {
-                              const yearly = card.breakdown[key];
-                              const monthly = yearly / 12;
-                              return (
-                                <tr
-                                  key={key}
-                                  className="border-b border-zinc-100 last:border-0 dark:border-zinc-800"
-                                >
-                                  <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">
-                                    {label}
-                                  </td>
-                                  <td className="px-3 py-2 tabular-nums text-zinc-600 dark:text-zinc-400">
-                                    {formatInr(monthly)}
-                                  </td>
-                                  <td className="px-3 py-2 tabular-nums text-zinc-600 dark:text-zinc-400">
-                                    {formatInr(yearly)}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-
                       <div className="mt-4 flex flex-col gap-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
-                        <p className="text-xs text-zinc-500">
-                          Fee {formatInr(card.annual_fee)} ·{" "}
-                          {card.reward_type === "cashback"
-                            ? "Cashback"
-                            : "Points"}{" "}
-                          · {card.reward_rate ?? "—"}
-                        </p>
                         <div
                           className={
                             isAxisBankCard(card.bank) ||
