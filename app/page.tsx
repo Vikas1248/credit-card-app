@@ -982,7 +982,7 @@ export default function Home() {
 
           <section
             id="spend-picks"
-            className={`scroll-mt-28 ${sectionShell}`}
+            className="scroll-mt-28 rounded-3xl bg-white p-8 shadow-md shadow-zinc-900/[0.06] ring-1 ring-zinc-950/[0.04] dark:bg-zinc-900/70 dark:shadow-black/40 dark:ring-white/[0.06] sm:p-10"
             aria-labelledby="spend-picks-heading"
           >
             <div className={sectionHeaderRowClass}>
