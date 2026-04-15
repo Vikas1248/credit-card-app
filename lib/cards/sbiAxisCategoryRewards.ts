@@ -428,7 +428,7 @@ export function deriveSbiAxisCategoryRange(
   if (cardNameNorm.includes("airtel axis bank credit card")) {
     if (slug === "dining") return { min: 1, max: 10 };
     if (slug === "travel") return { min: 1, max: 1 };
-    if (slug === "shopping") return { min: 1, max: 10 };
+    if (slug === "shopping") return { min: 1, max: 1 };
     if (slug === "fuel") return { min: 1, max: 1 };
   }
 
