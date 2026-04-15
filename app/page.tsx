@@ -94,6 +94,20 @@ type SalaryBandId =
   | "r25_50"
   | "r50_plus";
 
+type MonthlySpendBandId =
+  | "under_20k"
+  | "20k_50k"
+  | "50k_100k"
+  | "100k_plus";
+
+type FeePreferenceId = "lifetime_free" | "low_fee" | "premium_ok";
+
+type LifestyleNeedId =
+  | "movie_offer"
+  | "lounge_domestic"
+  | "lounge_international"
+  | "golf";
+
 const SALARY_BAND_OPTIONS: { id: SalaryBandId; label: string }[] = [
   { id: "r0_5", label: "0-5 lakh" },
   { id: "r5_10", label: "5-10 lakh" },
@@ -112,6 +126,30 @@ const SALARY_BAND_SPEND_PRESETS: Record<
   r25_50: { dining: 25000, travel: 20000, shopping: 35000, fuel: 12000 },
   r50_plus: { dining: 40000, travel: 35000, shopping: 60000, fuel: 18000 },
 };
+
+const MONTHLY_SPEND_BAND_OPTIONS: {
+  id: MonthlySpendBandId;
+  label: string;
+  multiplier: number;
+}[] = [
+  { id: "under_20k", label: "Under Rs20k / month", multiplier: 0.7 },
+  { id: "20k_50k", label: "Rs20k-Rs50k / month", multiplier: 1 },
+  { id: "50k_100k", label: "Rs50k-Rs100k / month", multiplier: 1.45 },
+  { id: "100k_plus", label: "Rs100k+ / month", multiplier: 2 },
+];
+
+const FEE_PREFERENCE_OPTIONS: { id: FeePreferenceId; label: string }[] = [
+  { id: "lifetime_free", label: "Lifetime free only" },
+  { id: "low_fee", label: "Low annual fee preferred" },
+  { id: "premium_ok", label: "Premium fee is okay" },
+];
+
+const LIFESTYLE_NEED_OPTIONS: { id: LifestyleNeedId; label: string }[] = [
+  { id: "movie_offer", label: "Movie 1+1 offers" },
+  { id: "lounge_domestic", label: "Domestic lounge" },
+  { id: "lounge_international", label: "International lounge" },
+  { id: "golf", label: "Golf benefits" },
+];
 
 type FeaturedGroup = {
   id: "best-overall" | "cashback" | "travel" | "lifetime-free";
@@ -342,6 +380,16 @@ export default function Home() {
   const [cards, setCards] = useState<CreditCard[]>([]);
   const [search, setSearch] = useState("");
   const [salaryBand, setSalaryBand] = useState<SalaryBandId>("r5_10");
+  const [monthlySpendBand, setMonthlySpendBand] =
+    useState<MonthlySpendBandId>("20k_50k");
+  const [topCategories, setTopCategories] = useState<SpendCategorySlug[]>([
+    "shopping",
+    "dining",
+  ]);
+  const [existingCardIds, setExistingCardIds] = useState<string[]>([]);
+  const [feePreference, setFeePreference] = useState<FeePreferenceId>("low_fee");
+  const [lifestyleNeeds, setLifestyleNeeds] = useState<LifestyleNeedId[]>([]);
+  const [wizardStep, setWizardStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [spendDining, setSpendDining] = useState("8000");
@@ -369,12 +417,91 @@ export default function Home() {
   const [compareAiLoading, setCompareAiLoading] = useState(false);
   const [compareAiError, setCompareAiError] = useState<string | null>(null);
 
-  const applySalaryBandPreset = (band: SalaryBandId) => {
-    const preset = SALARY_BAND_SPEND_PRESETS[band];
-    setSpendDining(String(preset.dining));
-    setSpendTravel(String(preset.travel));
-    setSpendShopping(String(preset.shopping));
-    setSpendFuel(String(preset.fuel));
+  const toggleTopCategory = (slug: SpendCategorySlug) => {
+    setTopCategories((prev) => {
+      if (prev.includes(slug)) {
+        if (prev.length <= 1) return prev;
+        return prev.filter((x) => x !== slug);
+      }
+      return [...prev, slug];
+    });
+  };
+
+  const toggleExistingCard = (cardId: string) => {
+    setExistingCardIds((prev) =>
+      prev.includes(cardId) ? prev.filter((x) => x !== cardId) : [...prev, cardId]
+    );
+  };
+
+  const toggleLifestyleNeed = (need: LifestyleNeedId) => {
+    setLifestyleNeeds((prev) =>
+      prev.includes(need) ? prev.filter((x) => x !== need) : [...prev, need]
+    );
+  };
+
+  const buildWizardSpendPlan = () => {
+    const base = SALARY_BAND_SPEND_PRESETS[salaryBand];
+    const spendBand =
+      MONTHLY_SPEND_BAND_OPTIONS.find((x) => x.id === monthlySpendBand) ??
+      MONTHLY_SPEND_BAND_OPTIONS[1];
+    const result: Record<SpendCategorySlug, number> = {
+      dining: base.dining * spendBand.multiplier,
+      travel: base.travel * spendBand.multiplier,
+      shopping: base.shopping * spendBand.multiplier,
+      fuel: base.fuel * spendBand.multiplier,
+    };
+    const selected = new Set(topCategories);
+    for (const slug of ["dining", "travel", "shopping", "fuel"] as const) {
+      const focusMultiplier =
+        selected.size === 0 || selected.has(slug) ? 1.3 : 0.78;
+      result[slug] = Math.max(0, Math.round((result[slug] * focusMultiplier) / 100) * 100);
+    }
+    return result;
+  };
+
+  const recommendationPreferenceScore = (card: SpendRecommendation): number => {
+    let score = 0;
+
+    if (feePreference === "lifetime_free") {
+      score += card.annual_fee === 0 ? 2.5 : -5;
+    } else if (feePreference === "low_fee") {
+      if (card.annual_fee === 0) score += 2.2;
+      else if (card.annual_fee <= 500) score += 1.6;
+      else if (card.annual_fee <= 1000) score += 1;
+      else if (card.annual_fee > 2500) score -= 1.2;
+    }
+
+    const categoryPct = card.category_reward_pct;
+    if (categoryPct && topCategories.length > 0) {
+      for (const slug of topCategories) {
+        const pct = categoryPct[slug];
+        if (typeof pct === "number" && Number.isFinite(pct)) {
+          score += Math.min(2, pct / 3);
+        }
+      }
+    }
+
+    const haystack =
+      `${card.reward_rate ?? ""} ${card.best_for ?? ""} ${card.lounge_access ?? ""} ${card.card_name}`.toLowerCase();
+    for (const need of lifestyleNeeds) {
+      if (
+        (need === "movie_offer" &&
+          (haystack.includes("movie") ||
+            haystack.includes("bookmyshow") ||
+            haystack.includes("cinema"))) ||
+        (need === "lounge_domestic" &&
+          (haystack.includes("domestic lounge") ||
+            haystack.includes("domestic"))) ||
+        (need === "lounge_international" &&
+          (haystack.includes("international lounge") ||
+            haystack.includes("priority pass") ||
+            haystack.includes("international"))) ||
+        (need === "golf" && haystack.includes("golf"))
+      ) {
+        score += 1.4;
+      }
+    }
+    return score;
   };
 
   const loadCards = async () => {
@@ -454,10 +581,15 @@ export default function Home() {
       setRecommendationLoading(true);
       setRecommendationError(null);
 
-      const dining = Number(spendDining);
-      const travel = Number(spendTravel);
-      const shopping = Number(spendShopping);
-      const fuel = Number(spendFuel);
+      const wizardSpend = buildWizardSpendPlan();
+      const dining = wizardSpend.dining;
+      const travel = wizardSpend.travel;
+      const shopping = wizardSpend.shopping;
+      const fuel = wizardSpend.fuel;
+      setSpendDining(String(dining));
+      setSpendTravel(String(travel));
+      setSpendShopping(String(shopping));
+      setSpendFuel(String(fuel));
       const fields = [
         { name: "Dining", value: dining },
         { name: "Travel", value: travel },
@@ -485,7 +617,14 @@ export default function Home() {
         throw new Error(result.error ?? "Failed to fetch recommendations.");
       }
 
-      setRecommendations(result.recommendations ?? []);
+      const raw = result.recommendations ?? [];
+      const filtered = raw.filter((rec) => !existingCardIds.includes(rec.id));
+      const ranked = [...filtered].sort((a, b) => {
+        const scoreA = a.yearly_reward_inr + recommendationPreferenceScore(a) * 1200;
+        const scoreB = b.yearly_reward_inr + recommendationPreferenceScore(b) * 1200;
+        return scoreB - scoreA;
+      });
+      setRecommendations(ranked.slice(0, 3));
     } catch (fetchError) {
       const message =
         fetchError instanceof Error ? fetchError.message : "Unexpected error";
@@ -870,57 +1009,205 @@ export default function Home() {
             </div>
 
             <div className="mt-8 rounded-2xl border border-zinc-100 bg-zinc-50/60 p-5 dark:border-zinc-800 dark:bg-zinc-950/40 sm:p-6">
-              <label className="mb-4 block">
-                <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                  Annual salary band
-                </span>
-                <select
-                  value={salaryBand}
-                  onChange={(e) => {
-                    const band = e.target.value as SalaryBandId;
-                    setSalaryBand(band);
-                    applySalaryBandPreset(band);
-                  }}
-                  className={inputClass}
-                >
-                  {SALARY_BAND_OPTIONS.map((opt) => (
-                    <option key={opt.id} value={opt.id}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-                <span className="mt-1.5 block text-xs text-zinc-500 dark:text-zinc-400">
-                  Selecting a band auto-fills monthly spends below. You can still
-                  edit each category manually.
-                </span>
-              </label>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {(
-                  [
-                    ["spendDining", "Dining", spendDining, setSpendDining],
-                    ["spendTravel", "Travel", spendTravel, setSpendTravel],
-                    ["spendShopping", "Shopping", spendShopping, setSpendShopping],
-                    ["spendFuel", "Fuel", spendFuel, setSpendFuel],
-                  ] as const
-                ).map(([id, label, value, setVal]) => (
-                  <label key={id} className="block">
-                    <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                      {label}{" "}
-                      <span className="font-normal text-zinc-400">/ month · ₹</span>
-                    </span>
-                    <input
-                      id={id}
-                      type="number"
-                      min={0}
-                      step={100}
-                      value={value}
-                      onChange={(e) => setVal(e.target.value)}
-                      className={inputClass}
-                      inputMode="numeric"
-                    />
-                  </label>
-                ))}
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+                  Step {wizardStep} of 6
+                </p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {Math.round((wizardStep / 6) * 100)}% complete
+                </p>
               </div>
+              <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+                <div
+                  className="h-full rounded-full bg-blue-600 transition-all dark:bg-blue-500"
+                  style={{ width: `${(wizardStep / 6) * 100}%` }}
+                />
+              </div>
+
+              <div className="mt-5">
+                {wizardStep === 1 ? (
+                  <div>
+                    <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                      Income range
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {SALARY_BAND_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setSalaryBand(opt.id)}
+                          className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                            salaryBand === opt.id
+                              ? "border-blue-500 bg-blue-600 text-white"
+                              : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {wizardStep === 2 ? (
+                  <div>
+                    <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                      Total monthly spend
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {MONTHLY_SPEND_BAND_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setMonthlySpendBand(opt.id)}
+                          className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                            monthlySpendBand === opt.id
+                              ? "border-blue-500 bg-blue-600 text-white"
+                              : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {wizardStep === 3 ? (
+                  <div>
+                    <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                      Top categories (choose 1-3)
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {SPEND_CATEGORIES.map((cat) => {
+                        const active = topCategories.includes(cat.slug);
+                        return (
+                          <button
+                            key={cat.slug}
+                            type="button"
+                            onClick={() => toggleTopCategory(cat.slug)}
+                            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                              active
+                                ? "border-blue-500 bg-blue-600 text-white"
+                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                            }`}
+                          >
+                            <SpendCategoryIcon slug={cat.slug} className="h-3.5 w-3.5" />
+                            {cat.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+
+                {wizardStep === 4 ? (
+                  <div>
+                    <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                      Existing cards (optional)
+                    </p>
+                    <div className="max-h-44 overflow-auto rounded-xl border border-zinc-200 bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900">
+                      <div className="flex flex-wrap gap-2">
+                        {cardsSortedByName.slice(0, 60).map((card) => {
+                          const selected = existingCardIds.includes(card.id);
+                          return (
+                            <button
+                              key={card.id}
+                              type="button"
+                              onClick={() => toggleExistingCard(card.id)}
+                              className={`rounded-full border px-3 py-1.5 text-xs transition ${
+                                selected
+                                  ? "border-blue-500 bg-blue-600 text-white"
+                                  : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                              }`}
+                            >
+                              {card.card_name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
+                {wizardStep === 5 ? (
+                  <div>
+                    <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                      Fee preference
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {FEE_PREFERENCE_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setFeePreference(opt.id)}
+                          className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                            feePreference === opt.id
+                              ? "border-blue-500 bg-blue-600 text-white"
+                              : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {wizardStep === 6 ? (
+                  <div>
+                    <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                      Travel / lifestyle needs
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {LIFESTYLE_NEED_OPTIONS.map((opt) => {
+                        const selected = lifestyleNeeds.includes(opt.id);
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => toggleLifestyleNeed(opt.id)}
+                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                              selected
+                                ? "border-blue-500 bg-blue-600 text-white"
+                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setWizardStep((s) => Math.max(1, s - 1))}
+                  disabled={wizardStep === 1}
+                  className={btnGhost}
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWizardStep((s) => Math.min(6, s + 1))}
+                  disabled={wizardStep === 6}
+                  className={btnGhost}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-xl border border-blue-100 bg-blue-50/70 px-4 py-3 text-xs text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-200">
+              Estimated monthly spend split based on your inputs:{" "}
+              <span className="font-semibold">
+                D {formatInr(buildWizardSpendPlan().dining)} · T {formatInr(buildWizardSpendPlan().travel)} · S{" "}
+                {formatInr(buildWizardSpendPlan().shopping)} · F {formatInr(buildWizardSpendPlan().fuel)}
+              </span>
             </div>
 
             <div className="mt-8">
@@ -934,10 +1221,10 @@ export default function Home() {
                 {recommendationLoading ? (
                   <>
                     <Spinner className="h-4 w-4 text-white" />
-                    Calculating picks…
+                    Finding your best cards...
                   </>
                 ) : (
-                  "Update top 3 for this spend"
+                  "Get personalized top 3"
                 )}
               </button>
             </div>
