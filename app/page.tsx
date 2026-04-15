@@ -344,7 +344,7 @@ function SiteHeader() {
                 ["#search", "Search"],
                 ["#categories", "Categories"],
                 ["#featured", "Featured"],
-                ["#spend-picks", "Your spend"],
+                ["#spend-picks", "Top spends"],
                 ["#compare", "Compare"],
               ] as const
             ).map(([href, label]) => (
@@ -876,9 +876,10 @@ export default function Home() {
           </form>
         </header>
 
+        <div className="mt-12 flex flex-col gap-16 sm:mt-16 sm:gap-20">
         <section
           id="categories"
-          className={`scroll-mt-28 mt-12 sm:mt-16 ${sectionShell}`}
+          className={`order-2 scroll-mt-28 ${sectionShell}`}
           aria-labelledby="categories-heading"
         >
           <div className={sectionHeaderRowClass}>
@@ -951,7 +952,7 @@ export default function Home() {
           </ul>
         </section>
 
-        <div className="mt-16 space-y-24 sm:mt-20 sm:space-y-28">
+        <div className="order-1 space-y-24 sm:space-y-28">
           <section
             id="featured"
             className={`scroll-mt-28 ${sectionShell}`}
@@ -983,23 +984,12 @@ export default function Home() {
               <div className={sectionHeaderAccentClass} aria-hidden />
               <div className="min-w-0 flex-1">
                 <h2 id="spend-picks-heading" className={sectionTitleClass}>
-                  Top cards for your spend
+                  Find cards by your top spends
                 </h2>
                 <p className={sectionLeadClass}>
-                  Enter average monthly spend (₹) per category. We estimate each
-                  card’s yearly rewards from its category rates and rank the top
-                  three.{" "}
-                  <span className="font-medium text-zinc-700 dark:text-zinc-300">
-                    If you multiply every box by the same amount, the order usually
-                    stays the same
-                  </span>
-                  —change{" "}
-                  <span className="font-medium text-zinc-700 dark:text-zinc-300">
-                    how you split spend across categories
-                  </span>{" "}
-                  to see different winners. With AI available, we may adjust those
-                  three picks and add short explanations; without it, ranking is
-                  numeric only.
+                  Tell us where you spend most, and we rank the best matching cards
+                  first. The wizard uses income, spend mix, fee comfort, and
+                  lifestyle needs so users can discover cards aligned to real usage.
                 </p>
               </div>
             </div>
@@ -1453,7 +1443,7 @@ export default function Home() {
                   fields as each card’s detail page). When AI is available, a short
                   narrative summary can appear above; if you’ve entered spend in{" "}
                   <a href="#spend-picks" className="font-medium underline">
-                    Top cards for your spend
+                    Find cards by your top spends
                   </a>
                   , the AI uses it for context.
                 </p>
@@ -1797,6 +1787,7 @@ export default function Home() {
           ) : null}
         </section>
 
+        </div>
         </div>
       </main>
     </div>
