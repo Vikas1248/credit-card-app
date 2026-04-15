@@ -881,7 +881,7 @@ export default function Home() {
           </form>
         </header>
 
-        <div className="mt-12 flex flex-col gap-16 sm:mt-16 sm:gap-20">
+        <div className="mt-6 flex flex-col gap-16 sm:mt-8 sm:gap-20">
         <section
           id="categories-legacy"
           className={`order-2 hidden scroll-mt-28 ${sectionShell}`}
@@ -1000,6 +1000,12 @@ export default function Home() {
                       <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-300">
                         Takes 60 seconds · Step 1 of 6
                       </p>
+                      <p className="mt-2 text-sm leading-relaxed text-zinc-700 dark:text-zinc-200">
+                        Tell us where you spend most, and we rank the best matching
+                        cards first. The wizard uses income, spend mix, fee comfort,
+                        and lifestyle needs so users can discover cards aligned to
+                        real usage.
+                      </p>
                     </div>
                     <a
                       href="#spend-picks"
@@ -1009,11 +1015,6 @@ export default function Home() {
                     </a>
                   </div>
                 </div>
-                <p className={sectionLeadClass}>
-                  Tell us where you spend most, and we rank the best matching cards
-                  first. The wizard uses income, spend mix, fee comfort, and
-                  lifestyle needs so users can discover cards aligned to real usage.
-                </p>
               </div>
             </div>
 
