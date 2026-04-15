@@ -12,9 +12,9 @@
       "bank": "IndusInd Bank",
       "best_for": "Milestone-based rewards and travel perks",
       "card_name": "IndusInd Bank Tiger Credit Card",
-      "dining_reward": 0.01,
-      "travel_reward": 0.012,
-      "shopping_reward": 0.012,
+      "dining_reward": 0.004,
+      "travel_reward": 0.004,
+      "shopping_reward": 0.004,
       "fuel_reward": 0.0,
       "joining_fee": 0,
       "key_benefits": [
@@ -39,7 +39,7 @@
       "membership_rewards_inr_per_point": 0.4,
       "source": "indusind_bank",
       "welcome_offer": "No specific welcome bonus (lifetime free benefit)",
-      "reward_rate": "Up to ~7.2% on high annual spends, ~1.2% base reward rate",
+      "reward_rate": "Up to ~2.4% on milestone spends, ~0.4% base reward rate",
       "links": {
         "apply": "https://linksredirect.com/?cid=281873&source=linkkit&url=https%3A%2F%2Finduseasycredit.indusind.com%2Fcustomer%2Fcredit-card%2Flead",
         "official": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/tiger-credit-card.html"
