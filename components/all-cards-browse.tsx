@@ -64,6 +64,13 @@ function formatInr(value: number): string {
   }).format(value);
 }
 
+function normalizeDisplayText(value: string | null | undefined, fallback: string): string {
+  const cleaned = String(value ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return cleaned || fallback;
+}
+
 type AnnualFeeBand =
   | "any"
   | "free"
@@ -1442,31 +1449,33 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
             {displayBrowseCards.map((card) => (
               <li
                 key={card.id}
-                className={`group flex h-full flex-col rounded-2xl border p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-6 ${issuerBrandTileClass(card.bank, card.network)}`}
+                className={`group flex h-full min-h-[26rem] flex-col rounded-2xl border p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-6 ${issuerBrandTileClass(card.bank, card.network)}`}
               >
                 <div className="mb-3 flex flex-wrap items-center gap-2">
                   <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-700 shadow-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200">
-                    {card.network}
+                    {normalizeDisplayText(card.network, "Network")}
                   </span>
                   <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold tracking-wide text-zinc-700 shadow-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200">
-                    {card.bank}
+                    {normalizeDisplayText(card.bank, "Unknown bank")}
                   </span>
                 </div>
 
                 <div className="flex min-w-0 flex-1 flex-col">
                   <div className="flex flex-wrap items-start gap-2">
-                    <h2 className="text-base font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
+                    <h2 className="min-h-[2.75rem] text-base font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
                       <Link
                         href={`/card/${card.id}`}
-                        className="hover:text-blue-600 dark:hover:text-blue-400"
+                        className="line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400"
                       >
-                        {card.card_name}
+                        {normalizeDisplayText(card.card_name, "Unnamed card")}
                       </Link>
                     </h2>
                     <CardTopRewardTag card={card} />
                   </div>
 
-                  <CardKeyBenefits card={card} />
+                  <div className="mt-2 min-h-[4.75rem]">
+                    <CardKeyBenefits card={card} />
+                  </div>
 
                   <dl className="mt-3 grid grid-cols-2 gap-2 text-sm text-zinc-600 dark:text-zinc-300">
                     <div className="rounded-xl border border-zinc-200/70 bg-white/80 px-3 py-2 dark:border-zinc-700/70 dark:bg-zinc-900/60">
@@ -1487,7 +1496,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                     Reward type: {card.reward_type}
                   </p>
 
-                  <div className="mt-4 grid gap-2">
+                  <div className="mt-auto grid gap-2 pt-4">
                     <Link
                       href={`/card/${card.id}`}
                       className={`${cardViewDetailsButtonClass} w-full`}
