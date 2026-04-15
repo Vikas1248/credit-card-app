@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 };
 
 const navLinkClass =
-  "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100";
+  "inline-flex items-center gap-1.5 rounded-full border border-transparent px-2.5 py-1.5 font-medium text-zinc-600 transition hover:border-zinc-200 hover:bg-white hover:text-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:bg-zinc-900 dark:hover:text-zinc-100";
 
 type PageProps = {
   searchParams: Promise<{ q?: string | string[] }>;
@@ -42,7 +42,7 @@ export default async function CardsPage({ searchParams }: PageProps) {
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <div className="border-b border-zinc-200/80 bg-white/90 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/90">
+      <div className="border-b border-zinc-200/80 bg-white/80 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/80">
         <div className="mx-auto max-w-4xl px-4 py-3 sm:px-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Link
@@ -58,7 +58,7 @@ export default async function CardsPage({ searchParams }: PageProps) {
               {SITE_NAME}
             </Link>
             <nav
-              className="flex flex-wrap items-center gap-1 text-sm"
+              className="flex flex-wrap items-center gap-1 rounded-full border border-zinc-200/80 bg-zinc-50/90 p-1 text-sm dark:border-zinc-700/80 dark:bg-zinc-900/70"
               aria-label="Catalog sections"
             >
               <Link href="/#categories" className={navLinkClass}>

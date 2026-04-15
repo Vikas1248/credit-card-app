@@ -244,7 +244,7 @@ const headerInputClass =
   "w-full rounded-2xl border border-zinc-200 bg-zinc-50/90 py-3 pl-11 pr-4 text-sm text-zinc-900 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-600 dark:bg-zinc-900/80 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-500";
 
 const headerNavLinkClass =
-  "shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100";
+  "shrink-0 rounded-full border border-transparent px-3 py-1.5 text-sm font-medium text-zinc-600 transition hover:border-zinc-200 hover:bg-white hover:text-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:bg-zinc-900 dark:hover:text-zinc-100";
 
 function Spinner({ className }: { className?: string }) {
   return (
@@ -319,7 +319,7 @@ function HomeSearchBar({
 
 function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/85 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/90">
+    <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/80 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/80">
       <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
           <Link
@@ -336,7 +336,7 @@ function SiteHeader() {
           </Link>
 
           <nav
-            className="flex gap-1 overflow-x-auto pb-1 sm:pb-0 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex gap-1 overflow-x-auto rounded-full border border-zinc-200/80 bg-zinc-50/90 p-1 pb-1 sm:pb-1 dark:border-zinc-700/80 dark:bg-zinc-900/70 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             aria-label="Sections"
           >
             {(
@@ -836,49 +836,45 @@ export default function Home() {
       <SiteHeader />
 
       <main className="mx-auto max-w-4xl px-4 py-14 sm:px-6 sm:py-20">
-        <header className="mx-auto max-w-2xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-            {SITE_NAME}
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-4xl">
-            Find a credit card for how you spend
-          </h1>
-          <p className="mt-5 text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-            {SITE_ABOUT_LEAD}
-          </p>
-        </header>
-
-        <form
-          className="mx-auto mt-10 max-w-xl"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const q = search.trim();
-            router.push(q ? `/cards?q=${encodeURIComponent(q)}` : "/cards");
-          }}
-        >
-          <HomeSearchBar
-            id="search"
-            search={search}
-            onSearchChange={setSearch}
-          />
-          <div className="mt-3 flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-4 sm:gap-y-2">
-            <button
-              type="submit"
-              className="text-sm font-semibold text-blue-600 hover:underline dark:text-blue-400"
-            >
-              Search in full catalog
-            </button>
-            <span className="hidden text-zinc-300 sm:inline" aria-hidden>
-              ·
-            </span>
-            <Link
-              href="/cards"
-              className="text-sm font-medium text-zinc-600 underline-offset-2 hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-100"
-            >
-              View all cards
-            </Link>
+        <header className="rounded-3xl border border-zinc-200/80 bg-gradient-to-br from-white to-blue-50/50 p-7 shadow-sm dark:border-zinc-700 dark:from-zinc-900 dark:to-zinc-900 sm:p-10">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-300">
+              {SITE_NAME}
+            </p>
+            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
+              Find your next credit card faster
+            </h1>
+            <p className="mt-4 text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
+              {SITE_ABOUT_LEAD}
+            </p>
           </div>
-        </form>
+
+          <form
+            className="mx-auto mt-8 max-w-xl"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const q = search.trim();
+              router.push(q ? `/cards?q=${encodeURIComponent(q)}` : "/cards");
+            }}
+          >
+            <HomeSearchBar
+              id="search"
+              search={search}
+              onSearchChange={setSearch}
+            />
+            <div className="mt-4 flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-3 sm:gap-y-2">
+              <button type="submit" className={btnPrimary}>
+                Search full catalog
+              </button>
+              <Link
+                href="/cards"
+                className={btnGhost}
+              >
+                Explore all cards
+              </Link>
+            </div>
+          </form>
+        </header>
 
         <section
           id="categories"

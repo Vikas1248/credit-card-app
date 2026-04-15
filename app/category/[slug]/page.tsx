@@ -41,7 +41,7 @@ export default async function CategoryPage({ params }: PageProps) {
 
   return (
     <>
-      <div className="border-b border-zinc-200/80 bg-white/90 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/90">
+      <div className="border-b border-zinc-200/80 bg-white/80 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/80">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <Link
             href="/"
@@ -56,12 +56,12 @@ export default async function CategoryPage({ params }: PageProps) {
             {SITE_NAME}
           </Link>
           <nav
-            className="flex flex-wrap items-center gap-1 text-sm"
+            className="flex flex-wrap items-center gap-1 rounded-full border border-zinc-200/80 bg-zinc-50/90 p-1 text-sm dark:border-zinc-700/80 dark:bg-zinc-900/70"
             aria-label="Catalog"
           >
             <Link
               href="/cards"
-              className="inline-flex items-center rounded-lg px-2.5 py-1.5 font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+              className="inline-flex items-center rounded-full border border-transparent px-2.5 py-1.5 font-medium text-zinc-600 transition hover:border-zinc-200 hover:bg-white hover:text-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
             >
               All cards
             </Link>
@@ -69,7 +69,7 @@ export default async function CategoryPage({ params }: PageProps) {
               <Link
                 key={c.slug}
                 href={`/category/${c.slug}`}
-                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                className="inline-flex items-center gap-1.5 rounded-full border border-transparent px-2.5 py-1.5 font-medium text-zinc-600 transition hover:border-zinc-200 hover:bg-white hover:text-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
               >
                 <SpendCategoryIcon slug={c.slug} className="h-4 w-4" />
                 {c.label}
