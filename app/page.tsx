@@ -221,16 +221,17 @@ function categoryEarnDisplay(card: CreditCard, key: SpendCategorySlug): string {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm transition placeholder:text-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-400";
+  "w-full rounded-xl border border-zinc-200/90 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm transition placeholder:text-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-600/90 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-400";
 
 const btnPrimary =
   "inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:pointer-events-none disabled:opacity-55 dark:hover:bg-blue-500 sm:w-auto";
 
 const btnGhost =
-  "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800";
+  "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-200/80 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800";
 
+/** Enterprise-style panels: depth from soft shadow instead of heavy outlines. */
 const sectionShell =
-  "rounded-3xl border border-zinc-300/90 bg-white p-8 shadow-md shadow-zinc-900/[0.06] ring-1 ring-zinc-950/[0.04] dark:border-zinc-600 dark:bg-zinc-900/70 dark:shadow-black/40 dark:ring-white/[0.06] sm:p-10";
+  "rounded-3xl bg-white p-8 shadow-sm shadow-zinc-900/[0.06] dark:bg-zinc-900/70 dark:shadow-black/35 sm:p-10";
 
 /** In-page section titles (distinct from sticky page header). */
 const sectionTitleClass =
@@ -240,13 +241,13 @@ const sectionLeadClass =
   "mt-2 max-w-xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400";
 
 const sectionHeaderRowClass =
-  "flex gap-3 border-b border-zinc-200 pb-6 dark:border-zinc-600 sm:gap-4";
+  "flex gap-3 border-b border-zinc-200/50 pb-6 dark:border-zinc-700/50 sm:gap-4";
 
 const sectionHeaderAccentClass =
   "mt-2 h-11 w-1.5 shrink-0 rounded-full bg-gradient-to-b from-blue-500 to-indigo-600 shadow-sm shadow-blue-500/30";
 
 const headerInputClass =
-  "w-full rounded-2xl border border-zinc-200 bg-zinc-50/90 py-3 pl-11 pr-4 text-sm text-zinc-900 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-600 dark:bg-zinc-900/80 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-500";
+  "w-full rounded-2xl border border-zinc-200/80 bg-zinc-50/90 py-3 pl-11 pr-4 text-sm text-zinc-900 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-600/80 dark:bg-zinc-900/80 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-500";
 
 const headerNavLinkClass =
   "shrink-0 rounded-full border border-transparent px-3 py-1.5 text-sm font-medium text-zinc-600 transition hover:border-zinc-200 hover:bg-white hover:text-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:bg-zinc-900 dark:hover:text-zinc-100";
@@ -324,7 +325,7 @@ function HomeSearchBar({
 
 function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/80 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/80">
+    <header className="sticky top-0 z-50 border-b border-zinc-200/50 bg-white/85 backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-950/85">
       <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
           <Link
@@ -341,7 +342,7 @@ function SiteHeader() {
           </Link>
 
           <nav
-            className="flex gap-1 overflow-x-auto rounded-full border border-zinc-200/80 bg-zinc-50/90 p-1 pb-1 sm:pb-1 dark:border-zinc-700/80 dark:bg-zinc-900/70 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex gap-1 overflow-x-auto rounded-full border border-zinc-200/50 bg-zinc-50/90 p-1 pb-1 sm:pb-1 dark:border-zinc-700/50 dark:bg-zinc-900/70 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             aria-label="Sections"
           >
             {(
@@ -827,11 +828,11 @@ export default function Home() {
   }, [featuredGroups]);
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+    <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-zinc-100/80 text-zinc-900 dark:from-zinc-950 dark:to-zinc-950 dark:text-zinc-100">
       <SiteHeader />
 
       <main className="mx-auto max-w-4xl px-4 py-14 sm:px-6 sm:py-20">
-        <header className="rounded-3xl border border-zinc-200/80 bg-gradient-to-br from-white to-blue-50/50 p-7 shadow-sm dark:border-zinc-700 dark:from-zinc-900 dark:to-zinc-900 sm:p-10">
+        <header className="rounded-3xl bg-gradient-to-br from-white to-blue-50/50 p-7 shadow-sm shadow-zinc-900/[0.06] dark:from-zinc-900 dark:to-zinc-900 sm:p-10">
           <div className="mx-auto max-w-2xl text-center">
             <p className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-300">
               {SITE_NAME}
@@ -908,7 +909,7 @@ export default function Home() {
               <li key={c.slug}>
                 <Link
                   href={`/category/${c.slug}`}
-                  className="group flex h-full flex-col items-center rounded-2xl border border-zinc-200/80 bg-white px-4 py-5 text-center shadow-sm transition hover:border-blue-300/80 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:hover:border-blue-700/50"
+                  className="group flex h-full flex-col items-center rounded-2xl bg-white px-4 py-5 text-center shadow-sm shadow-zinc-900/[0.04] transition hover:shadow-md hover:shadow-blue-900/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-zinc-900/40 dark:hover:shadow-blue-900/20"
                 >
                   <span
                     className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600/10 text-blue-700 transition group-hover:bg-blue-600/15 dark:bg-blue-500/15 dark:text-blue-300"
@@ -928,7 +929,7 @@ export default function Home() {
             <li>
               <Link
                 href="/cards"
-                className="group flex h-full flex-col items-center rounded-2xl border border-zinc-200/80 bg-white px-4 py-5 text-center shadow-sm transition hover:border-indigo-300/80 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:hover:border-indigo-600/50"
+                className="group flex h-full flex-col items-center rounded-2xl bg-white px-4 py-5 text-center shadow-sm shadow-zinc-900/[0.04] transition hover:shadow-md hover:shadow-indigo-900/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-zinc-900/40 dark:hover:shadow-indigo-900/25"
               >
                 <span
                   className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600/10 text-indigo-700 transition group-hover:bg-indigo-600/15 dark:bg-indigo-500/15 dark:text-indigo-300"
@@ -984,7 +985,7 @@ export default function Home() {
 
           <section
             id="spend-picks"
-            className="scroll-mt-28 rounded-3xl bg-white p-8 shadow-md shadow-zinc-900/[0.06] ring-1 ring-zinc-950/[0.04] dark:bg-zinc-900/70 dark:shadow-black/40 dark:ring-white/[0.06] sm:p-10"
+            className="scroll-mt-28 rounded-3xl bg-white p-8 shadow-sm shadow-zinc-900/[0.06] dark:bg-zinc-900/70 dark:shadow-black/35 sm:p-10"
             aria-labelledby="spend-picks-heading"
           >
             <div className={sectionHeaderRowClass}>
@@ -1001,7 +1002,7 @@ export default function Home() {
             </div>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.05fr]">
-              <div className="rounded-2xl border border-zinc-100 bg-zinc-50/60 p-5 dark:border-zinc-800 dark:bg-zinc-950/40 sm:p-6">
+              <div className="rounded-2xl bg-zinc-50/80 p-5 shadow-sm shadow-zinc-900/[0.04] dark:bg-zinc-950/40 sm:p-6">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
                     Step {wizardStep} of 5
@@ -1032,7 +1033,7 @@ export default function Home() {
                             className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                               salaryBand === opt.id
                                 ? "border-blue-500 bg-blue-600 text-white"
-                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                                : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
                             }`}
                           >
                             {opt.label}
@@ -1056,7 +1057,7 @@ export default function Home() {
                             className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                               monthlySpendBand === opt.id
                                 ? "border-blue-500 bg-blue-600 text-white"
-                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                                : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
                             }`}
                           >
                             {opt.label}
@@ -1082,7 +1083,7 @@ export default function Home() {
                               className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                                 active
                                   ? "border-blue-500 bg-blue-600 text-white"
-                                  : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                                  : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
                               }`}
                             >
                               <SpendCategoryIcon slug={cat.slug} className="h-3.5 w-3.5" />
@@ -1108,7 +1109,7 @@ export default function Home() {
                             className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                               feePreference === opt.id
                                 ? "border-blue-500 bg-blue-600 text-white"
-                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                                : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
                             }`}
                           >
                             {opt.label}
@@ -1134,7 +1135,7 @@ export default function Home() {
                               className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                                 selected
                                   ? "border-blue-500 bg-blue-600 text-white"
-                                  : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                                  : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
                               }`}
                             >
                               {opt.label}
@@ -1146,11 +1147,11 @@ export default function Home() {
                   ) : null}
                 </div>
 
-                <details className="group mt-6 rounded-2xl border border-zinc-200 bg-white/70 px-4 py-3 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/20">
+                <details className="group mt-6 rounded-2xl bg-white/80 px-4 py-3 shadow-sm shadow-zinc-900/[0.04] dark:bg-zinc-950/30">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                     <span>Optional: fine-tune rewards</span>
                     <span
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 transition group-open:rotate-180 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-zinc-200/60 bg-white/90 text-zinc-600 transition group-open:rotate-180 dark:border-zinc-700/60 dark:bg-zinc-900 dark:text-zinc-300"
                       aria-hidden
                     >
                       <svg
@@ -1189,7 +1190,7 @@ export default function Home() {
                             className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                               shoppingOnlinePct === value
                                 ? "border-blue-500 bg-blue-600 text-white"
-                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                                : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
                             }`}
                           >
                             {label}
@@ -1211,7 +1212,7 @@ export default function Home() {
                             className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                               shoppingPreferredMerchant === id
                                 ? "border-blue-500 bg-blue-600 text-white"
-                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                                : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
                             }`}
                           >
                             {label}
@@ -1239,7 +1240,7 @@ export default function Home() {
                             className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                               diningDeliveryPct === value
                                 ? "border-blue-500 bg-blue-600 text-white"
-                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                                : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
                             }`}
                           >
                             {label}
@@ -1261,7 +1262,7 @@ export default function Home() {
                             className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                               diningPreferredApp === id
                                 ? "border-blue-500 bg-blue-600 text-white"
-                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                                : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
                             }`}
                           >
                             {label}
@@ -1295,7 +1296,7 @@ export default function Home() {
                               className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                                 active
                                   ? "border-blue-500 bg-blue-600 text-white"
-                                  : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                                  : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
                               }`}
                             >
                               {label}
@@ -1324,7 +1325,7 @@ export default function Home() {
                                 className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                                   preferredAirline === id
                                     ? "border-blue-500 bg-blue-600 text-white"
-                                    : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                                    : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
                                 }`}
                               >
                                 {label}
@@ -1378,7 +1379,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/30 sm:p-6">
+              <div className="rounded-2xl bg-white p-5 shadow-sm shadow-zinc-900/[0.05] dark:bg-zinc-950/35 sm:p-6">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
@@ -1394,14 +1395,14 @@ export default function Home() {
                       e.preventDefault();
                       setWizardStep(1);
                     }}
-                    className="shrink-0 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    className="shrink-0 rounded-full border border-zinc-200/60 bg-white/90 px-3 py-1.5 text-xs font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700/60 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                   >
                     Edit
                   </a>
                 </div>
 
                 <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-                  <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-700 dark:bg-zinc-900/40">
+                  <div className="rounded-xl bg-zinc-50/90 px-3 py-3 dark:bg-zinc-900/45">
                     <dt className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                       Focus
                     </dt>
@@ -1416,7 +1417,7 @@ export default function Home() {
                       ))}
                     </dd>
                   </div>
-                  <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-700 dark:bg-zinc-900/40">
+                  <div className="rounded-xl bg-zinc-50/90 px-3 py-3 dark:bg-zinc-900/45">
                     <dt className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                       Fee
                     </dt>
@@ -1425,7 +1426,7 @@ export default function Home() {
                         "—"}
                     </dd>
                   </div>
-                  <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-700 dark:bg-zinc-900/40">
+                  <div className="rounded-xl bg-zinc-50/90 px-3 py-3 dark:bg-zinc-900/45">
                     <dt className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                       Lifestyle
                     </dt>
@@ -1448,7 +1449,7 @@ export default function Home() {
                   </div>
                 </dl>
 
-                <div className="mt-4 rounded-xl border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900/30">
+                <div className="mt-4 rounded-xl bg-white/90 px-4 py-3 shadow-sm shadow-zinc-900/[0.03] dark:bg-zinc-900/35">
                   <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-200">
                     What you’ll get
                   </p>
@@ -1481,12 +1482,12 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="mt-6 overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900/40">
+            <div className="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm shadow-zinc-900/[0.05] dark:bg-zinc-900/45">
               <details className="group">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50 dark:text-zinc-100 dark:hover:bg-zinc-800/40">
                   <span>See what’s included in the ranking</span>
                   <span
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 transition group-open:rotate-180 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-zinc-200/60 bg-white/90 text-zinc-600 transition group-open:rotate-180 dark:border-zinc-700/60 dark:bg-zinc-900 dark:text-zinc-300"
                     aria-hidden
                   >
                     <svg
@@ -1505,9 +1506,9 @@ export default function Home() {
                   </span>
                 </summary>
 
-                <div className="border-t border-zinc-200 px-5 py-5 dark:border-zinc-700">
+                <div className="border-t border-zinc-200/50 px-5 py-5 dark:border-zinc-700/50">
                   <div className="grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm dark:border-zinc-700 dark:bg-zinc-950/30">
+                    <div className="rounded-2xl bg-zinc-50/90 p-4 text-sm dark:bg-zinc-950/35">
                       <p className="font-semibold text-zinc-900 dark:text-zinc-100">
                         Spend-based math
                       </p>
@@ -1516,7 +1517,7 @@ export default function Home() {
                         shopping, and fuel.
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm dark:border-zinc-700 dark:bg-zinc-950/30">
+                    <div className="rounded-2xl bg-zinc-50/90 p-4 text-sm dark:bg-zinc-950/35">
                       <p className="font-semibold text-zinc-900 dark:text-zinc-100">
                         Preference matching
                       </p>
@@ -1525,7 +1526,7 @@ export default function Home() {
                         cards influence ranking.
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm dark:border-zinc-700 dark:bg-zinc-950/30">
+                    <div className="rounded-2xl bg-zinc-50/90 p-4 text-sm dark:bg-zinc-950/35">
                       <p className="font-semibold text-zinc-900 dark:text-zinc-100">
                         AI (when available)
                       </p>
@@ -1588,7 +1589,7 @@ export default function Home() {
                 <li key={c.slug}>
                   <Link
                     href={`/category/${c.slug}`}
-                    className="group flex h-full flex-col items-center rounded-2xl border border-zinc-200/80 bg-white px-4 py-5 text-center shadow-sm transition hover:border-blue-300/80 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:hover:border-blue-700/50"
+                    className="group flex h-full flex-col items-center rounded-2xl bg-white px-4 py-5 text-center shadow-sm shadow-zinc-900/[0.04] transition hover:shadow-md hover:shadow-blue-900/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-zinc-900/40 dark:hover:shadow-blue-900/20"
                   >
                     <span
                       className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600/10 text-blue-700 transition group-hover:bg-blue-600/15 dark:bg-blue-500/15 dark:text-blue-300"
@@ -1608,7 +1609,7 @@ export default function Home() {
               <li>
                 <Link
                   href="/cards"
-                  className="group flex h-full flex-col items-center rounded-2xl border border-zinc-200/80 bg-white px-4 py-5 text-center shadow-sm transition hover:border-indigo-300/80 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:hover:border-indigo-600/50"
+                  className="group flex h-full flex-col items-center rounded-2xl bg-white px-4 py-5 text-center shadow-sm shadow-zinc-900/[0.04] transition hover:shadow-md hover:shadow-indigo-900/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-zinc-900/40 dark:hover:shadow-indigo-900/25"
                 >
                   <span
                     className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600/10 text-indigo-700 transition group-hover:bg-indigo-600/15 dark:bg-indigo-500/15 dark:text-indigo-300"
@@ -1716,7 +1717,7 @@ export default function Home() {
             </div>
 
             {compareLeft && compareRight ? (
-              <div className="mt-6 rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-5 dark:border-indigo-900/40 dark:bg-indigo-950/25">
+              <div className="mt-6 rounded-xl bg-indigo-50/50 p-5 shadow-sm shadow-indigo-900/[0.06] dark:bg-indigo-950/25 dark:shadow-black/30">
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                     AI comparison
@@ -1761,10 +1762,10 @@ export default function Home() {
             ) : null}
 
             {compareLeft && compareRight ? (
-              <div className="mt-6 overflow-hidden rounded-xl border border-zinc-200 shadow-sm dark:border-zinc-700">
+              <div className="mt-6 overflow-hidden rounded-xl bg-white shadow-sm shadow-zinc-900/[0.05] dark:bg-zinc-900/40 dark:shadow-black/30">
                 <table className="w-full min-w-[520px] text-left text-sm">
                 <thead>
-                  <tr className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+                  <tr className="border-b border-zinc-200/60 bg-zinc-50/90 dark:border-zinc-700/50 dark:bg-zinc-900/80">
                     <th className="w-[28%] px-4 py-3 font-semibold text-zinc-700 dark:text-zinc-200">
                       Details
                     </th>

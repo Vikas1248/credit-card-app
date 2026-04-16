@@ -47,7 +47,7 @@ function formatInr(value: number): string {
 
 function SkeletonCard() {
   return (
-    <div className="h-56 animate-pulse rounded-2xl border border-zinc-200 bg-white/70 p-5 dark:border-zinc-700 dark:bg-zinc-950/20" />
+    <div className="h-56 animate-pulse rounded-2xl bg-white/80 p-5 shadow-sm shadow-zinc-900/[0.04] dark:bg-zinc-950/30" />
   );
 }
 
@@ -95,7 +95,7 @@ export function RecommendedCards({ profile }: { profile: UserProfile }) {
   }, [requestBody]);
 
   return (
-    <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/40 sm:p-8">
+    <section className="rounded-3xl bg-white p-6 shadow-sm shadow-zinc-900/[0.06] dark:bg-zinc-900/45 dark:shadow-black/30 sm:p-8">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h2 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-2xl">
@@ -126,14 +126,14 @@ export function RecommendedCards({ profile }: { profile: UserProfile }) {
             return (
               <article
                 key={c.card_id}
-                className={`flex h-full flex-col overflow-hidden rounded-2xl border p-5 shadow-sm dark:border-zinc-700 ${
+                className={`flex h-full flex-col overflow-hidden rounded-2xl p-5 shadow-sm shadow-zinc-900/[0.05] dark:shadow-black/25 ${
                   best
-                    ? "border-emerald-200 bg-emerald-50/40 ring-1 ring-emerald-200 dark:border-emerald-900/40 dark:bg-emerald-950/25 dark:ring-emerald-900/40"
-                    : "border-zinc-200 bg-white/70 dark:bg-zinc-950/20"
+                    ? "bg-emerald-50/50 ring-1 ring-emerald-200/70 dark:bg-emerald-950/25 dark:ring-emerald-900/35"
+                    : "bg-white/90 dark:bg-zinc-950/35"
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <span className="rounded-full border border-zinc-200 bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">
+                  <span className="rounded-full border border-zinc-200/60 bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 dark:border-zinc-700/60 dark:bg-zinc-900 dark:text-zinc-200">
                     {best ? "Best match" : `Pick #${idx + 1}`}
                   </span>
                   <span className="rounded-full bg-blue-600/10 px-2.5 py-1 text-[11px] font-semibold text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">
@@ -149,7 +149,7 @@ export function RecommendedCards({ profile }: { profile: UserProfile }) {
                 </p>
 
                 <dl className="mt-4 text-sm">
-                  <div className="rounded-xl border border-zinc-200 bg-white/70 p-3 dark:border-zinc-700 dark:bg-zinc-900/40">
+                  <div className="rounded-xl bg-zinc-50/90 p-3 dark:bg-zinc-900/50">
                     <dt className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                       Yearly rewards
                     </dt>
