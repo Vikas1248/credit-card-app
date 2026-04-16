@@ -7,8 +7,7 @@ export type UserProfile = {
   spendContext?: {
     shopping?: {
       onlinePct: number; // 0..100
-      flipkartPct?: number; // 0..100 of online
-      amazonPct?: number; // 0..100 of online
+      preferredMerchant?: "none" | "flipkart" | "amazon";
     };
     dining?: {
       deliveryPct: number; // 0..100
@@ -16,10 +15,9 @@ export type UserProfile = {
       zomatoPct?: number; // 0..100 of delivery
     };
     travel?: {
-      modes: Array<"flights" | "trains" | "hotels" | "cabs">;
+      modes: Array<"flights" | "trains" | "hotels">;
       preferredAirline: "none" | "indigo" | "air_india" | "vistara";
       flightsPct: number; // 0..100 (share of travel spend via flights)
-      preferredAirlinePct?: number; // 0..100 of flights
     };
   };
 };
@@ -77,8 +75,12 @@ export function parseUserProfile(
       ? (ctx.shopping as Record<string, unknown>)
       : null;
   const shoppingOnlinePct = clampPct(shoppingRaw?.onlinePct, 70);
-  const flipkartPct = clampPct(shoppingRaw?.flipkartPct, 0);
-  const amazonPct = clampPct(shoppingRaw?.amazonPct, 0);
+  const preferredMerchant =
+    shoppingRaw?.preferredMerchant === "flipkart" ||
+    shoppingRaw?.preferredMerchant === "amazon" ||
+    shoppingRaw?.preferredMerchant === "none"
+      ? shoppingRaw.preferredMerchant
+      : "none";
 
   const diningRaw =
     ctx?.dining && typeof ctx.dining === "object"
@@ -97,8 +99,8 @@ export function parseUserProfile(
     .filter((v): v is string => typeof v === "string")
     .map((v) => v.trim().toLowerCase())
     .filter(
-      (v): v is "flights" | "trains" | "hotels" | "cabs" =>
-        v === "flights" || v === "trains" || v === "hotels" || v === "cabs"
+      (v): v is "flights" | "trains" | "hotels" =>
+        v === "flights" || v === "trains" || v === "hotels"
     )
     .slice(0, 4);
   const preferredAirline =
@@ -109,7 +111,6 @@ export function parseUserProfile(
       ? travelRaw.preferredAirline
       : "none";
   const flightsPct = clampPct(travelRaw?.flightsPct, 60);
-  const preferredAirlinePct = clampPct(travelRaw?.preferredAirlinePct, 0);
 
   return {
     ok: true,
@@ -122,8 +123,7 @@ export function parseUserProfile(
       spendContext: {
         shopping: {
           onlinePct: shoppingOnlinePct,
-          flipkartPct,
-          amazonPct,
+          preferredMerchant,
         },
         dining: {
           deliveryPct: diningDeliveryPct,
@@ -134,7 +134,6 @@ export function parseUserProfile(
           modes: travelModes,
           preferredAirline,
           flightsPct,
-          preferredAirlinePct,
         },
       },
     },

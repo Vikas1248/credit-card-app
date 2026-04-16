@@ -11,8 +11,7 @@ type UserProfile = {
   spendContext?: {
     shopping?: {
       onlinePct: number;
-      flipkartPct?: number;
-      amazonPct?: number;
+      preferredMerchant?: "none" | "flipkart" | "amazon";
     };
     dining?: {
       deliveryPct: number;
@@ -20,10 +19,9 @@ type UserProfile = {
       zomatoPct?: number;
     };
     travel?: {
-      modes: Array<"flights" | "trains" | "hotels" | "cabs">;
+      modes: Array<"flights" | "trains" | "hotels">;
       preferredAirline: "none" | "indigo" | "air_india" | "vistara";
       flightsPct: number;
-      preferredAirlinePct?: number;
     };
   };
 };

@@ -391,17 +391,17 @@ export default function Home() {
   const [shoppingOnlinePct, setShoppingOnlinePct] = useState(70);
   const [diningDeliveryPct, setDiningDeliveryPct] = useState(55);
   const [travelModes, setTravelModes] = useState<
-    Array<"flights" | "trains" | "hotels" | "cabs">
+    Array<"flights" | "trains" | "hotels">
   >([]);
   const [travelFlightsPct, setTravelFlightsPct] = useState(60);
-  const [shoppingFlipkartPct, setShoppingFlipkartPct] = useState(0);
-  const [shoppingAmazonPct, setShoppingAmazonPct] = useState(0);
   const [diningSwiggyPct, setDiningSwiggyPct] = useState(0);
   const [diningZomatoPct, setDiningZomatoPct] = useState(0);
   const [preferredAirline, setPreferredAirline] = useState<
     "none" | "indigo" | "air_india" | "vistara"
   >("none");
-  const [preferredAirlinePct, setPreferredAirlinePct] = useState(0);
+  const [shoppingPreferredMerchant, setShoppingPreferredMerchant] = useState<
+    "none" | "flipkart" | "amazon"
+  >("none");
   const [v2Profile, setV2Profile] = useState<{
     monthlySpend: number;
     topCategories: string[];
@@ -411,8 +411,7 @@ export default function Home() {
     spendContext?: {
       shopping?: {
         onlinePct: number;
-        flipkartPct?: number;
-        amazonPct?: number;
+        preferredMerchant?: "none" | "flipkart" | "amazon";
       };
       dining?: {
         deliveryPct: number;
@@ -420,10 +419,9 @@ export default function Home() {
         zomatoPct?: number;
       };
       travel?: {
-        modes: Array<"flights" | "trains" | "hotels" | "cabs">;
+        modes: Array<"flights" | "trains" | "hotels">;
         preferredAirline: "none" | "indigo" | "air_india" | "vistara";
         flightsPct: number;
-        preferredAirlinePct?: number;
       };
     };
   } | null>(null);
@@ -611,8 +609,7 @@ export default function Home() {
       spendContext: {
         shopping: {
           onlinePct: shoppingOnlinePct,
-          flipkartPct: shoppingFlipkartPct,
-          amazonPct: shoppingAmazonPct,
+          preferredMerchant: shoppingPreferredMerchant,
         },
         dining: {
           deliveryPct: diningDeliveryPct,
@@ -623,7 +620,6 @@ export default function Home() {
           modes: travelModes,
           preferredAirline,
           flightsPct: travelFlightsPct,
-          preferredAirlinePct,
         },
       },
     });
@@ -1181,33 +1177,27 @@ export default function Home() {
                           className="mt-2 w-full"
                         />
                       </label>
-                      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <label className="block">
-                          <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                            Flipkart share (of online): {shoppingFlipkartPct}%
-                          </span>
-                          <input
-                            type="range"
-                            min={0}
-                            max={100}
-                            value={shoppingFlipkartPct}
-                            onChange={(e) => setShoppingFlipkartPct(Number(e.target.value))}
-                            className="mt-2 w-full"
-                          />
-                        </label>
-                        <label className="block">
-                          <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                            Amazon share (of online): {shoppingAmazonPct}%
-                          </span>
-                          <input
-                            type="range"
-                            min={0}
-                            max={100}
-                            value={shoppingAmazonPct}
-                            onChange={(e) => setShoppingAmazonPct(Number(e.target.value))}
-                            className="mt-2 w-full"
-                          />
-                        </label>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {(
+                          [
+                            ["none", "No specific app"],
+                            ["flipkart", "Flipkart"],
+                            ["amazon", "Amazon"],
+                          ] as const
+                        ).map(([id, label]) => (
+                          <button
+                            key={id}
+                            type="button"
+                            onClick={() => setShoppingPreferredMerchant(id)}
+                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                              shoppingPreferredMerchant === id
+                                ? "border-blue-500 bg-blue-600 text-white"
+                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
                       </div>
                     </div>
 
@@ -1268,7 +1258,6 @@ export default function Home() {
                             ["flights", "Flights"],
                             ["trains", "Trains"],
                             ["hotels", "Hotels"],
-                            ["cabs", "Cabs"],
                           ] as const
                         ).map(([id, label]) => {
                           const active = travelModes.includes(id);
@@ -1326,19 +1315,6 @@ export default function Home() {
                           />
                         </label>
                       </div>
-                      <label className="mt-3 block">
-                        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                          Preferred airline share (of flights): {preferredAirlinePct}%
-                        </span>
-                        <input
-                          type="range"
-                          min={0}
-                          max={100}
-                          value={preferredAirlinePct}
-                          onChange={(e) => setPreferredAirlinePct(Number(e.target.value))}
-                          className="mt-2 w-full"
-                        />
-                      </label>
                     </div>
 
                     <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">

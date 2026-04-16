@@ -221,25 +221,21 @@ export function calculateYearlyValue(card: CardRowForScoring, profile: UserProfi
   const shoppingCtx = profile.spendContext?.shopping;
   if (shoppingCtx) {
     const onlineMonthly = spendSplit.shopping * (shoppingCtx.onlinePct / 100);
-    const flipkartShare = Math.max(0, Math.min(1, (shoppingCtx.flipkartPct ?? 0) / 100));
-    const amazonShare = Math.max(0, Math.min(1, (shoppingCtx.amazonPct ?? 0) / 100));
-    const otherShare = Math.max(0, 1 - flipkartShare - amazonShare);
+    const merchantShare = 0.85; // assume most online spend on the chosen merchant
 
-    if (flipkartShare > 0 && hay.includes("flipkart")) {
+    if (shoppingCtx.preferredMerchant === "flipkart" && hay.includes("flipkart")) {
       const boostedPct = pctNearKeyword(card.reward_rate, "flipkart") ?? toPctMaybe(card.reward_rate);
       if (typeof boostedPct === "number" && boostedPct > baseShoppingPct) {
-        yearlyReward += onlineMonthly * flipkartShare * 12 * ((boostedPct - baseShoppingPct) / 100);
+        yearlyReward += onlineMonthly * merchantShare * 12 * ((boostedPct - baseShoppingPct) / 100);
       }
     }
 
-    if (amazonShare > 0 && hay.includes("amazon")) {
+    if (shoppingCtx.preferredMerchant === "amazon" && hay.includes("amazon")) {
       const boostedPct = pctNearKeyword(card.reward_rate, "amazon") ?? toPctMaybe(card.reward_rate);
       if (typeof boostedPct === "number" && boostedPct > baseShoppingPct) {
-        yearlyReward += onlineMonthly * amazonShare * 12 * ((boostedPct - baseShoppingPct) / 100);
+        yearlyReward += onlineMonthly * merchantShare * 12 * ((boostedPct - baseShoppingPct) / 100);
       }
     }
-
-    void otherShare;
   }
 
   const diningCtx = profile.spendContext?.dining;
@@ -275,12 +271,8 @@ export function calculateYearlyValue(card: CardRowForScoring, profile: UserProfi
       const flightsShare = travelCtx.modes.includes("flights")
         ? travelCtx.flightsPct / 100
         : 0.35;
-      const airlineShare = Math.max(
-        0,
-        Math.min(1, (travelCtx.preferredAirlinePct ?? 0) / 100)
-      );
       const flightsMonthly = spendSplit.travel * flightsShare;
-      const airlineMonthly = flightsMonthly * (airlineShare > 0 ? airlineShare : 0.6);
+      const airlineMonthly = flightsMonthly * 0.85; // assume most flights follow stated preference
       yearlyReward += airlineMonthly * 12 * ((boostedPct - baseTravelPct) / 100);
     }
   }
