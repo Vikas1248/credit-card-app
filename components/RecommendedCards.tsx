@@ -133,15 +133,7 @@ export function RecommendedCards({ profile }: { profile: UserProfile }) {
                   {c.bank}
                 </p>
 
-                <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
-                  <div className="rounded-xl border border-zinc-200 bg-white/70 p-3 dark:border-zinc-700 dark:bg-zinc-900/40">
-                    <dt className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                      Net yearly gain
-                    </dt>
-                    <dd className="mt-1 text-base font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-                      {formatInr(c.netGain)}
-                    </dd>
-                  </div>
+                <dl className="mt-4 text-sm">
                   <div className="rounded-xl border border-zinc-200 bg-white/70 p-3 dark:border-zinc-700 dark:bg-zinc-900/40">
                     <dt className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                       Yearly rewards

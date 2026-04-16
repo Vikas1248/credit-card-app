@@ -1,4 +1,8 @@
 import { rewardCalculator, type SpendByCategory } from "@/lib/recommend/rewardCalculator";
+import {
+  rewardPctForSpendCategory,
+  type SpendCategorySlug,
+} from "@/lib/spendCategories";
 import type { UserProfile } from "@/lib/recommendV2/userProfile";
 
 export type CardRowForScoring = {
@@ -72,11 +76,57 @@ function textHaystack(card: CardRowForScoring): string {
   } ${card.reward_rate ?? ""}`.toLowerCase();
 }
 
+function profileCategorySlugs(profile: UserProfile): SpendCategorySlug[] {
+  const allowed: SpendCategorySlug[] = ["dining", "travel", "shopping", "fuel"];
+  return profile.topCategories
+    .map((c) => c.toLowerCase())
+    .filter((c): c is SpendCategorySlug =>
+      allowed.includes(c as SpendCategorySlug)
+    );
+}
+
+function categoryPct(card: CardRowForScoring, slug: SpendCategorySlug): number {
+  const pct = rewardPctForSpendCategory(
+    {
+      card_name: card.card_name,
+      bank: card.bank,
+      network: (card.network as any) ?? undefined,
+      reward_type: card.reward_type,
+      best_for: card.best_for,
+      reward_rate: card.reward_rate,
+      metadata: card.metadata ?? null,
+      key_benefits: card.key_benefits ?? null,
+      dining_reward: card.dining_reward ?? null,
+      travel_reward: card.travel_reward ?? null,
+      shopping_reward: card.shopping_reward ?? null,
+      fuel_reward: card.fuel_reward ?? null,
+    },
+    slug
+  );
+  return typeof pct === "number" && Number.isFinite(pct) && pct > 0 ? pct : 0;
+}
+
 function categoryMatchScore(card: CardRowForScoring, profile: UserProfile): number {
-  const hay = textHaystack(card);
-  const cats = profile.topCategories.map((c) => c.toLowerCase());
-  const hits = cats.filter((c) => hay.includes(c)).length;
-  return clamp01(hits / Math.max(1, cats.length));
+  const focusCats = profileCategorySlugs(profile);
+  if (focusCats.length === 0) return 0.5;
+
+  const focusPcts = focusCats.map((slug) => categoryPct(card, slug));
+  const avgFocusPct =
+    focusPcts.reduce((sum, value) => sum + value, 0) / Math.max(1, focusPcts.length);
+  const bestFocusedPct = Math.max(...focusPcts, 0);
+
+  // Strongly prefer cards with genuinely good earn on selected focus categories.
+  return clamp01(avgFocusPct / 8) * 0.65 + clamp01(bestFocusedPct / 10) * 0.35;
+}
+
+function focusCategoryPenalty(card: CardRowForScoring, profile: UserProfile): number {
+  const focusCats = profileCategorySlugs(profile);
+  if (focusCats.length === 0) return 0;
+
+  const weakestFocusedPct = Math.min(...focusCats.map((slug) => categoryPct(card, slug)));
+  if (weakestFocusedPct >= 3) return 0;
+  if (weakestFocusedPct > 0) return 0.08;
+  return 0.18;
 }
 
 function lifestyleFitScore(card: CardRowForScoring, profile: UserProfile): number {
@@ -174,14 +224,17 @@ export function scoreCard(card: CardRowForScoring, profile: UserProfile): number
         : clamp01(0.8 - 0.7 * (card.annual_fee > 500 ? 1 : 0));
 
   const typeAlign = rewardTypeAlignment(card, profile); // 0..1
+  const focusPenalty = focusCategoryPenalty(card, profile);
 
-  const score01 =
+  const score01 = clamp01(
     0.3 * cat +
     0.3 * rewardValue * typeAlign +
     0.2 * feeEff +
     0.1 * lifestyle +
-    0.1 * premium;
+    0.1 * premium -
+    focusPenalty
+  );
 
-  return Math.round(clamp01(score01) * 100);
+  return Math.round(score01 * 100);
 }
 
