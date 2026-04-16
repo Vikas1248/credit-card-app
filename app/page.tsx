@@ -840,8 +840,20 @@ export default function Home() {
               Find your next credit card faster
             </h1>
             <p className="mt-4 text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-              Compare and get the best card based on your spend.
+              AI helps match your spend pattern to the right cards, explain each pick,
+              and highlight likely yearly rewards.
             </p>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-300">
+                AI spend matching
+              </span>
+              <span className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-indigo-300">
+                AI card explanations
+              </span>
+              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">
+                AI compare insights
+              </span>
+            </div>
           </div>
 
           <form
@@ -870,6 +882,38 @@ export default function Home() {
             </div>
           </form>
         </header>
+
+        <section
+          className="mt-5 rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/50 sm:p-5"
+          aria-label="AI capabilities"
+        >
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl border border-zinc-200/80 bg-zinc-50/70 p-3 dark:border-zinc-700 dark:bg-zinc-900/50">
+              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Match
+              </p>
+              <p className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                Converts your wizard inputs into a scored shortlist.
+              </p>
+            </div>
+            <div className="rounded-xl border border-zinc-200/80 bg-zinc-50/70 p-3 dark:border-zinc-700 dark:bg-zinc-900/50">
+              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Explain
+              </p>
+              <p className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                Adds one-line AI reasons for why each recommendation fits.
+              </p>
+            </div>
+            <div className="rounded-xl border border-zinc-200/80 bg-zinc-50/70 p-3 dark:border-zinc-700 dark:bg-zinc-900/50">
+              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Compare
+              </p>
+              <p className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                Generates side-by-side AI guidance for close card choices.
+              </p>
+            </div>
+          </div>
+        </section>
 
         <div className="mt-2 flex flex-col gap-16 sm:mt-3 sm:gap-20">
         <section
@@ -982,8 +1026,8 @@ export default function Home() {
                   Recommended cards for you
                 </h2>
                 <p className={sectionLeadClass}>
-                  Tell us your spend pattern and preferences. We’ll shortlist cards and
-                  explain the “why” in one line.
+                  Tell us your spend pattern and preferences. AI ranks your best-fit cards,
+                  estimates yearly rewards, and explains the "why" in one line.
                 </p>
               </div>
             </div>
