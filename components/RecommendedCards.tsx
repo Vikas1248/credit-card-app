@@ -8,6 +8,21 @@ type UserProfile = {
   preferredRewardType: "cashback" | "points" | "miles";
   feeSensitivity: "low" | "medium" | "high";
   lifestyle: string[];
+  spendContext?: {
+    shopping?: {
+      primaryApp: "mixed" | "flipkart" | "amazon" | "myntra" | "ajio";
+      onlinePct: number;
+    };
+    dining?: {
+      primaryApp: "mixed" | "swiggy" | "zomato";
+      deliveryPct: number;
+    };
+    travel?: {
+      modes: Array<"flights" | "trains" | "hotels" | "cabs">;
+      preferredAirline: "none" | "indigo" | "air_india" | "vistara";
+      flightsPct: number;
+    };
+  };
 };
 
 type RecommendedCard = {

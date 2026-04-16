@@ -46,6 +46,35 @@ function toPctMaybe(rewardRateText: string | null): number | null {
   return Number.isFinite(pct) && pct > 0 ? pct : null;
 }
 
+function pctNearKeyword(text: string | null, keyword: string): number | null {
+  if (!text) return null;
+  const t = text.toLowerCase();
+  const k = keyword.toLowerCase();
+  const idx = t.indexOf(k);
+  if (idx < 0) return null;
+  const window = t.slice(
+    Math.max(0, idx - 60),
+    Math.min(t.length, idx + k.length + 60)
+  );
+  const matches = [...window.matchAll(/(\d+(\.\d+)?)\s*%/g)].map((m) => Number(m[1]));
+  const valid = matches.filter((n) => Number.isFinite(n) && n > 0 && n <= 25);
+  if (valid.length === 0) return null;
+  return Math.max(...valid);
+}
+
+function airlineKeyword(
+  id: UserProfile["spendContext"] extends infer X
+    ? X extends { travel?: { preferredAirline: infer A } }
+      ? A
+      : never
+    : never
+): string | null {
+  if (id === "indigo") return "indigo";
+  if (id === "air_india") return "air india";
+  if (id === "vistara") return "vistara";
+  return null;
+}
+
 function buildSpendSplit(profile: UserProfile): SpendByCategory {
   // Heuristic split:
   // - 60% into top categories (evenly)
@@ -178,6 +207,52 @@ export function calculateYearlyValue(card: CardRowForScoring, profile: UserProfi
       yearlyReward = profile.monthlySpend * 12 * (pct / 100);
     } else {
       yearlyReward = 0;
+    }
+  }
+
+  // Optional spend context uplift: adjust only when user specifies a primary app/airline
+  // and card text clearly indicates the same co-brand / affinity.
+  const hay = textHaystack(card);
+
+  const baseShoppingPct = categoryPct(card, "shopping");
+  const baseDiningPct = categoryPct(card, "dining");
+  const baseTravelPct = categoryPct(card, "travel");
+
+  const shoppingCtx = profile.spendContext?.shopping;
+  if (shoppingCtx && shoppingCtx.primaryApp !== "mixed" && hay.includes(shoppingCtx.primaryApp)) {
+    const boostedPct =
+      pctNearKeyword(card.reward_rate, shoppingCtx.primaryApp) ?? toPctMaybe(card.reward_rate);
+    if (typeof boostedPct === "number" && boostedPct > baseShoppingPct) {
+      const merchantShare = 0.7;
+      const merchantMonthly =
+        spendSplit.shopping * (shoppingCtx.onlinePct / 100) * merchantShare;
+      yearlyReward += merchantMonthly * 12 * ((boostedPct - baseShoppingPct) / 100);
+    }
+  }
+
+  const diningCtx = profile.spendContext?.dining;
+  if (diningCtx && diningCtx.primaryApp !== "mixed" && hay.includes(diningCtx.primaryApp)) {
+    const boostedPct =
+      pctNearKeyword(card.reward_rate, diningCtx.primaryApp) ?? toPctMaybe(card.reward_rate);
+    if (typeof boostedPct === "number" && boostedPct > baseDiningPct) {
+      const appShare = 0.75;
+      const appMonthly =
+        spendSplit.dining * (diningCtx.deliveryPct / 100) * appShare;
+      yearlyReward += appMonthly * 12 * ((boostedPct - baseDiningPct) / 100);
+    }
+  }
+
+  const travelCtx = profile.spendContext?.travel;
+  const airlineKey = travelCtx ? airlineKeyword(travelCtx.preferredAirline) : null;
+  if (travelCtx && airlineKey && hay.includes(airlineKey)) {
+    const boostedPct =
+      pctNearKeyword(card.reward_rate, airlineKey) ?? toPctMaybe(card.reward_rate);
+    if (typeof boostedPct === "number" && boostedPct > baseTravelPct) {
+      const flightsShare = travelCtx.modes.includes("flights")
+        ? travelCtx.flightsPct / 100
+        : 0.35;
+      const flightsMonthly = spendSplit.travel * flightsShare;
+      yearlyReward += flightsMonthly * 12 * ((boostedPct - baseTravelPct) / 100);
     }
   }
 

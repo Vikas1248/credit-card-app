@@ -110,11 +110,37 @@ const MONTHLY_SPEND_BAND_OPTIONS: {
   id: MonthlySpendBandId;
   label: string;
   multiplier: number;
+  minTotal: number;
+  maxTotal: number | null;
 }[] = [
-  { id: "under_20k", label: "Under Rs20k / month", multiplier: 0.7 },
-  { id: "20k_50k", label: "Rs20k-Rs50k / month", multiplier: 1 },
-  { id: "50k_100k", label: "Rs50k-Rs100k / month", multiplier: 1.45 },
-  { id: "100k_plus", label: "Rs100k+ / month", multiplier: 2 },
+  {
+    id: "under_20k",
+    label: "Under Rs20k / month",
+    multiplier: 0.7,
+    minTotal: 0,
+    maxTotal: 20000,
+  },
+  {
+    id: "20k_50k",
+    label: "Rs20k-Rs50k / month",
+    multiplier: 1,
+    minTotal: 20000,
+    maxTotal: 50000,
+  },
+  {
+    id: "50k_100k",
+    label: "Rs50k-Rs100k / month",
+    multiplier: 1.45,
+    minTotal: 50000,
+    maxTotal: 100000,
+  },
+  {
+    id: "100k_plus",
+    label: "Rs100k+ / month",
+    multiplier: 2,
+    minTotal: 100000,
+    maxTotal: null,
+  },
 ];
 
 const FEE_PREFERENCE_OPTIONS: { id: FeePreferenceId; label: string }[] = [
@@ -363,12 +389,42 @@ export default function Home() {
   const [spendShopping, setSpendShopping] = useState("12000");
   const [spendFuel, setSpendFuel] = useState("6000");
   const [showV2Recommendations, setShowV2Recommendations] = useState(false);
+  const [shoppingPrimaryApp, setShoppingPrimaryApp] = useState<
+    "mixed" | "flipkart" | "amazon" | "myntra" | "ajio"
+  >("mixed");
+  const [shoppingOnlinePct, setShoppingOnlinePct] = useState(70);
+  const [diningPrimaryApp, setDiningPrimaryApp] = useState<"mixed" | "swiggy" | "zomato">(
+    "mixed"
+  );
+  const [diningDeliveryPct, setDiningDeliveryPct] = useState(55);
+  const [travelModes, setTravelModes] = useState<
+    Array<"flights" | "trains" | "hotels" | "cabs">
+  >([]);
+  const [preferredAirline, setPreferredAirline] = useState<
+    "none" | "indigo" | "air_india" | "vistara"
+  >("none");
+  const [travelFlightsPct, setTravelFlightsPct] = useState(60);
   const [v2Profile, setV2Profile] = useState<{
     monthlySpend: number;
     topCategories: string[];
     preferredRewardType: "cashback" | "points" | "miles";
     feeSensitivity: "low" | "medium" | "high";
     lifestyle: string[];
+    spendContext?: {
+      shopping?: {
+        primaryApp: "mixed" | "flipkart" | "amazon" | "myntra" | "ajio";
+        onlinePct: number;
+      };
+      dining?: {
+        primaryApp: "mixed" | "swiggy" | "zomato";
+        deliveryPct: number;
+      };
+      travel?: {
+        modes: Array<"flights" | "trains" | "hotels" | "cabs">;
+        preferredAirline: "none" | "indigo" | "air_india" | "vistara";
+        flightsPct: number;
+      };
+    };
   } | null>(null);
   const [compareIdA, setCompareIdA] = useState("");
   const [compareIdB, setCompareIdB] = useState("");
@@ -423,6 +479,39 @@ export default function Home() {
         selected.size === 0 || selected.has(slug) ? 1.3 : 0.78;
       result[slug] = Math.max(0, Math.round((result[slug] * focusMultiplier) / 100) * 100);
     }
+
+    const total =
+      result.dining + result.travel + result.shopping + result.fuel;
+    let targetTotal = total;
+    if (total < spendBand.minTotal) {
+      targetTotal = spendBand.minTotal;
+    } else if (spendBand.maxTotal != null && total > spendBand.maxTotal) {
+      targetTotal = spendBand.maxTotal;
+    }
+
+    if (total > 0 && targetTotal !== total) {
+      const scale = targetTotal / total;
+      for (const slug of ["dining", "travel", "shopping", "fuel"] as const) {
+        result[slug] = Math.max(
+          0,
+          Math.round((result[slug] * scale) / 100) * 100
+        );
+      }
+
+      const adjustedTotal =
+        result.dining + result.travel + result.shopping + result.fuel;
+      const roundingDelta = targetTotal - adjustedTotal;
+      if (roundingDelta !== 0) {
+        const primarySlug =
+          topCategories[0] ??
+          (["shopping", "dining", "travel", "fuel"] as const)[0];
+        result[primarySlug] = Math.max(
+          0,
+          result[primarySlug] + roundingDelta
+        );
+      }
+    }
+
     return result;
   };
 
@@ -524,6 +613,15 @@ export default function Home() {
       preferredRewardType: "cashback",
       feeSensitivity,
       lifestyle: lifestyleNeeds,
+      spendContext: {
+        shopping: { primaryApp: shoppingPrimaryApp, onlinePct: shoppingOnlinePct },
+        dining: { primaryApp: diningPrimaryApp, deliveryPct: diningDeliveryPct },
+        travel: {
+          modes: travelModes,
+          preferredAirline,
+          flightsPct: travelFlightsPct,
+        },
+      },
     });
     setShowV2Recommendations(true);
   };
@@ -1066,6 +1164,191 @@ export default function Home() {
                     </div>
                   ) : null}
                 </div>
+
+                <details className="group mt-6 rounded-2xl border border-zinc-200 bg-white/70 px-4 py-3 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/20">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    <span>Optional: fine-tune rewards</span>
+                    <span
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 transition group-open:rotate-180 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                      aria-hidden
+                    >
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </span>
+                  </summary>
+
+                  <div className="mt-4 space-y-5">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                        Shopping
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {(
+                          [
+                            ["mixed", "Mixed"],
+                            ["flipkart", "Flipkart"],
+                            ["amazon", "Amazon"],
+                            ["myntra", "Myntra"],
+                            ["ajio", "Ajio"],
+                          ] as const
+                        ).map(([id, label]) => (
+                          <button
+                            key={id}
+                            type="button"
+                            onClick={() => setShoppingPrimaryApp(id)}
+                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                              shoppingPrimaryApp === id
+                                ? "border-blue-500 bg-blue-600 text-white"
+                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                      <label className="mt-3 block">
+                        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                          Online shopping share: {shoppingOnlinePct}%
+                        </span>
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={shoppingOnlinePct}
+                          onChange={(e) => setShoppingOnlinePct(Number(e.target.value))}
+                          className="mt-2 w-full"
+                        />
+                      </label>
+                    </div>
+
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                        Dining
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {(
+                          [
+                            ["mixed", "Mixed"],
+                            ["swiggy", "Swiggy"],
+                            ["zomato", "Zomato"],
+                          ] as const
+                        ).map(([id, label]) => (
+                          <button
+                            key={id}
+                            type="button"
+                            onClick={() => setDiningPrimaryApp(id)}
+                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                              diningPrimaryApp === id
+                                ? "border-blue-500 bg-blue-600 text-white"
+                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                      <label className="mt-3 block">
+                        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                          Delivery share: {diningDeliveryPct}%
+                        </span>
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={diningDeliveryPct}
+                          onChange={(e) => setDiningDeliveryPct(Number(e.target.value))}
+                          className="mt-2 w-full"
+                        />
+                      </label>
+                    </div>
+
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                        Travel
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {(
+                          [
+                            ["flights", "Flights"],
+                            ["trains", "Trains"],
+                            ["hotels", "Hotels"],
+                            ["cabs", "Cabs"],
+                          ] as const
+                        ).map(([id, label]) => {
+                          const active = travelModes.includes(id);
+                          return (
+                            <button
+                              key={id}
+                              type="button"
+                              onClick={() =>
+                                setTravelModes((prev) =>
+                                  active ? prev.filter((x) => x !== id) : [...prev, id]
+                                )
+                              }
+                              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                                active
+                                  ? "border-blue-500 bg-blue-600 text-white"
+                                  : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <label className="block">
+                          <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                            Preferred airline
+                          </span>
+                          <select
+                            value={preferredAirline}
+                            onChange={(e) =>
+                              setPreferredAirline(e.target.value as any)
+                            }
+                            className={inputClass}
+                          >
+                            <option value="none">No preference</option>
+                            <option value="indigo">IndiGo</option>
+                            <option value="air_india">Air India</option>
+                            <option value="vistara">Vistara</option>
+                          </select>
+                        </label>
+                        <label className="block">
+                          <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                            Flights share: {travelFlightsPct}%
+                          </span>
+                          <input
+                            type="range"
+                            min={0}
+                            max={100}
+                            value={travelFlightsPct}
+                            onChange={(e) =>
+                              setTravelFlightsPct(Number(e.target.value))
+                            }
+                            className="mt-2 w-full"
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+                      This helps estimate rewards for co-branded cards (Flipkart/Amazon/IndiGo)
+                      more realistically. You can skip it.
+                    </p>
+                  </div>
+                </details>
 
                 <div className="mt-5 flex flex-wrap gap-2">
                   <button
