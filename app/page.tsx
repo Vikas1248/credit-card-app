@@ -10,6 +10,7 @@ import { CardTopRewardTag } from "@/components/card-top-reward-tag";
 import { FeaturedCardsCarousel } from "@/components/featured-cards-carousel";
 import { HdfcApplyLink } from "@/components/hdfc-apply-link";
 import { IndusIndApplyLink } from "@/components/indusind-apply-link";
+import { RecommendedCards } from "@/components/RecommendedCards";
 import { SbiApplyLink } from "@/components/sbi-apply-link";
 import { isAmexCardUsingGenericApply } from "@/lib/cards/amexGenericApply";
 import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
@@ -56,27 +57,6 @@ type RewardBreakdown = {
   travel: number;
   shopping: number;
   fuel: number;
-};
-
-type SpendRecommendation = {
-  id: string;
-  card_name: string;
-  bank: string;
-  network: CardNetwork;
-  annual_fee: number;
-  reward_type: "cashback" | "points";
-  reward_rate: string | null;
-  lounge_access: string | null;
-  best_for: string | null;
-  yearly_reward_inr: number;
-  breakdown: RewardBreakdown;
-  category_reward_pct?: {
-    dining: number | null;
-    travel: number | null;
-    shopping: number | null;
-    fuel: number | null;
-  };
-  explanation?: string | null;
 };
 
 const CATEGORY_LABELS: { key: keyof RewardBreakdown; label: string }[] = [
@@ -361,19 +341,6 @@ function SiteHeader() {
   );
 }
 
-function PicksSkeleton() {
-  return (
-    <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div
-          key={i}
-          className="h-56 animate-pulse rounded-2xl bg-zinc-100 dark:bg-zinc-800"
-        />
-      ))}
-    </div>
-  );
-}
-
 export default function Home() {
   const router = useRouter();
   const [cards, setCards] = useState<CreditCard[]>([]);
@@ -395,19 +362,14 @@ export default function Home() {
   const [spendTravel, setSpendTravel] = useState("5000");
   const [spendShopping, setSpendShopping] = useState("12000");
   const [spendFuel, setSpendFuel] = useState("6000");
-  const [recommendationLoading, setRecommendationLoading] = useState(false);
-  const [recommendationError, setRecommendationError] = useState<string | null>(
-    null
-  );
-  const [recommendationNotice, setRecommendationNotice] = useState<string | null>(
-    null
-  );
-  const [recommendations, setRecommendations] = useState<SpendRecommendation[]>(
-    []
-  );
-  const [recommendationSummary, setRecommendationSummary] = useState<
-    string | null
-  >(null);
+  const [showV2Recommendations, setShowV2Recommendations] = useState(false);
+  const [v2Profile, setV2Profile] = useState<{
+    monthlySpend: number;
+    topCategories: string[];
+    preferredRewardType: "cashback" | "points" | "miles";
+    feeSensitivity: "low" | "medium" | "high";
+    lifestyle: string[];
+  } | null>(null);
   const [compareIdA, setCompareIdA] = useState("");
   const [compareIdB, setCompareIdB] = useState("");
   const [featuredFromAi, setFeaturedFromAi] = useState<
@@ -462,121 +424,6 @@ export default function Home() {
       result[slug] = Math.max(0, Math.round((result[slug] * focusMultiplier) / 100) * 100);
     }
     return result;
-  };
-
-  const recommendationPreferenceScore = (card: SpendRecommendation): number => {
-    let score = 0;
-
-    if (feePreference === "lifetime_free") {
-      score += card.annual_fee === 0 ? 2.5 : -5;
-    } else if (feePreference === "low_fee") {
-      if (card.annual_fee === 0) score += 2.2;
-      else if (card.annual_fee <= 500) score += 1.6;
-      else if (card.annual_fee <= 1000) score += 1;
-      else if (card.annual_fee > 2500) score -= 1.2;
-    }
-
-    const categoryPct = card.category_reward_pct;
-    if (categoryPct && topCategories.length > 0) {
-      for (const slug of topCategories) {
-        const pct = categoryPct[slug];
-        if (typeof pct === "number" && Number.isFinite(pct)) {
-          score += Math.min(2, pct / 3);
-        }
-      }
-    }
-
-    const haystack =
-      `${card.reward_rate ?? ""} ${card.best_for ?? ""} ${card.lounge_access ?? ""} ${card.card_name}`.toLowerCase();
-    for (const need of lifestyleNeeds) {
-      if (
-        (need === "movie_offer" &&
-          (haystack.includes("movie") ||
-            haystack.includes("bookmyshow") ||
-            haystack.includes("cinema"))) ||
-        (need === "lounge_domestic" &&
-          (haystack.includes("domestic lounge") ||
-            haystack.includes("domestic"))) ||
-        (need === "lounge_international" &&
-          (haystack.includes("international lounge") ||
-            haystack.includes("priority pass") ||
-            haystack.includes("international"))) ||
-        (need === "golf" && haystack.includes("golf"))
-      ) {
-        score += 1.4;
-      }
-    }
-    return score;
-  };
-
-  const recommendationText = (
-    card: SpendRecommendation,
-    sourceCard: CreditCard | null
-  ): string => {
-    const metaText =
-      sourceCard?.metadata != null ? JSON.stringify(sourceCard.metadata) : "";
-    return [
-      card.card_name,
-      card.bank,
-      card.reward_rate ?? "",
-      card.best_for ?? "",
-      card.lounge_access ?? "",
-      sourceCard?.key_benefits ?? "",
-      metaText,
-    ]
-      .join(" ")
-      .toLowerCase();
-  };
-
-  const cardMatchesLifestyleNeeds = (
-    card: SpendRecommendation,
-    sourceCard: CreditCard | null
-  ): boolean => {
-    if (lifestyleNeeds.length === 0) return true;
-    const text = recommendationText(card, sourceCard);
-    for (const need of lifestyleNeeds) {
-      const matched =
-        (need === "movie_offer" &&
-          (text.includes("movie") ||
-            text.includes("bookmyshow") ||
-            text.includes("cinema"))) ||
-        (need === "lounge_domestic" &&
-          (text.includes("domestic lounge") || text.includes("domestic"))) ||
-        (need === "lounge_international" &&
-          (text.includes("international lounge") ||
-            text.includes("priority pass") ||
-            text.includes("international"))) ||
-        (need === "golf" && text.includes("golf"));
-      if (!matched) return false;
-    }
-    return true;
-  };
-
-  const cardMatchesTopCategorySelection = (card: SpendRecommendation): boolean => {
-    if (topCategories.length === 0) return true;
-    const pct = card.category_reward_pct;
-    if (!pct) return false;
-    const hasSelectedCategoryEarn = topCategories.some(
-      (slug) => typeof pct[slug] === "number" && (pct[slug] ?? 0) > 0
-    );
-    return hasSelectedCategoryEarn;
-  };
-
-  const cardMatchesFeePreference = (card: SpendRecommendation): boolean => {
-    if (feePreference === "lifetime_free") return card.annual_fee === 0;
-    if (feePreference === "low_fee") return card.annual_fee <= 1000;
-    return true;
-  };
-
-  const recommendationMatchesSelections = (
-    card: SpendRecommendation,
-    sourceCard: CreditCard | null
-  ): boolean => {
-    return (
-      cardMatchesFeePreference(card) &&
-      cardMatchesTopCategorySelection(card) &&
-      cardMatchesLifestyleNeeds(card, sourceCard)
-    );
   };
 
   const loadCards = async () => {
@@ -651,102 +498,34 @@ export default function Home() {
     };
   }, [cards]);
 
-  const loadRecommendations = async () => {
-    try {
-      setRecommendationLoading(true);
-      setRecommendationError(null);
-      setRecommendationNotice(null);
-      setRecommendationSummary(null);
+  const loadRecommendations = () => {
+    const wizardSpend = buildWizardSpendPlan();
+    const dining = wizardSpend.dining;
+    const travel = wizardSpend.travel;
+    const shopping = wizardSpend.shopping;
+    const fuel = wizardSpend.fuel;
 
-      const wizardSpend = buildWizardSpendPlan();
-      const dining = wizardSpend.dining;
-      const travel = wizardSpend.travel;
-      const shopping = wizardSpend.shopping;
-      const fuel = wizardSpend.fuel;
-      setSpendDining(String(dining));
-      setSpendTravel(String(travel));
-      setSpendShopping(String(shopping));
-      setSpendFuel(String(fuel));
-      const fields = [
-        { name: "Dining", value: dining },
-        { name: "Travel", value: travel },
-        { name: "Shopping", value: shopping },
-        { name: "Fuel", value: fuel },
-      ];
-      for (const f of fields) {
-        if (!Number.isFinite(f.value) || f.value < 0) {
-          throw new Error(
-            `Please enter a valid non-negative monthly spend for ${f.name}.`
-          );
-        }
-      }
+    setSpendDining(String(dining));
+    setSpendTravel(String(travel));
+    setSpendShopping(String(shopping));
+    setSpendFuel(String(fuel));
 
-      const response = await fetch("/api/cards/recommend", {
-        method: "POST",
-        cache: "no-store",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          dining,
-          travel,
-          shopping,
-          fuel,
-          profile: {
-            top_categories: topCategories,
-            fee_preference: feePreference,
-            lifestyle_needs: lifestyleNeeds,
-            exclude_card_ids: existingCardIds,
-          },
-        }),
-      });
+    const monthlySpend = dining + travel + shopping + fuel;
+    const feeSensitivity =
+      feePreference === "lifetime_free"
+        ? "high"
+        : feePreference === "low_fee"
+          ? "medium"
+          : "low";
 
-      const result: {
-        recommendations?: SpendRecommendation[];
-        summary_text?: string | null;
-        error?: string;
-      } = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error ?? "Failed to fetch recommendations.");
-      }
-      setRecommendationSummary(result.summary_text ?? null);
-
-      const raw = result.recommendations ?? [];
-      const sourceCardById = new Map(cards.map((c) => [c.id, c] as const));
-      const filtered = raw.filter((rec) => !existingCardIds.includes(rec.id));
-      const strictMatches = filtered.filter((rec) =>
-        recommendationMatchesSelections(rec, sourceCardById.get(rec.id) ?? null)
-      );
-      const feeAndCategoryMatches = filtered.filter(
-        (rec) =>
-          cardMatchesFeePreference(rec) && cardMatchesTopCategorySelection(rec)
-      );
-      const feeOnlyMatches = filtered.filter((rec) => cardMatchesFeePreference(rec));
-
-      let finalMatches = strictMatches;
-      if (finalMatches.length === 0) finalMatches = feeAndCategoryMatches;
-      if (finalMatches.length === 0) finalMatches = feeOnlyMatches;
-      if (finalMatches.length === 0) finalMatches = filtered;
-
-      if (strictMatches.length === 0) {
-        setRecommendationNotice(
-          "No exact matches found. Showing nearest matches based on your spend and preferences."
-        );
-      }
-
-      const ranked = [...finalMatches].sort((a, b) => {
-        const scoreA = a.yearly_reward_inr + recommendationPreferenceScore(a) * 1200;
-        const scoreB = b.yearly_reward_inr + recommendationPreferenceScore(b) * 1200;
-        return scoreB - scoreA;
-      });
-      setRecommendations(ranked.slice(0, 3));
-    } catch (fetchError) {
-      const message =
-        fetchError instanceof Error ? fetchError.message : "Unexpected error";
-      setRecommendationError(message);
-      setRecommendationNotice(null);
-      setRecommendationSummary(null);
-    } finally {
-      setRecommendationLoading(false);
-    }
+    setV2Profile({
+      monthlySpend,
+      topCategories: topCategories,
+      preferredRewardType: "cashback",
+      feeSensitivity,
+      lifestyle: lifestyleNeeds,
+    });
+    setShowV2Recommendations(true);
   };
 
   const cardsSortedByName = useMemo(
@@ -1316,18 +1095,10 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => void loadRecommendations()}
-                    disabled={recommendationLoading || wizardStep !== 6}
+                    disabled={wizardStep !== 6}
                     className={btnPrimary}
-                    aria-busy={recommendationLoading}
                   >
-                    {recommendationLoading ? (
-                      <>
-                        <Spinner className="h-4 w-4 text-white" />
-                        Finding your best cards...
-                      </>
-                    ) : (
-                      "Show my recommendations"
-                    )}
+                    Show my recommendations
                   </button>
                 </div>
               </div>
@@ -1415,219 +1186,9 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="sr-only" aria-live="polite">
-              {recommendationError ? recommendationError : ""}
-            </div>
-            {recommendationError ? (
-              <div
-                className="mt-4 flex gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/50 dark:text-red-200"
-                role="alert"
-              >
-                <span className="shrink-0 font-semibold">Error</span>
-                <span>{recommendationError}</span>
-              </div>
-            ) : null}
-            {recommendationNotice ? (
-              <div className="mt-4 flex gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-900/50 dark:bg-blue-950/50 dark:text-blue-200">
-                <span className="shrink-0 font-semibold">Note</span>
-                <span>{recommendationNotice}</span>
-              </div>
-            ) : null}
-
-            {recommendationLoading ? (
-              <PicksSkeleton />
-            ) : recommendations.length > 0 ? (
+            {showV2Recommendations && v2Profile ? (
               <div className="mt-10">
-                {recommendationSummary ? (
-                  <div className="mb-6 rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-white px-4 py-3 text-sm text-indigo-950 shadow-sm dark:border-indigo-900/50 dark:from-indigo-950/50 dark:to-zinc-950/20 dark:text-indigo-100 sm:px-5 sm:py-4">
-                    <div className="flex items-start gap-3">
-                      <span
-                        className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-indigo-600/10 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-200"
-                        aria-hidden
-                      >
-                        <svg
-                          className="h-4 w-4"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9 2a1 1 0 00-1 1v1.06a6.5 6.5 0 00-4.31 4.31H2a1 1 0 100 2h1.69A6.5 6.5 0 008 15.94V17a1 1 0 102 0v-1.06a6.5 6.5 0 004.31-4.31H18a1 1 0 100-2h-1.69A6.5 6.5 0 0012 4.06V3a1 1 0 00-1-1H9zm1 4a4.5 4.5 0 11-.001 9.001A4.5 4.5 0 0110 6z" />
-                        </svg>
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold uppercase tracking-wide text-indigo-700 dark:text-indigo-200">
-                          AI summary
-                        </p>
-                        <p className="mt-1 text-sm leading-relaxed">{recommendationSummary}</p>
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-              <div className="grid grid-cols-1 items-stretch gap-8 lg:grid-cols-3">
-                {recommendations.map((card, index) => {
-                  const isBest = index === 0;
-                  const monthlyTotal = card.yearly_reward_inr / 12;
-                  const pickMetadata =
-                    cards.find((c) => c.id === card.id)?.metadata ?? null;
-                  const showHdfcApply = hdfcCardShowsApply(
-                    card.bank,
-                    pickMetadata
-                  );
-                  const showIndusindApply = indusindCardShowsApply(
-                    card.bank,
-                    pickMetadata
-                  );
-                  return (
-                    <article
-                      key={card.id}
-                      className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border p-6 shadow-md ${issuerBrandTileClass(card.bank, card.network)} ${
-                        isBest
-                          ? "ring-2 ring-emerald-400/45 dark:ring-emerald-500/35"
-                          : ""
-                      }`}
-                    >
-                      <div className="flex h-full flex-col">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex min-w-0 flex-wrap items-center gap-2">
-                            <span className="inline-flex items-center rounded-full border border-zinc-200 bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/30 dark:text-zinc-200">
-                              Pick #{index + 1}
-                            </span>
-                            {isBest ? (
-                              <span className="inline-flex items-center rounded-full bg-emerald-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
-                                Top match
-                              </span>
-                            ) : null}
-                          </div>
-                          <span className="shrink-0 rounded-full border border-zinc-200 bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-950/30 dark:text-zinc-200">
-                            {card.network}
-                          </span>
-                        </div>
-
-                        <h3 className="mt-3 line-clamp-2 text-lg font-semibold leading-snug tracking-tight">
-                          <Link
-                            href={`/card/${card.id}`}
-                            className="text-zinc-900 transition group-hover:text-blue-600 dark:text-zinc-50 dark:group-hover:text-blue-400"
-                          >
-                            {card.card_name}
-                          </Link>
-                        </h3>
-
-                        <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                          {card.bank}
-                        </p>
-
-                        <div className="mt-3">
-                          <CardTopRewardTag card={card} />
-                        </div>
-
-                        <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
-                          <div className="rounded-2xl border border-zinc-200 bg-white/70 p-3 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/25">
-                            <dt className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                              Est. monthly rewards
-                            </dt>
-                            <dd className="mt-1 text-xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-                              {formatInr(monthlyTotal)}
-                            </dd>
-                          </div>
-                          <div className="rounded-2xl border border-zinc-200 bg-white/70 p-3 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/25">
-                            <dt className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                              Annual fee
-                            </dt>
-                            <dd className="mt-1 text-xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-                              {formatInr(card.annual_fee)}
-                            </dd>
-                          </div>
-                        </dl>
-
-                        {card.explanation ? (
-                          <div className="mt-4 rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50/90 to-white px-4 py-3 text-sm text-zinc-800 shadow-sm dark:border-blue-900/50 dark:from-blue-950/50 dark:to-zinc-950/10 dark:text-zinc-200">
-                            <div className="flex items-start gap-2.5">
-                              <span
-                                className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-blue-600/10 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
-                                aria-hidden
-                              >
-                                <svg
-                                  className="h-4 w-4"
-                                  fill="currentColor"
-                                  viewBox="0 0 20 20"
-                                >
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
-                              </span>
-                              <div className="min-w-0">
-                                <p className="text-[11px] font-bold uppercase tracking-wide text-blue-700 dark:text-blue-200">
-                                  Why this fits
-                                </p>
-                                <p className="mt-1 leading-relaxed">{card.explanation}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ) : null}
-
-                        <div className="mt-auto pt-5">
-                          <div className="rounded-2xl border border-zinc-200 bg-white/70 p-3 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/25">
-                            <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                              Actions
-                            </p>
-                            <div
-                              className={
-                                isAxisBankCard(card.bank) ||
-                                isAmexPlatinumReserveCard(card.card_name, card.bank) ||
-                                isAmexCardUsingGenericApply(card.card_name, card.bank) ||
-                                isSbiCard(card.bank) ||
-                                showHdfcApply ||
-                                showIndusindApply
-                                  ? "mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 [&>*]:min-h-11"
-                                  : "mt-2 grid grid-cols-1 gap-2 [&>*]:min-h-11"
-                              }
-                            >
-                              <Link
-                                href={`/card/${card.id}`}
-                                className={`${cardViewDetailsButtonClass} w-full`}
-                              >
-                                Learn more
-                              </Link>
-                          {isAxisBankCard(card.bank) ? (
-                            <AxisApplyLink fullWidth />
-                          ) : null}
-                          {isAmexPlatinumReserveCard(
-                            card.card_name,
-                            card.bank
-                          ) ? (
-                            <AmexPlatinumReserveApplyLink fullWidth />
-                          ) : null}
-                          {isAmexCardUsingGenericApply(
-                            card.card_name,
-                            card.bank
-                          ) ? (
-                            <AmexGenericApplyLink fullWidth />
-                          ) : null}
-                          {isSbiCard(card.bank) ? (
-                            <SbiApplyLink fullWidth />
-                          ) : null}
-                          {showHdfcApply ? (
-                            <HdfcApplyLink
-                              metadata={pickMetadata}
-                              fullWidth
-                            />
-                          ) : null}
-                          {showIndusindApply ? (
-                            <IndusIndApplyLink
-                              metadata={pickMetadata}
-                              fullWidth
-                            />
-                          ) : null}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
+                <RecommendedCards profile={v2Profile} />
               </div>
             ) : null}
           </section>
