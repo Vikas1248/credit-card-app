@@ -883,38 +883,6 @@ export default function Home() {
           </form>
         </header>
 
-        <section
-          className="mt-5 rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/50 sm:p-5"
-          aria-label="AI capabilities"
-        >
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-xl border border-zinc-200/80 bg-zinc-50/70 p-3 dark:border-zinc-700 dark:bg-zinc-900/50">
-              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                Match
-              </p>
-              <p className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                Converts your wizard inputs into a scored shortlist.
-              </p>
-            </div>
-            <div className="rounded-xl border border-zinc-200/80 bg-zinc-50/70 p-3 dark:border-zinc-700 dark:bg-zinc-900/50">
-              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                Explain
-              </p>
-              <p className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                Adds one-line AI reasons for why each recommendation fits.
-              </p>
-            </div>
-            <div className="rounded-xl border border-zinc-200/80 bg-zinc-50/70 p-3 dark:border-zinc-700 dark:bg-zinc-900/50">
-              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                Compare
-              </p>
-              <p className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                Generates side-by-side AI guidance for close card choices.
-              </p>
-            </div>
-          </div>
-        </section>
-
         <div className="mt-2 flex flex-col gap-16 sm:mt-3 sm:gap-20">
         <section
           id="categories-legacy"
