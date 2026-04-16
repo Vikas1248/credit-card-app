@@ -6,17 +6,20 @@ export type UserProfile = {
   lifestyle: string[]; // ["traveler", "online_shopper"]
   spendContext?: {
     shopping?: {
-      primaryApp: "mixed" | "flipkart" | "amazon" | "myntra" | "ajio";
       onlinePct: number; // 0..100
+      flipkartPct?: number; // 0..100 of online
+      amazonPct?: number; // 0..100 of online
     };
     dining?: {
-      primaryApp: "mixed" | "swiggy" | "zomato";
       deliveryPct: number; // 0..100
+      swiggyPct?: number; // 0..100 of delivery
+      zomatoPct?: number; // 0..100 of delivery
     };
     travel?: {
       modes: Array<"flights" | "trains" | "hotels" | "cabs">;
       preferredAirline: "none" | "indigo" | "air_india" | "vistara";
       flightsPct: number; // 0..100 (share of travel spend via flights)
+      preferredAirlinePct?: number; // 0..100 of flights
     };
   };
 };
@@ -73,27 +76,17 @@ export function parseUserProfile(
     ctx?.shopping && typeof ctx.shopping === "object"
       ? (ctx.shopping as Record<string, unknown>)
       : null;
-  const shoppingPrimary =
-    shoppingRaw?.primaryApp === "flipkart" ||
-    shoppingRaw?.primaryApp === "amazon" ||
-    shoppingRaw?.primaryApp === "myntra" ||
-    shoppingRaw?.primaryApp === "ajio" ||
-    shoppingRaw?.primaryApp === "mixed"
-      ? shoppingRaw.primaryApp
-      : "mixed";
   const shoppingOnlinePct = clampPct(shoppingRaw?.onlinePct, 70);
+  const flipkartPct = clampPct(shoppingRaw?.flipkartPct, 0);
+  const amazonPct = clampPct(shoppingRaw?.amazonPct, 0);
 
   const diningRaw =
     ctx?.dining && typeof ctx.dining === "object"
       ? (ctx.dining as Record<string, unknown>)
       : null;
-  const diningPrimary =
-    diningRaw?.primaryApp === "swiggy" ||
-    diningRaw?.primaryApp === "zomato" ||
-    diningRaw?.primaryApp === "mixed"
-      ? diningRaw.primaryApp
-      : "mixed";
   const diningDeliveryPct = clampPct(diningRaw?.deliveryPct, 55);
+  const swiggyPct = clampPct(diningRaw?.swiggyPct, 0);
+  const zomatoPct = clampPct(diningRaw?.zomatoPct, 0);
 
   const travelRaw =
     ctx?.travel && typeof ctx.travel === "object"
@@ -116,6 +109,7 @@ export function parseUserProfile(
       ? travelRaw.preferredAirline
       : "none";
   const flightsPct = clampPct(travelRaw?.flightsPct, 60);
+  const preferredAirlinePct = clampPct(travelRaw?.preferredAirlinePct, 0);
 
   return {
     ok: true,
@@ -126,12 +120,21 @@ export function parseUserProfile(
       feeSensitivity,
       lifestyle: lifestyle.slice(0, 10),
       spendContext: {
-        shopping: { primaryApp: shoppingPrimary, onlinePct: shoppingOnlinePct },
-        dining: { primaryApp: diningPrimary, deliveryPct: diningDeliveryPct },
+        shopping: {
+          onlinePct: shoppingOnlinePct,
+          flipkartPct,
+          amazonPct,
+        },
+        dining: {
+          deliveryPct: diningDeliveryPct,
+          swiggyPct,
+          zomatoPct,
+        },
         travel: {
           modes: travelModes,
           preferredAirline,
           flightsPct,
+          preferredAirlinePct,
         },
       },
     },

@@ -378,7 +378,6 @@ export default function Home() {
     "shopping",
     "dining",
   ]);
-  const [existingCardIds, setExistingCardIds] = useState<string[]>([]);
   const [feePreference, setFeePreference] = useState<FeePreferenceId>("low_fee");
   const [lifestyleNeeds, setLifestyleNeeds] = useState<LifestyleNeedId[]>([]);
   const [wizardStep, setWizardStep] = useState(1);
@@ -389,21 +388,20 @@ export default function Home() {
   const [spendShopping, setSpendShopping] = useState("12000");
   const [spendFuel, setSpendFuel] = useState("6000");
   const [showV2Recommendations, setShowV2Recommendations] = useState(false);
-  const [shoppingPrimaryApp, setShoppingPrimaryApp] = useState<
-    "mixed" | "flipkart" | "amazon" | "myntra" | "ajio"
-  >("mixed");
   const [shoppingOnlinePct, setShoppingOnlinePct] = useState(70);
-  const [diningPrimaryApp, setDiningPrimaryApp] = useState<"mixed" | "swiggy" | "zomato">(
-    "mixed"
-  );
   const [diningDeliveryPct, setDiningDeliveryPct] = useState(55);
   const [travelModes, setTravelModes] = useState<
     Array<"flights" | "trains" | "hotels" | "cabs">
   >([]);
+  const [travelFlightsPct, setTravelFlightsPct] = useState(60);
+  const [shoppingFlipkartPct, setShoppingFlipkartPct] = useState(0);
+  const [shoppingAmazonPct, setShoppingAmazonPct] = useState(0);
+  const [diningSwiggyPct, setDiningSwiggyPct] = useState(0);
+  const [diningZomatoPct, setDiningZomatoPct] = useState(0);
   const [preferredAirline, setPreferredAirline] = useState<
     "none" | "indigo" | "air_india" | "vistara"
   >("none");
-  const [travelFlightsPct, setTravelFlightsPct] = useState(60);
+  const [preferredAirlinePct, setPreferredAirlinePct] = useState(0);
   const [v2Profile, setV2Profile] = useState<{
     monthlySpend: number;
     topCategories: string[];
@@ -412,17 +410,20 @@ export default function Home() {
     lifestyle: string[];
     spendContext?: {
       shopping?: {
-        primaryApp: "mixed" | "flipkart" | "amazon" | "myntra" | "ajio";
         onlinePct: number;
+        flipkartPct?: number;
+        amazonPct?: number;
       };
       dining?: {
-        primaryApp: "mixed" | "swiggy" | "zomato";
         deliveryPct: number;
+        swiggyPct?: number;
+        zomatoPct?: number;
       };
       travel?: {
         modes: Array<"flights" | "trains" | "hotels" | "cabs">;
         preferredAirline: "none" | "indigo" | "air_india" | "vistara";
         flightsPct: number;
+        preferredAirlinePct?: number;
       };
     };
   } | null>(null);
@@ -448,12 +449,6 @@ export default function Home() {
       }
       return [...prev, slug];
     });
-  };
-
-  const toggleExistingCard = (cardId: string) => {
-    setExistingCardIds((prev) =>
-      prev.includes(cardId) ? prev.filter((x) => x !== cardId) : [...prev, cardId]
-    );
   };
 
   const toggleLifestyleNeed = (need: LifestyleNeedId) => {
@@ -614,12 +609,21 @@ export default function Home() {
       feeSensitivity,
       lifestyle: lifestyleNeeds,
       spendContext: {
-        shopping: { primaryApp: shoppingPrimaryApp, onlinePct: shoppingOnlinePct },
-        dining: { primaryApp: diningPrimaryApp, deliveryPct: diningDeliveryPct },
+        shopping: {
+          onlinePct: shoppingOnlinePct,
+          flipkartPct: shoppingFlipkartPct,
+          amazonPct: shoppingAmazonPct,
+        },
+        dining: {
+          deliveryPct: diningDeliveryPct,
+          swiggyPct: diningSwiggyPct,
+          zomatoPct: diningZomatoPct,
+        },
         travel: {
           modes: travelModes,
           preferredAirline,
           flightsPct: travelFlightsPct,
+          preferredAirlinePct,
         },
       },
     });
@@ -994,16 +998,16 @@ export default function Home() {
               <div className="rounded-2xl border border-zinc-100 bg-zinc-50/60 p-5 dark:border-zinc-800 dark:bg-zinc-950/40 sm:p-6">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-                    Step {wizardStep} of 6
+                    Step {wizardStep} of 5
                   </p>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {Math.round((wizardStep / 6) * 100)}% complete
+                    {Math.round((wizardStep / 5) * 100)}% complete
                   </p>
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
                   <div
                     className="h-full rounded-full bg-blue-600 transition-all dark:bg-blue-500"
-                    style={{ width: `${(wizardStep / 6) * 100}%` }}
+                    style={{ width: `${(wizardStep / 5) * 100}%` }}
                   />
                 </div>
 
@@ -1087,35 +1091,6 @@ export default function Home() {
                   {wizardStep === 4 ? (
                     <div>
                       <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                        Existing cards (optional)
-                      </p>
-                      <div className="max-h-44 overflow-auto rounded-xl border border-zinc-200 bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900">
-                        <div className="flex flex-wrap gap-2">
-                          {cardsSortedByName.slice(0, 60).map((card) => {
-                            const selected = existingCardIds.includes(card.id);
-                            return (
-                              <button
-                                key={card.id}
-                                type="button"
-                                onClick={() => toggleExistingCard(card.id)}
-                                className={`rounded-full border px-3 py-1.5 text-xs transition ${
-                                  selected
-                                    ? "border-blue-500 bg-blue-600 text-white"
-                                    : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-                                }`}
-                              >
-                                {card.card_name}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {wizardStep === 5 ? (
-                    <div>
-                      <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                         Fee preference
                       </p>
                       <div className="flex flex-wrap gap-2">
@@ -1137,7 +1112,7 @@ export default function Home() {
                     </div>
                   ) : null}
 
-                  {wizardStep === 6 ? (
+                  {wizardStep === 5 ? (
                     <div>
                       <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                         Travel / lifestyle needs
@@ -1193,30 +1168,6 @@ export default function Home() {
                       <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                         Shopping
                       </p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {(
-                          [
-                            ["mixed", "Mixed"],
-                            ["flipkart", "Flipkart"],
-                            ["amazon", "Amazon"],
-                            ["myntra", "Myntra"],
-                            ["ajio", "Ajio"],
-                          ] as const
-                        ).map(([id, label]) => (
-                          <button
-                            key={id}
-                            type="button"
-                            onClick={() => setShoppingPrimaryApp(id)}
-                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                              shoppingPrimaryApp === id
-                                ? "border-blue-500 bg-blue-600 text-white"
-                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-                            }`}
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
                       <label className="mt-3 block">
                         <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
                           Online shopping share: {shoppingOnlinePct}%
@@ -1230,34 +1181,40 @@ export default function Home() {
                           className="mt-2 w-full"
                         />
                       </label>
+                      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <label className="block">
+                          <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                            Flipkart share (of online): {shoppingFlipkartPct}%
+                          </span>
+                          <input
+                            type="range"
+                            min={0}
+                            max={100}
+                            value={shoppingFlipkartPct}
+                            onChange={(e) => setShoppingFlipkartPct(Number(e.target.value))}
+                            className="mt-2 w-full"
+                          />
+                        </label>
+                        <label className="block">
+                          <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                            Amazon share (of online): {shoppingAmazonPct}%
+                          </span>
+                          <input
+                            type="range"
+                            min={0}
+                            max={100}
+                            value={shoppingAmazonPct}
+                            onChange={(e) => setShoppingAmazonPct(Number(e.target.value))}
+                            className="mt-2 w-full"
+                          />
+                        </label>
+                      </div>
                     </div>
 
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                         Dining
                       </p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {(
-                          [
-                            ["mixed", "Mixed"],
-                            ["swiggy", "Swiggy"],
-                            ["zomato", "Zomato"],
-                          ] as const
-                        ).map(([id, label]) => (
-                          <button
-                            key={id}
-                            type="button"
-                            onClick={() => setDiningPrimaryApp(id)}
-                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                              diningPrimaryApp === id
-                                ? "border-blue-500 bg-blue-600 text-white"
-                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-                            }`}
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
                       <label className="mt-3 block">
                         <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
                           Delivery share: {diningDeliveryPct}%
@@ -1271,6 +1228,34 @@ export default function Home() {
                           className="mt-2 w-full"
                         />
                       </label>
+                      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <label className="block">
+                          <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                            Swiggy share (of delivery): {diningSwiggyPct}%
+                          </span>
+                          <input
+                            type="range"
+                            min={0}
+                            max={100}
+                            value={diningSwiggyPct}
+                            onChange={(e) => setDiningSwiggyPct(Number(e.target.value))}
+                            className="mt-2 w-full"
+                          />
+                        </label>
+                        <label className="block">
+                          <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                            Zomato share (of delivery): {diningZomatoPct}%
+                          </span>
+                          <input
+                            type="range"
+                            min={0}
+                            max={100}
+                            value={diningZomatoPct}
+                            onChange={(e) => setDiningZomatoPct(Number(e.target.value))}
+                            className="mt-2 w-full"
+                          />
+                        </label>
+                      </div>
                     </div>
 
                     <div>
@@ -1341,6 +1326,19 @@ export default function Home() {
                           />
                         </label>
                       </div>
+                      <label className="mt-3 block">
+                        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                          Preferred airline share (of flights): {preferredAirlinePct}%
+                        </span>
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={preferredAirlinePct}
+                          onChange={(e) => setPreferredAirlinePct(Number(e.target.value))}
+                          className="mt-2 w-full"
+                        />
+                      </label>
                     </div>
 
                     <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
@@ -1365,10 +1363,10 @@ export default function Home() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setWizardStep((s) => Math.min(6, s + 1))}
-                    disabled={wizardStep === 6}
+                    onClick={() => setWizardStep((s) => Math.min(5, s + 1))}
+                    disabled={wizardStep === 5}
                     className={
-                      wizardStep === 6
+                      wizardStep === 5
                         ? btnGhost
                         : "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-blue-500 bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-blue-400 dark:bg-blue-500 dark:hover:bg-blue-400"
                     }
@@ -1378,7 +1376,7 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => void loadRecommendations()}
-                    disabled={wizardStep !== 6}
+                    disabled={wizardStep !== 5}
                     className={btnPrimary}
                   >
                     Show my recommendations

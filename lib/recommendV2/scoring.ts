@@ -219,27 +219,51 @@ export function calculateYearlyValue(card: CardRowForScoring, profile: UserProfi
   const baseTravelPct = categoryPct(card, "travel");
 
   const shoppingCtx = profile.spendContext?.shopping;
-  if (shoppingCtx && shoppingCtx.primaryApp !== "mixed" && hay.includes(shoppingCtx.primaryApp)) {
-    const boostedPct =
-      pctNearKeyword(card.reward_rate, shoppingCtx.primaryApp) ?? toPctMaybe(card.reward_rate);
-    if (typeof boostedPct === "number" && boostedPct > baseShoppingPct) {
-      const merchantShare = 0.7;
-      const merchantMonthly =
-        spendSplit.shopping * (shoppingCtx.onlinePct / 100) * merchantShare;
-      yearlyReward += merchantMonthly * 12 * ((boostedPct - baseShoppingPct) / 100);
+  if (shoppingCtx) {
+    const onlineMonthly = spendSplit.shopping * (shoppingCtx.onlinePct / 100);
+    const flipkartShare = Math.max(0, Math.min(1, (shoppingCtx.flipkartPct ?? 0) / 100));
+    const amazonShare = Math.max(0, Math.min(1, (shoppingCtx.amazonPct ?? 0) / 100));
+    const otherShare = Math.max(0, 1 - flipkartShare - amazonShare);
+
+    if (flipkartShare > 0 && hay.includes("flipkart")) {
+      const boostedPct = pctNearKeyword(card.reward_rate, "flipkart") ?? toPctMaybe(card.reward_rate);
+      if (typeof boostedPct === "number" && boostedPct > baseShoppingPct) {
+        yearlyReward += onlineMonthly * flipkartShare * 12 * ((boostedPct - baseShoppingPct) / 100);
+      }
     }
+
+    if (amazonShare > 0 && hay.includes("amazon")) {
+      const boostedPct = pctNearKeyword(card.reward_rate, "amazon") ?? toPctMaybe(card.reward_rate);
+      if (typeof boostedPct === "number" && boostedPct > baseShoppingPct) {
+        yearlyReward += onlineMonthly * amazonShare * 12 * ((boostedPct - baseShoppingPct) / 100);
+      }
+    }
+
+    void otherShare;
   }
 
   const diningCtx = profile.spendContext?.dining;
-  if (diningCtx && diningCtx.primaryApp !== "mixed" && hay.includes(diningCtx.primaryApp)) {
-    const boostedPct =
-      pctNearKeyword(card.reward_rate, diningCtx.primaryApp) ?? toPctMaybe(card.reward_rate);
-    if (typeof boostedPct === "number" && boostedPct > baseDiningPct) {
-      const appShare = 0.75;
-      const appMonthly =
-        spendSplit.dining * (diningCtx.deliveryPct / 100) * appShare;
-      yearlyReward += appMonthly * 12 * ((boostedPct - baseDiningPct) / 100);
+  if (diningCtx) {
+    const deliveryMonthly = spendSplit.dining * (diningCtx.deliveryPct / 100);
+    const swiggyShare = Math.max(0, Math.min(1, (diningCtx.swiggyPct ?? 0) / 100));
+    const zomatoShare = Math.max(0, Math.min(1, (diningCtx.zomatoPct ?? 0) / 100));
+    const otherShare = Math.max(0, 1 - swiggyShare - zomatoShare);
+
+    if (swiggyShare > 0 && hay.includes("swiggy")) {
+      const boostedPct = pctNearKeyword(card.reward_rate, "swiggy") ?? toPctMaybe(card.reward_rate);
+      if (typeof boostedPct === "number" && boostedPct > baseDiningPct) {
+        yearlyReward += deliveryMonthly * swiggyShare * 12 * ((boostedPct - baseDiningPct) / 100);
+      }
     }
+
+    if (zomatoShare > 0 && hay.includes("zomato")) {
+      const boostedPct = pctNearKeyword(card.reward_rate, "zomato") ?? toPctMaybe(card.reward_rate);
+      if (typeof boostedPct === "number" && boostedPct > baseDiningPct) {
+        yearlyReward += deliveryMonthly * zomatoShare * 12 * ((boostedPct - baseDiningPct) / 100);
+      }
+    }
+
+    void otherShare;
   }
 
   const travelCtx = profile.spendContext?.travel;
@@ -251,8 +275,13 @@ export function calculateYearlyValue(card: CardRowForScoring, profile: UserProfi
       const flightsShare = travelCtx.modes.includes("flights")
         ? travelCtx.flightsPct / 100
         : 0.35;
+      const airlineShare = Math.max(
+        0,
+        Math.min(1, (travelCtx.preferredAirlinePct ?? 0) / 100)
+      );
       const flightsMonthly = spendSplit.travel * flightsShare;
-      yearlyReward += flightsMonthly * 12 * ((boostedPct - baseTravelPct) / 100);
+      const airlineMonthly = flightsMonthly * (airlineShare > 0 ? airlineShare : 0.6);
+      yearlyReward += airlineMonthly * 12 * ((boostedPct - baseTravelPct) / 100);
     }
   }
 

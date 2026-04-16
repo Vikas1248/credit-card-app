@@ -10,17 +10,20 @@ type UserProfile = {
   lifestyle: string[];
   spendContext?: {
     shopping?: {
-      primaryApp: "mixed" | "flipkart" | "amazon" | "myntra" | "ajio";
       onlinePct: number;
+      flipkartPct?: number;
+      amazonPct?: number;
     };
     dining?: {
-      primaryApp: "mixed" | "swiggy" | "zomato";
       deliveryPct: number;
+      swiggyPct?: number;
+      zomatoPct?: number;
     };
     travel?: {
       modes: Array<"flights" | "trains" | "hotels" | "cabs">;
       preferredAirline: "none" | "indigo" | "air_india" | "vistara";
       flightsPct: number;
+      preferredAirlinePct?: number;
     };
   };
 };
