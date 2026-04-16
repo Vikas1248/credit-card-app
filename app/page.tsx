@@ -1632,69 +1632,103 @@ export default function Home() {
             ) : null}
           </section>
 
-          <section className={sectionShell} aria-labelledby="trust-heading">
+          <section className={sectionShell} aria-labelledby="how-we-rank-heading">
             <div className={sectionHeaderRowClass}>
               <div className={sectionHeaderAccentClass} aria-hidden />
               <div className="min-w-0 flex-1">
-                <h2 id="trust-heading" className={sectionTitleClass}>
-                  Why users trust these recommendations
+                <h2 id="how-we-rank-heading" className={sectionTitleClass}>
+                  How we rank
                 </h2>
                 <p className={sectionLeadClass}>
-                  We rank cards using your spend mix and show a transparent
-                  breakdown by category, plus fees and reward type, so users can
-                  compare with confidence.
+                  A quick, transparent view of what goes into your recommendations.
                 </p>
               </div>
             </div>
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-zinc-200 bg-white p-4 text-sm dark:border-zinc-700 dark:bg-zinc-900/50">
-                <p className="font-semibold text-zinc-900 dark:text-zinc-100">Personalized math</p>
-                <p className="mt-1 text-zinc-600 dark:text-zinc-400">Based on monthly spend split across dining, travel, shopping, and fuel.</p>
-              </div>
-              <div className="rounded-2xl border border-zinc-200 bg-white p-4 text-sm dark:border-zinc-700 dark:bg-zinc-900/50">
-                <p className="font-semibold text-zinc-900 dark:text-zinc-100">Fee-aware ranking</p>
-                <p className="mt-1 text-zinc-600 dark:text-zinc-400">Annual fee, joining fee, and reward type stay visible in every recommendation.</p>
-              </div>
-              <div className="rounded-2xl border border-zinc-200 bg-white p-4 text-sm dark:border-zinc-700 dark:bg-zinc-900/50">
-                <p className="font-semibold text-zinc-900 dark:text-zinc-100">Actionable picks</p>
-                <p className="mt-1 text-zinc-600 dark:text-zinc-400">Direct Learn more / Apply actions help users move from discovery to decision.</p>
-              </div>
+
+            <div className="mt-6 overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900/40">
+              <details className="group">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50 dark:text-zinc-100 dark:hover:bg-zinc-800/40">
+                  <span>See what’s included in the ranking</span>
+                  <span
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 transition group-open:rotate-180 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                    aria-hidden
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </span>
+                </summary>
+
+                <div className="border-t border-zinc-200 px-5 py-5 dark:border-zinc-700">
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm dark:border-zinc-700 dark:bg-zinc-950/30">
+                      <p className="font-semibold text-zinc-900 dark:text-zinc-100">
+                        Spend-based math
+                      </p>
+                      <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+                        We estimate rewards from your monthly spend across dining, travel,
+                        shopping, and fuel.
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm dark:border-zinc-700 dark:bg-zinc-950/30">
+                      <p className="font-semibold text-zinc-900 dark:text-zinc-100">
+                        Preference matching
+                      </p>
+                      <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+                        Fee comfort, selected categories, lifestyle needs, and your existing
+                        cards influence ranking.
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm dark:border-zinc-700 dark:bg-zinc-950/30">
+                      <p className="font-semibold text-zinc-900 dark:text-zinc-100">
+                        AI (when available)
+                      </p>
+                      <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+                        A one-line summary and per-card “why” help explain the shortlist
+                        (never inventing cards outside the candidate pool).
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="mt-4 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+                    Tip: If you don’t see exact matches, we’ll show the nearest options
+                    from the current catalog.
+                  </p>
+                </div>
+              </details>
             </div>
           </section>
 
-          <section className={sectionShell} aria-labelledby="top-picks-heading">
+          <section
+            id="featured"
+            className={`scroll-mt-28 ${sectionShell}`}
+            aria-labelledby="featured-heading-main"
+          >
             <div className={sectionHeaderRowClass}>
               <div className={sectionHeaderAccentClass} aria-hidden />
               <div className="min-w-0 flex-1">
-                <h2 id="top-picks-heading" className={sectionTitleClass}>
-                  Top picks
+                <h2 id="featured-heading-main" className={sectionTitleClass}>
+                  Featured
                 </h2>
                 <p className={sectionLeadClass}>
-                  Quick shortlist of high-value cards to start exploring right away.
+                  Rotating highlights from the catalog—up to five picks at a time.
                 </p>
               </div>
             </div>
-            <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-              {topPicksCards.map((card) => (
-                <article
-                  key={card.id}
-                  className={`rounded-2xl border p-4 shadow-sm ${issuerBrandTileClass(card.bank, card.network)}`}
-                >
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">{card.bank}</p>
-                  <h3 className="mt-1 line-clamp-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    {card.card_name}
-                  </h3>
-                  <div className="mt-2">
-                    <CardTopRewardTag card={card} />
-                  </div>
-                  <div className="mt-3">
-                    <Link href={`/card/${card.id}`} className={`${cardViewDetailsButtonClass} w-full`}>
-                      Learn more
-                    </Link>
-                  </div>
-                </article>
-              ))}
-            </div>
+            <FeaturedCardsCarousel
+              items={featuredCarouselSlides}
+              loading={loading}
+            />
           </section>
 
           <section
@@ -2122,28 +2156,6 @@ export default function Home() {
             </p>
           ) : null}
         </section>
-
-          <section
-            id="featured"
-            className={`scroll-mt-28 ${sectionShell}`}
-            aria-labelledby="featured-heading-main"
-          >
-            <div className={sectionHeaderRowClass}>
-              <div className={sectionHeaderAccentClass} aria-hidden />
-              <div className="min-w-0 flex-1">
-                <h2 id="featured-heading-main" className={sectionTitleClass}>
-                  Featured
-                </h2>
-                <p className={sectionLeadClass}>
-                  Rotating highlights from the catalog—up to five picks at a time.
-                </p>
-              </div>
-            </div>
-            <FeaturedCardsCarousel
-              items={featuredCarouselSlides}
-              loading={loading}
-            />
-          </section>
 
         </div>
 
