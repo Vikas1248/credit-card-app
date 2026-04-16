@@ -396,7 +396,6 @@ export default function Home() {
   const [travelModes, setTravelModes] = useState<
     Array<"flights" | "trains" | "hotels">
   >([]);
-  const [travelFlightsPct, setTravelFlightsPct] = useState(60);
   const [preferredAirline, setPreferredAirline] = useState<
     "none" | "indigo" | "air_india" | "vistara"
   >("none");
@@ -618,7 +617,7 @@ export default function Home() {
         travel: {
           modes: travelModes,
           preferredAirline,
-          flightsPct: travelFlightsPct,
+          flightsPct: 60,
         },
       },
     });
@@ -1312,33 +1311,6 @@ export default function Home() {
                                 onClick={() => setPreferredAirline(id)}
                                 className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                                   preferredAirline === id
-                                    ? "border-blue-500 bg-blue-600 text-white"
-                                    : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-                                }`}
-                              >
-                                {label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                            Flights share
-                          </p>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {(
-                              [
-                                [35, "Low (35%)"],
-                                [60, "Balanced (60%)"],
-                                [85, "High (85%)"],
-                              ] as const
-                            ).map(([value, label]) => (
-                              <button
-                                key={value}
-                                type="button"
-                                onClick={() => setTravelFlightsPct(value)}
-                                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                                  travelFlightsPct === value
                                     ? "border-blue-500 bg-blue-600 text-white"
                                     : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
                                 }`}
