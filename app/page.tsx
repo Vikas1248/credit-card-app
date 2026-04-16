@@ -1106,224 +1106,312 @@ export default function Home() {
                 <h2 id="spend-picks-heading" className={sectionTitleClass}>
                   Recommended cards for you
                 </h2>
+                <p className={sectionLeadClass}>
+                  Tell us your spend pattern and preferences. We’ll shortlist cards and
+                  explain the “why” in one line.
+                </p>
               </div>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-zinc-100 bg-zinc-50/60 p-5 dark:border-zinc-800 dark:bg-zinc-950/40 sm:p-6">
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-                  Step {wizardStep} of 6
-                </p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {Math.round((wizardStep / 6) * 100)}% complete
-                </p>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-                <div
-                  className="h-full rounded-full bg-blue-600 transition-all dark:bg-blue-500"
-                  style={{ width: `${(wizardStep / 6) * 100}%` }}
-                />
-              </div>
+            <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.05fr]">
+              <div className="rounded-2xl border border-zinc-100 bg-zinc-50/60 p-5 dark:border-zinc-800 dark:bg-zinc-950/40 sm:p-6">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+                    Step {wizardStep} of 6
+                  </p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {Math.round((wizardStep / 6) * 100)}% complete
+                  </p>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+                  <div
+                    className="h-full rounded-full bg-blue-600 transition-all dark:bg-blue-500"
+                    style={{ width: `${(wizardStep / 6) * 100}%` }}
+                  />
+                </div>
 
-              <div className="mt-5">
-                {wizardStep === 1 ? (
-                  <div>
-                    <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                      Income range
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {SALARY_BAND_OPTIONS.map((opt) => (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          onClick={() => setSalaryBand(opt.id)}
-                          className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                            salaryBand === opt.id
-                              ? "border-blue-500 bg-blue-600 text-white"
-                              : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-
-                {wizardStep === 2 ? (
-                  <div>
-                    <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                      Total monthly spend
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {MONTHLY_SPEND_BAND_OPTIONS.map((opt) => (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          onClick={() => setMonthlySpendBand(opt.id)}
-                          className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                            monthlySpendBand === opt.id
-                              ? "border-blue-500 bg-blue-600 text-white"
-                              : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-
-                {wizardStep === 3 ? (
-                  <div>
-                    <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                      Top categories (choose 1-3)
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {SPEND_CATEGORIES.map((cat) => {
-                        const active = topCategories.includes(cat.slug);
-                        return (
-                          <button
-                            key={cat.slug}
-                            type="button"
-                            onClick={() => toggleTopCategory(cat.slug)}
-                            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                              active
-                                ? "border-blue-500 bg-blue-600 text-white"
-                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-                            }`}
-                          >
-                            <SpendCategoryIcon slug={cat.slug} className="h-3.5 w-3.5" />
-                            {cat.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : null}
-
-                {wizardStep === 4 ? (
-                  <div>
-                    <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                      Existing cards (optional)
-                    </p>
-                    <div className="max-h-44 overflow-auto rounded-xl border border-zinc-200 bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900">
+                <div className="mt-5">
+                  {wizardStep === 1 ? (
+                    <div>
+                      <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                        Income range
+                      </p>
                       <div className="flex flex-wrap gap-2">
-                        {cardsSortedByName.slice(0, 60).map((card) => {
-                          const selected = existingCardIds.includes(card.id);
-                          return (
-                            <button
-                              key={card.id}
-                              type="button"
-                              onClick={() => toggleExistingCard(card.id)}
-                              className={`rounded-full border px-3 py-1.5 text-xs transition ${
-                                selected
-                                  ? "border-blue-500 bg-blue-600 text-white"
-                                  : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-                              }`}
-                            >
-                              {card.card_name}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-
-                {wizardStep === 5 ? (
-                  <div>
-                    <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                      Fee preference
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {FEE_PREFERENCE_OPTIONS.map((opt) => (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          onClick={() => setFeePreference(opt.id)}
-                          className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                            feePreference === opt.id
-                              ? "border-blue-500 bg-blue-600 text-white"
-                              : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-
-                {wizardStep === 6 ? (
-                  <div>
-                    <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                      Travel / lifestyle needs
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {LIFESTYLE_NEED_OPTIONS.map((opt) => {
-                        const selected = lifestyleNeeds.includes(opt.id);
-                        return (
+                        {SALARY_BAND_OPTIONS.map((opt) => (
                           <button
                             key={opt.id}
                             type="button"
-                            onClick={() => toggleLifestyleNeed(opt.id)}
+                            onClick={() => setSalaryBand(opt.id)}
                             className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                              selected
+                              salaryBand === opt.id
                                 ? "border-blue-500 bg-blue-600 text-white"
                                 : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
                             }`}
                           >
                             {opt.label}
                           </button>
-                        );
-                      })}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ) : null}
+                  ) : null}
+
+                  {wizardStep === 2 ? (
+                    <div>
+                      <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                        Total monthly spend
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {MONTHLY_SPEND_BAND_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => setMonthlySpendBand(opt.id)}
+                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                              monthlySpendBand === opt.id
+                                ? "border-blue-500 bg-blue-600 text-white"
+                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {wizardStep === 3 ? (
+                    <div>
+                      <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                        Top categories (choose 1-3)
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {SPEND_CATEGORIES.map((cat) => {
+                          const active = topCategories.includes(cat.slug);
+                          return (
+                            <button
+                              key={cat.slug}
+                              type="button"
+                              onClick={() => toggleTopCategory(cat.slug)}
+                              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                                active
+                                  ? "border-blue-500 bg-blue-600 text-white"
+                                  : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                              }`}
+                            >
+                              <SpendCategoryIcon slug={cat.slug} className="h-3.5 w-3.5" />
+                              {cat.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {wizardStep === 4 ? (
+                    <div>
+                      <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                        Existing cards (optional)
+                      </p>
+                      <div className="max-h-44 overflow-auto rounded-xl border border-zinc-200 bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900">
+                        <div className="flex flex-wrap gap-2">
+                          {cardsSortedByName.slice(0, 60).map((card) => {
+                            const selected = existingCardIds.includes(card.id);
+                            return (
+                              <button
+                                key={card.id}
+                                type="button"
+                                onClick={() => toggleExistingCard(card.id)}
+                                className={`rounded-full border px-3 py-1.5 text-xs transition ${
+                                  selected
+                                    ? "border-blue-500 bg-blue-600 text-white"
+                                    : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                                }`}
+                              >
+                                {card.card_name}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {wizardStep === 5 ? (
+                    <div>
+                      <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                        Fee preference
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {FEE_PREFERENCE_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => setFeePreference(opt.id)}
+                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                              feePreference === opt.id
+                                ? "border-blue-500 bg-blue-600 text-white"
+                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {wizardStep === 6 ? (
+                    <div>
+                      <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                        Travel / lifestyle needs
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {LIFESTYLE_NEED_OPTIONS.map((opt) => {
+                          const selected = lifestyleNeeds.includes(opt.id);
+                          return (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              onClick={() => toggleLifestyleNeed(opt.id)}
+                              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                                selected
+                                  ? "border-blue-500 bg-blue-600 text-white"
+                                  : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setWizardStep((s) => Math.max(1, s - 1))}
+                    disabled={wizardStep === 1}
+                    className={
+                      wizardStep === 1
+                        ? btnGhost
+                        : "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                    }
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setWizardStep((s) => Math.min(6, s + 1))}
+                    disabled={wizardStep === 6}
+                    className={
+                      wizardStep === 6
+                        ? btnGhost
+                        : "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-blue-500 bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-blue-400 dark:bg-blue-500 dark:hover:bg-blue-400"
+                    }
+                  >
+                    Next
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void loadRecommendations()}
+                    disabled={recommendationLoading || wizardStep !== 6}
+                    className={btnPrimary}
+                    aria-busy={recommendationLoading}
+                  >
+                    {recommendationLoading ? (
+                      <>
+                        <Spinner className="h-4 w-4 text-white" />
+                        Finding your best cards...
+                      </>
+                    ) : (
+                      "Show my recommendations"
+                    )}
+                  </button>
+                </div>
               </div>
 
-              <div className="mt-5 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setWizardStep((s) => Math.max(1, s - 1))}
-                  disabled={wizardStep === 1}
-                  className={
-                    wizardStep === 1
-                      ? btnGhost
-                      : "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-                  }
-                >
-                  Back
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setWizardStep((s) => Math.min(6, s + 1))}
-                  disabled={wizardStep === 6}
-                  className={
-                    wizardStep === 6
-                      ? btnGhost
-                      : "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-blue-500 bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-blue-400 dark:bg-blue-500 dark:hover:bg-blue-400"
-                  }
-                >
-                  Next
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void loadRecommendations()}
-                  disabled={recommendationLoading || wizardStep !== 6}
-                  className={btnPrimary}
-                  aria-busy={recommendationLoading}
-                >
-                  {recommendationLoading ? (
-                    <>
-                      <Spinner className="h-4 w-4 text-white" />
-                      Finding your best cards...
-                    </>
-                  ) : (
-                    "Show my recommendations"
-                  )}
-                </button>
+              <div className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/30 sm:p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                      Your inputs
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+                      We use these to rank the catalog (and exclude your existing cards).
+                    </p>
+                  </div>
+                  <a
+                    href="#spend-picks"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setWizardStep(1);
+                    }}
+                    className="shrink-0 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  >
+                    Edit
+                  </a>
+                </div>
+
+                <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+                  <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-700 dark:bg-zinc-900/40">
+                    <dt className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                      Focus
+                    </dt>
+                    <dd className="mt-1 flex flex-wrap gap-1.5">
+                      {topCategories.map((slug) => (
+                        <span
+                          key={slug}
+                          className="rounded-full bg-blue-600/10 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
+                        >
+                          {SPEND_CATEGORIES.find((c) => c.slug === slug)?.label ?? slug}
+                        </span>
+                      ))}
+                    </dd>
+                  </div>
+                  <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-700 dark:bg-zinc-900/40">
+                    <dt className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                      Fee
+                    </dt>
+                    <dd className="mt-1 text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                      {FEE_PREFERENCE_OPTIONS.find((o) => o.id === feePreference)?.label ??
+                        "—"}
+                    </dd>
+                  </div>
+                  <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-700 dark:bg-zinc-900/40">
+                    <dt className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                      Lifestyle
+                    </dt>
+                    <dd className="mt-1 flex flex-wrap gap-1.5">
+                      {lifestyleNeeds.length > 0 ? (
+                        lifestyleNeeds.map((id) => (
+                          <span
+                            key={id}
+                            className="rounded-full bg-indigo-600/10 px-2 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300"
+                          >
+                            {LIFESTYLE_NEED_OPTIONS.find((o) => o.id === id)?.label ?? id}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                          None
+                        </span>
+                      )}
+                    </dd>
+                  </div>
+                </dl>
+
+                <div className="mt-4 rounded-xl border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900/30">
+                  <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-200">
+                    What you’ll get
+                  </p>
+                  <ul className="mt-2 space-y-1 text-xs text-zinc-500 dark:text-zinc-400">
+                    <li>- Top 3 picks with estimated monthly rewards</li>
+                    <li>- Fee-aware ranking and preference matching</li>
+                    <li>- One-line AI summary when available</li>
+                  </ul>
+                </div>
               </div>
             </div>
 
@@ -1351,8 +1439,27 @@ export default function Home() {
             ) : recommendations.length > 0 ? (
               <div className="mt-10">
                 {recommendationSummary ? (
-                  <div className="mb-6 rounded-xl border border-indigo-200 bg-indigo-50/80 px-4 py-3 text-sm text-indigo-900 dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-indigo-100">
-                    {recommendationSummary}
+                  <div className="mb-6 rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-white px-4 py-3 text-sm text-indigo-950 shadow-sm dark:border-indigo-900/50 dark:from-indigo-950/50 dark:to-zinc-950/20 dark:text-indigo-100 sm:px-5 sm:py-4">
+                    <div className="flex items-start gap-3">
+                      <span
+                        className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-indigo-600/10 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-200"
+                        aria-hidden
+                      >
+                        <svg
+                          className="h-4 w-4"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9 2a1 1 0 00-1 1v1.06a6.5 6.5 0 00-4.31 4.31H2a1 1 0 100 2h1.69A6.5 6.5 0 008 15.94V17a1 1 0 102 0v-1.06a6.5 6.5 0 004.31-4.31H18a1 1 0 100-2h-1.69A6.5 6.5 0 0012 4.06V3a1 1 0 00-1-1H9zm1 4a4.5 4.5 0 11-.001 9.001A4.5 4.5 0 0110 6z" />
+                        </svg>
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold uppercase tracking-wide text-indigo-700 dark:text-indigo-200">
+                          AI summary
+                        </p>
+                        <p className="mt-1 text-sm leading-relaxed">{recommendationSummary}</p>
+                      </div>
+                    </div>
                   </div>
                 ) : null}
               <div className="grid grid-cols-1 items-stretch gap-8 lg:grid-cols-3">
