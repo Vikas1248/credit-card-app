@@ -1479,100 +1479,117 @@ export default function Home() {
                   return (
                     <article
                       key={card.id}
-                      className={`flex h-full flex-col rounded-2xl border p-6 shadow-md ${issuerBrandTileClass(card.bank, card.network)} ${
+                      className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border p-6 shadow-md ${issuerBrandTileClass(card.bank, card.network)} ${
                         isBest
                           ? "ring-2 ring-emerald-400/45 dark:ring-emerald-500/35"
                           : ""
                       }`}
                     >
                       <div className="flex h-full flex-col">
-                      <div className="flex flex-wrap items-start justify-between gap-2">
-                        <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                          Recommended #{index + 1}
-                        </span>
-                        {isBest ? (
-                          <span className="rounded-full bg-emerald-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
-                            Top match
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex min-w-0 flex-wrap items-center gap-2">
+                            <span className="inline-flex items-center rounded-full border border-zinc-200 bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/30 dark:text-zinc-200">
+                              Pick #{index + 1}
+                            </span>
+                            {isBest ? (
+                              <span className="inline-flex items-center rounded-full bg-emerald-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
+                                Top match
+                              </span>
+                            ) : null}
+                          </div>
+                          <span className="shrink-0 rounded-full border border-zinc-200 bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-950/30 dark:text-zinc-200">
+                            {card.network}
                           </span>
-                        ) : null}
-                      </div>
-                      <h3 className="mt-3 line-clamp-2 text-lg font-semibold leading-snug tracking-tight">
-                        <Link
-                          href={`/card/${card.id}`}
-                          className="text-zinc-900 transition hover:text-blue-600 dark:text-zinc-50 dark:hover:text-blue-400"
-                        >
-                          {card.card_name}
-                        </Link>
-                      </h3>
-                      <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                        {card.bank}
-                      </p>
-                      <div className="mt-2">
-                        <CardTopRewardTag card={card} />
-                      </div>
-
-                      <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
-                        <div className="rounded-xl bg-white/75 p-3 shadow-sm dark:bg-zinc-950/45">
-                          <dt className="text-xs font-medium text-zinc-500">
-                            Monthly reward
-                          </dt>
-                          <dd className="mt-0.5 text-lg font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-                            {formatInr(monthlyTotal)}
-                          </dd>
                         </div>
-                        <div className="rounded-xl bg-white/75 p-3 shadow-sm dark:bg-zinc-950/45">
-                          <dt className="text-xs font-medium text-zinc-500">
-                            Annual fee
-                          </dt>
-                          <dd className="mt-0.5 text-lg font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-                            {formatInr(card.annual_fee)}
-                          </dd>
-                        </div>
-                      </dl>
 
-                      {card.explanation ? (
-                        <div className="mt-4 flex gap-2 rounded-xl border border-blue-100 bg-blue-50/90 px-3 py-3 dark:border-blue-900/40 dark:bg-blue-950/40">
-                          <span
-                            className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400"
-                            aria-hidden
-                          >
-                            <svg
-                              className="h-4 w-4"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </span>
-                          <p className="text-sm leading-relaxed text-zinc-800 dark:text-zinc-200">
-                            {card.explanation}
-                          </p>
-                        </div>
-                      ) : null}
-
-                      <div className="mt-auto flex flex-col gap-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
-                        <div
-                          className={
-                            isAxisBankCard(card.bank) ||
-                            isAmexPlatinumReserveCard(card.card_name, card.bank) ||
-                            isAmexCardUsingGenericApply(card.card_name, card.bank) ||
-                            isSbiCard(card.bank) ||
-                            showHdfcApply ||
-                            showIndusindApply
-                              ? "grid grid-cols-1 gap-2 sm:grid-cols-2 [&>*]:min-h-11"
-                              : "grid grid-cols-1 gap-2 [&>*]:min-h-11"
-                          }
-                        >
+                        <h3 className="mt-3 line-clamp-2 text-lg font-semibold leading-snug tracking-tight">
                           <Link
                             href={`/card/${card.id}`}
-                            className={`${cardViewDetailsButtonClass} w-full`}
+                            className="text-zinc-900 transition group-hover:text-blue-600 dark:text-zinc-50 dark:group-hover:text-blue-400"
                           >
-                            Learn more
+                            {card.card_name}
                           </Link>
+                        </h3>
+
+                        <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                          {card.bank}
+                        </p>
+
+                        <div className="mt-3">
+                          <CardTopRewardTag card={card} />
+                        </div>
+
+                        <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
+                          <div className="rounded-2xl border border-zinc-200 bg-white/70 p-3 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/25">
+                            <dt className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                              Est. monthly rewards
+                            </dt>
+                            <dd className="mt-1 text-xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                              {formatInr(monthlyTotal)}
+                            </dd>
+                          </div>
+                          <div className="rounded-2xl border border-zinc-200 bg-white/70 p-3 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/25">
+                            <dt className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                              Annual fee
+                            </dt>
+                            <dd className="mt-1 text-xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                              {formatInr(card.annual_fee)}
+                            </dd>
+                          </div>
+                        </dl>
+
+                        {card.explanation ? (
+                          <div className="mt-4 rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50/90 to-white px-4 py-3 text-sm text-zinc-800 shadow-sm dark:border-blue-900/50 dark:from-blue-950/50 dark:to-zinc-950/10 dark:text-zinc-200">
+                            <div className="flex items-start gap-2.5">
+                              <span
+                                className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-blue-600/10 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
+                                aria-hidden
+                              >
+                                <svg
+                                  className="h-4 w-4"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              </span>
+                              <div className="min-w-0">
+                                <p className="text-[11px] font-bold uppercase tracking-wide text-blue-700 dark:text-blue-200">
+                                  Why this fits
+                                </p>
+                                <p className="mt-1 leading-relaxed">{card.explanation}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ) : null}
+
+                        <div className="mt-auto pt-5">
+                          <div className="rounded-2xl border border-zinc-200 bg-white/70 p-3 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/25">
+                            <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                              Actions
+                            </p>
+                            <div
+                              className={
+                                isAxisBankCard(card.bank) ||
+                                isAmexPlatinumReserveCard(card.card_name, card.bank) ||
+                                isAmexCardUsingGenericApply(card.card_name, card.bank) ||
+                                isSbiCard(card.bank) ||
+                                showHdfcApply ||
+                                showIndusindApply
+                                  ? "mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 [&>*]:min-h-11"
+                                  : "mt-2 grid grid-cols-1 gap-2 [&>*]:min-h-11"
+                              }
+                            >
+                              <Link
+                                href={`/card/${card.id}`}
+                                className={`${cardViewDetailsButtonClass} w-full`}
+                              >
+                                Learn more
+                              </Link>
                           {isAxisBankCard(card.bank) ? (
                             <AxisApplyLink fullWidth />
                           ) : null}
@@ -1603,8 +1620,9 @@ export default function Home() {
                               fullWidth
                             />
                           ) : null}
+                            </div>
+                          </div>
                         </div>
-                      </div>
                       </div>
                     </article>
                   );
