@@ -1163,19 +1163,28 @@ export default function Home() {
                       <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                         Shopping
                       </p>
-                      <label className="mt-3 block">
-                        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                          Online shopping share: {shoppingOnlinePct}%
-                        </span>
-                        <input
-                          type="range"
-                          min={0}
-                          max={100}
-                          value={shoppingOnlinePct}
-                          onChange={(e) => setShoppingOnlinePct(Number(e.target.value))}
-                          className="mt-2 w-full"
-                        />
-                      </label>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {(
+                          [
+                            [40, "Mostly offline (40%)"],
+                            [70, "Balanced (70%)"],
+                            [90, "Mostly online (90%)"],
+                          ] as const
+                        ).map(([value, label]) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => setShoppingOnlinePct(value)}
+                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                              shoppingOnlinePct === value
+                                ? "border-blue-500 bg-blue-600 text-white"
+                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {(
                           [
@@ -1204,19 +1213,28 @@ export default function Home() {
                       <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                         Dining
                       </p>
-                      <label className="mt-3 block">
-                        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                          Delivery share: {diningDeliveryPct}%
-                        </span>
-                        <input
-                          type="range"
-                          min={0}
-                          max={100}
-                          value={diningDeliveryPct}
-                          onChange={(e) => setDiningDeliveryPct(Number(e.target.value))}
-                          className="mt-2 w-full"
-                        />
-                      </label>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {(
+                          [
+                            [30, "Mostly dine-in (30%)"],
+                            [55, "Balanced (55%)"],
+                            [80, "Mostly delivery (80%)"],
+                          ] as const
+                        ).map(([value, label]) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => setDiningDeliveryPct(value)}
+                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                              diningDeliveryPct === value
+                                ? "border-blue-500 bg-blue-600 text-white"
+                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {(
                           [
@@ -1274,39 +1292,62 @@ export default function Home() {
                           );
                         })}
                       </div>
-                      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <label className="block">
-                          <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                      <div className="mt-3 space-y-3">
+                        <div>
+                          <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
                             Preferred airline
-                          </span>
-                          <select
-                            value={preferredAirline}
-                            onChange={(e) =>
-                              setPreferredAirline(e.target.value as any)
-                            }
-                            className={inputClass}
-                          >
-                            <option value="none">No preference</option>
-                            <option value="indigo">IndiGo</option>
-                            <option value="air_india">Air India</option>
-                            <option value="vistara">Vistara</option>
-                          </select>
-                        </label>
-                        <label className="block">
-                          <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                            Flights share: {travelFlightsPct}%
-                          </span>
-                          <input
-                            type="range"
-                            min={0}
-                            max={100}
-                            value={travelFlightsPct}
-                            onChange={(e) =>
-                              setTravelFlightsPct(Number(e.target.value))
-                            }
-                            className="mt-2 w-full"
-                          />
-                        </label>
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {(
+                              [
+                                ["none", "No preference"],
+                                ["indigo", "IndiGo"],
+                                ["air_india", "Air India"],
+                                ["vistara", "Vistara"],
+                              ] as const
+                            ).map(([id, label]) => (
+                              <button
+                                key={id}
+                                type="button"
+                                onClick={() => setPreferredAirline(id)}
+                                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                                  preferredAirline === id
+                                    ? "border-blue-500 bg-blue-600 text-white"
+                                    : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                            Flights share
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {(
+                              [
+                                [35, "Low (35%)"],
+                                [60, "Balanced (60%)"],
+                                [85, "High (85%)"],
+                              ] as const
+                            ).map(([value, label]) => (
+                              <button
+                                key={value}
+                                type="button"
+                                onClick={() => setTravelFlightsPct(value)}
+                                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                                  travelFlightsPct === value
+                                    ? "border-blue-500 bg-blue-600 text-white"
+                                    : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
 
