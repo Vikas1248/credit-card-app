@@ -241,25 +241,21 @@ export function calculateYearlyValue(card: CardRowForScoring, profile: UserProfi
   const diningCtx = profile.spendContext?.dining;
   if (diningCtx) {
     const deliveryMonthly = spendSplit.dining * (diningCtx.deliveryPct / 100);
-    const swiggyShare = Math.max(0, Math.min(1, (diningCtx.swiggyPct ?? 0) / 100));
-    const zomatoShare = Math.max(0, Math.min(1, (diningCtx.zomatoPct ?? 0) / 100));
-    const otherShare = Math.max(0, 1 - swiggyShare - zomatoShare);
+    const appShare = 0.85; // assume most delivery spend is on selected app
 
-    if (swiggyShare > 0 && hay.includes("swiggy")) {
+    if (diningCtx.preferredApp === "swiggy" && hay.includes("swiggy")) {
       const boostedPct = pctNearKeyword(card.reward_rate, "swiggy") ?? toPctMaybe(card.reward_rate);
       if (typeof boostedPct === "number" && boostedPct > baseDiningPct) {
-        yearlyReward += deliveryMonthly * swiggyShare * 12 * ((boostedPct - baseDiningPct) / 100);
+        yearlyReward += deliveryMonthly * appShare * 12 * ((boostedPct - baseDiningPct) / 100);
       }
     }
 
-    if (zomatoShare > 0 && hay.includes("zomato")) {
+    if (diningCtx.preferredApp === "zomato" && hay.includes("zomato")) {
       const boostedPct = pctNearKeyword(card.reward_rate, "zomato") ?? toPctMaybe(card.reward_rate);
       if (typeof boostedPct === "number" && boostedPct > baseDiningPct) {
-        yearlyReward += deliveryMonthly * zomatoShare * 12 * ((boostedPct - baseDiningPct) / 100);
+        yearlyReward += deliveryMonthly * appShare * 12 * ((boostedPct - baseDiningPct) / 100);
       }
     }
-
-    void otherShare;
   }
 
   const travelCtx = profile.spendContext?.travel;

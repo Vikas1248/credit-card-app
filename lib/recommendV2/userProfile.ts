@@ -11,8 +11,7 @@ export type UserProfile = {
     };
     dining?: {
       deliveryPct: number; // 0..100
-      swiggyPct?: number; // 0..100 of delivery
-      zomatoPct?: number; // 0..100 of delivery
+      preferredApp?: "none" | "swiggy" | "zomato";
     };
     travel?: {
       modes: Array<"flights" | "trains" | "hotels">;
@@ -87,8 +86,12 @@ export function parseUserProfile(
       ? (ctx.dining as Record<string, unknown>)
       : null;
   const diningDeliveryPct = clampPct(diningRaw?.deliveryPct, 55);
-  const swiggyPct = clampPct(diningRaw?.swiggyPct, 0);
-  const zomatoPct = clampPct(diningRaw?.zomatoPct, 0);
+  const preferredDiningApp =
+    diningRaw?.preferredApp === "swiggy" ||
+    diningRaw?.preferredApp === "zomato" ||
+    diningRaw?.preferredApp === "none"
+      ? diningRaw.preferredApp
+      : "none";
 
   const travelRaw =
     ctx?.travel && typeof ctx.travel === "object"
@@ -127,8 +130,7 @@ export function parseUserProfile(
         },
         dining: {
           deliveryPct: diningDeliveryPct,
-          swiggyPct,
-          zomatoPct,
+          preferredApp: preferredDiningApp,
         },
         travel: {
           modes: travelModes,

@@ -390,12 +390,13 @@ export default function Home() {
   const [showV2Recommendations, setShowV2Recommendations] = useState(false);
   const [shoppingOnlinePct, setShoppingOnlinePct] = useState(70);
   const [diningDeliveryPct, setDiningDeliveryPct] = useState(55);
+  const [diningPreferredApp, setDiningPreferredApp] = useState<
+    "none" | "swiggy" | "zomato"
+  >("none");
   const [travelModes, setTravelModes] = useState<
     Array<"flights" | "trains" | "hotels">
   >([]);
   const [travelFlightsPct, setTravelFlightsPct] = useState(60);
-  const [diningSwiggyPct, setDiningSwiggyPct] = useState(0);
-  const [diningZomatoPct, setDiningZomatoPct] = useState(0);
   const [preferredAirline, setPreferredAirline] = useState<
     "none" | "indigo" | "air_india" | "vistara"
   >("none");
@@ -415,8 +416,7 @@ export default function Home() {
       };
       dining?: {
         deliveryPct: number;
-        swiggyPct?: number;
-        zomatoPct?: number;
+        preferredApp?: "none" | "swiggy" | "zomato";
       };
       travel?: {
         modes: Array<"flights" | "trains" | "hotels">;
@@ -613,8 +613,7 @@ export default function Home() {
         },
         dining: {
           deliveryPct: diningDeliveryPct,
-          swiggyPct: diningSwiggyPct,
-          zomatoPct: diningZomatoPct,
+          preferredApp: diningPreferredApp,
         },
         travel: {
           modes: travelModes,
@@ -1218,33 +1217,27 @@ export default function Home() {
                           className="mt-2 w-full"
                         />
                       </label>
-                      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <label className="block">
-                          <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                            Swiggy share (of delivery): {diningSwiggyPct}%
-                          </span>
-                          <input
-                            type="range"
-                            min={0}
-                            max={100}
-                            value={diningSwiggyPct}
-                            onChange={(e) => setDiningSwiggyPct(Number(e.target.value))}
-                            className="mt-2 w-full"
-                          />
-                        </label>
-                        <label className="block">
-                          <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                            Zomato share (of delivery): {diningZomatoPct}%
-                          </span>
-                          <input
-                            type="range"
-                            min={0}
-                            max={100}
-                            value={diningZomatoPct}
-                            onChange={(e) => setDiningZomatoPct(Number(e.target.value))}
-                            className="mt-2 w-full"
-                          />
-                        </label>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {(
+                          [
+                            ["none", "No specific app"],
+                            ["swiggy", "Swiggy"],
+                            ["zomato", "Zomato"],
+                          ] as const
+                        ).map(([id, label]) => (
+                          <button
+                            key={id}
+                            type="button"
+                            onClick={() => setDiningPreferredApp(id)}
+                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                              diningPreferredApp === id
+                                ? "border-blue-500 bg-blue-600 text-white"
+                                : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
                       </div>
                     </div>
 

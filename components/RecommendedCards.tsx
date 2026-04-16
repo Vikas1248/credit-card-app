@@ -15,8 +15,7 @@ type UserProfile = {
     };
     dining?: {
       deliveryPct: number;
-      swiggyPct?: number;
-      zomatoPct?: number;
+      preferredApp?: "none" | "swiggy" | "zomato";
     };
     travel?: {
       modes: Array<"flights" | "trains" | "hotels">;
