@@ -199,3 +199,32 @@ export function compareCardsBySpendCategory(
   if (bs !== as) return bs - as;
   return a.card_name.localeCompare(b.card_name);
 }
+
+/**
+ * Which spend bucket this card is "strongest" in for category browse / filters.
+ * On equal earn %, prefers shopping → dining → travel → fuel (avoids flat cashback
+ * cards defaulting to travel when travel was iterated first).
+ */
+export function primarySpendCategorySlug(
+  card: CardWithCategoryRewardsInput
+): SpendCategorySlug | null {
+  const tieBreak: SpendCategorySlug[] = ["shopping", "dining", "travel", "fuel"];
+  const scan: SpendCategorySlug[] = ["dining", "travel", "shopping", "fuel"];
+  let best: { slug: SpendCategorySlug; pct: number } | null = null;
+  for (const s of scan) {
+    const pct = rewardPctForSpendCategory(card, s);
+    if (pct == null || pct <= 0) continue;
+    if (!best) {
+      best = { slug: s, pct };
+      continue;
+    }
+    if (pct > best.pct) {
+      best = { slug: s, pct };
+    } else if (pct === best.pct) {
+      if (tieBreak.indexOf(s) < tieBreak.indexOf(best.slug)) {
+        best = { slug: s, pct };
+      }
+    }
+  }
+  return best?.slug ?? null;
+}

@@ -385,6 +385,10 @@ export function deriveSbiAxisCategoryRange(
   }
   if (cardNameNorm.includes("cashback sbi card")) {
     if (slug === "fuel") return { min: 1, max: 1 };
+    // No dedicated travel earn in our catalog model — avoid /category/travel mis-classification.
+    if (slug === "travel") return { min: 1, max: 1 };
+    if (slug === "shopping") return { min: 1, max: 5 };
+    if (slug === "dining") return { min: 1, max: 5 };
   }
   if (cardNameNorm.includes("indigo axis bank credit card")) {
     if (slug === "travel") return { min: 3, max: 3 };
@@ -465,7 +469,24 @@ export function deriveSbiAxisCategoryRange(
     if (slug === "fuel") {
       return { min: minR, max: minR };
     }
-    return { min: minR, max: maxR };
+    // Flat "online vs offline" cards are not travel-specific: do not assign the
+    // online tier to travel unless copy clearly signals travel earn (otherwise
+    // travel === shopping and category pages mis-file cards under /category/travel).
+    const travelCue = slugMatchesCorpus("travel", corpus);
+    const shoppingCue = slugMatchesCorpus("shopping", corpus);
+    const diningCue = slugMatchesCorpus("dining", corpus);
+    const genericOnlineSlab = !travelCue;
+
+    if (slug === "travel") {
+      return travelCue ? { min: minR, max: maxR } : { min: minR, max: minR };
+    }
+    if (slug === "shopping") {
+      return genericOnlineSlab || shoppingCue ? { min: minR, max: maxR } : { min: minR, max: minR };
+    }
+    if (slug === "dining") {
+      return genericOnlineSlab || diningCue ? { min: minR, max: maxR } : { min: minR, max: minR };
+    }
+    return { min: minR, max: minR };
   }
 
   const hints = parsePercentHints(corpus);

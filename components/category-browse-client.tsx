@@ -20,6 +20,7 @@ import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import { isSbiCard } from "@/lib/cards/sbiApply";
 import {
   compareCardsBySpendCategory,
+  primarySpendCategorySlug,
   rewardPctForSpendCategory,
   type SpendCategorySlug,
   spendCategoryBySlug,
@@ -182,23 +183,24 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
     };
   }, [listSort, slug]);
 
-  const PRIMARY_SPEND_CATEGORY_ORDER: SpendCategorySlug[] = [
-    "travel",
-    "dining",
-    "shopping",
-    "fuel",
-  ];
-
   const primaryCategoryCards = useMemo(() => {
-    return cards.filter((card) => {
-      let best: { slug: SpendCategorySlug; pct: number } | null = null;
-      for (const s of PRIMARY_SPEND_CATEGORY_ORDER) {
-        const pct = rewardPctForSpendCategory(card, s);
-        if (pct == null || pct <= 0) continue;
-        if (!best || pct > best.pct) best = { slug: s, pct };
-      }
-      return best?.slug === slug;
-    });
+    return cards.filter(
+      (card) =>
+        primarySpendCategorySlug({
+          card_name: card.card_name,
+          bank: card.bank,
+          network: card.network,
+          reward_type: card.reward_type,
+          best_for: card.best_for,
+          reward_rate: card.reward_rate,
+          key_benefits: card.key_benefits,
+          metadata: card.metadata ?? null,
+          dining_reward: card.dining_reward,
+          travel_reward: card.travel_reward,
+          shopping_reward: card.shopping_reward,
+          fuel_reward: card.fuel_reward,
+        }) === slug
+    );
   }, [cards, slug]);
 
   const sortedByEarn = useMemo(() => {
