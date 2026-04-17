@@ -1,3 +1,4 @@
+import { isSbiAxisCatalogBank } from "@/lib/cards/sbiAxisCategoryRewards";
 import {
   rewardPctMidpointForSpendCategory,
   type CardWithCategoryRewardsInput,
@@ -51,27 +52,34 @@ function resolvedCategoryPct(
   key: "dining" | "travel" | "shopping" | "fuel"
 ): number {
   const slug = key;
+  const input: CardWithCategoryRewardsInput = {
+    card_name: card.card_name ?? "",
+    bank: card.bank,
+    dining_reward: card.dining_reward,
+    travel_reward: card.travel_reward,
+    shopping_reward: card.shopping_reward,
+    fuel_reward: card.fuel_reward,
+    network: card.network,
+    reward_type: card.reward_type,
+    best_for: card.best_for,
+    reward_rate: card.reward_rate,
+    metadata: card.metadata,
+    key_benefits: card.key_benefits,
+  };
+
+  // SBI / Axis: catalog-derived ranges (see spendCategories) must win over raw *_reward
+  // columns — those columns are often mis-scaled (e.g. 0.05 stored instead of 5 for "5%"),
+  // which would make yearly rewards tiny (₹hundreds instead of thousands).
+  if (isSbiAxisCatalogBank(card.bank)) {
+    const derived = rewardPctMidpointForSpendCategory(input, slug);
+    if (derived > 0) return derived;
+  }
+
   const base = card[`${key}_reward` as const];
   if (typeof base === "number" && Number.isFinite(base) && base > 0) {
     return base;
   }
-  return rewardPctMidpointForSpendCategory(
-    {
-      card_name: card.card_name ?? "",
-      bank: card.bank,
-      dining_reward: card.dining_reward,
-      travel_reward: card.travel_reward,
-      shopping_reward: card.shopping_reward,
-      fuel_reward: card.fuel_reward,
-      network: card.network,
-      reward_type: card.reward_type,
-      best_for: card.best_for,
-      reward_rate: card.reward_rate,
-      metadata: card.metadata,
-      key_benefits: card.key_benefits,
-    },
-    slug
-  );
+  return rewardPctMidpointForSpendCategory(input, slug);
 }
 
 /**
