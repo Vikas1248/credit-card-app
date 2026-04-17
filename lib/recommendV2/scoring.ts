@@ -158,14 +158,73 @@ function focusCategoryPenalty(card: CardRowForScoring, profile: UserProfile): nu
   return 0.18;
 }
 
-function lifestyleFitScore(card: CardRowForScoring, profile: UserProfile): number {
+function lifestyleNeedSatisfied(card: CardRowForScoring, need: string): boolean {
   const hay = textHaystack(card);
+  const n = need.toLowerCase().trim();
+  const loungeBlob = `${card.lounge_access ?? ""} ${card.key_benefits ?? ""} ${card.best_for ?? ""}`.toLowerCase();
+
+  switch (n) {
+    case "movie_offer":
+      return (
+        hay.includes("movie") ||
+        hay.includes("bookmyshow") ||
+        hay.includes("cinema") ||
+        hay.includes("inox") ||
+        hay.includes("pvr")
+      );
+    case "lounge_domestic":
+      if (
+        loungeBlob.includes("domestic lounge") ||
+        loungeBlob.includes("domestic airport") ||
+        loungeBlob.includes("domestic lounges")
+      ) {
+        return true;
+      }
+      return (
+        hay.includes("domestic lounge") ||
+        hay.includes("domestic airport lounge") ||
+        (hay.includes("lounge") && hay.includes("domestic"))
+      );
+    case "lounge_international":
+      if (
+        loungeBlob.includes("international lounge") ||
+        loungeBlob.includes("priority pass")
+      ) {
+        return true;
+      }
+      return (
+        hay.includes("international lounge") ||
+        hay.includes("priority pass") ||
+        (hay.includes("lounge") && hay.includes("international"))
+      );
+    case "golf":
+      return hay.includes("golf");
+    case "traveler":
+      return hay.includes("travel") || hay.includes("lounge") || hay.includes("miles");
+    default:
+      return n.length > 0 && hay.includes(n);
+  }
+}
+
+function lifestyleFitScore(card: CardRowForScoring, profile: UserProfile): number {
   if (profile.lifestyle.length === 0) return 0.5; // neutral
-  const hits = profile.lifestyle
-    .map((x) => x.toLowerCase())
-    .filter((x) => x && (hay.includes(x) || (x === "traveler" && (hay.includes("travel") || hay.includes("lounge")))))
-    .length;
+  const hits = profile.lifestyle.filter((need) => lifestyleNeedSatisfied(card, need)).length;
   return clamp01(hits / Math.max(1, profile.lifestyle.length));
+}
+
+/** When the user picks explicit lifestyle needs, nudge down cards that miss them (IDs are not present in card text). */
+function lifestyleExpectationPenalty(card: CardRowForScoring, profile: UserProfile): number {
+  let penalty = 0;
+  for (const raw of profile.lifestyle) {
+    const need = raw.toLowerCase().trim();
+    if (!need) continue;
+    if (!lifestyleNeedSatisfied(card, need)) {
+      if (need === "lounge_domestic" || need === "lounge_international") penalty += 0.08;
+      else if (need === "movie_offer" || need === "golf") penalty += 0.04;
+      else penalty += 0.03;
+    }
+  }
+  return Math.min(0.2, penalty);
 }
 
 function rewardTypeAlignment(card: CardRowForScoring, profile: UserProfile): number {
@@ -317,6 +376,7 @@ export function scoreCard(card: CardRowForScoring, profile: UserProfile): number
 
   const typeAlign = rewardTypeAlignment(card, profile); // 0..1
   const focusPenalty = focusCategoryPenalty(card, profile);
+  const lifestyleMiss = lifestyleExpectationPenalty(card, profile);
 
   const score01 = clamp01(
     0.3 * cat +
@@ -324,7 +384,8 @@ export function scoreCard(card: CardRowForScoring, profile: UserProfile): number
     0.2 * feeEff +
     0.1 * lifestyle +
     0.1 * premium -
-    focusPenalty
+    focusPenalty -
+    lifestyleMiss
   );
 
   return Math.round(score01 * 100);

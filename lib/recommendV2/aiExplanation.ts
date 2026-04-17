@@ -18,6 +18,7 @@ Explain in 2-3 lines why this credit card is best for this user.
 User:
 - Monthly spend: ₹${Math.round(userProfile.monthlySpend)}
 - Categories: ${userProfile.topCategories.join(", ")}
+- Lifestyle / benefits: ${userProfile.lifestyle.length ? userProfile.lifestyle.join(", ") : "—"}
 - Preference: ${userProfile.preferredRewardType}
 - Fee sensitivity: ${userProfile.feeSensitivity}
 
