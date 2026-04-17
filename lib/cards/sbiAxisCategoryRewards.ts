@@ -32,10 +32,11 @@ const SLUG_PATTERNS: Record<CategorySlug, RegExp[]> = {
     /swiggy|zomato|dining|restaurant|food\s+delivery|food\s+apps|grocer|groceries|movie|movies|departmental|department\s*store|eazydiner|blinkit/i,
   ],
   travel: [
-    /travel|flight|hotel|cleartrip|yatra|makemytrip|goibibo|indigo|irctc|rail|train|airline|uber|\bola\b/i,
+    // Word-bound train/railway only — bare "train" matches inside "restrictions" and mis-tags cards.
+    /travel|flight|hotel|cleartrip|yatra|makemytrip|goibibo|indigo|irctc|railway|\btrains?\b|airline|uber|\bola\b/i,
   ],
   shopping: [
-    /amazon|flipkart|myntra|online\s+shopping|shopping|retail|utility\s+bill|utilities|bill\s+pay|paytm|blinkit|partner\s*merchant|airtel\s+thanks/i,
+    /amazon|flipkart|myntra|online\s+shopping|online\s+spends?|shopping|retail|utility\s+bill|utilities|bill\s+pay|paytm|blinkit|partner\s*merchant|airtel\s+thanks/i,
   ],
   fuel: [
     /fuel|petrol|diesel|iocl|bpcl|hpcl|indian\s*oil|bpcl|octane|mobility/i,
@@ -93,9 +94,9 @@ function parseCategorySpecificPercentHints(
     dining:
       "dining|restaurant|food\\s+delivery|swiggy|zomato|grocer|groceries|movies?|departmental",
     travel:
-      "travel|flight|hotel|cleartrip|yatra|makemytrip|goibibo|indigo|irctc|rail|train|airline",
+      "travel|flight|hotel|cleartrip|yatra|makemytrip|goibibo|indigo|irctc|railway|\\btrains?\\b|airline",
     shopping:
-      "shopping|amazon|flipkart|myntra|retail|online\\s+spend|online\\s+shopping",
+      "shopping|amazon|flipkart|myntra|retail|online\\s+spends?|online\\s+spend|online\\s+shopping",
     fuel: "fuel|petrol|diesel|bpcl|hpcl|iocl|indian\\s*oil",
   };
   const kw = keywords[slug];

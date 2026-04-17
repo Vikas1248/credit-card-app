@@ -199,6 +199,8 @@ function topCategoryReward(card: CreditCard): {
   value: number;
 } | null {
   const keys: SpendCategorySlug[] = ["dining", "travel", "shopping", "fuel"];
+  /** When earn % ties across categories, prefer shopping then dining (typical for flat online cashback cards). */
+  const tiePriority: SpendCategorySlug[] = ["shopping", "dining", "travel", "fuel"];
   const valid = keys
     .map((k) => [k, rewardPctForSpendCategory(cardCategoryInput(card), k)] as const)
     .filter(
@@ -206,7 +208,10 @@ function topCategoryReward(card: CreditCard): {
         entry[1] != null && entry[1] > 0
     );
   if (valid.length === 0) return null;
-  valid.sort((a, b) => b[1] - a[1]);
+  valid.sort((a, b) => {
+    if (b[1] !== a[1]) return b[1] - a[1];
+    return tiePriority.indexOf(a[0]) - tiePriority.indexOf(b[0]);
+  });
   return { category: valid[0][0], value: valid[0][1] };
 }
 
