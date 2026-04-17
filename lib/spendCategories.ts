@@ -201,6 +201,30 @@ export function compareCardsBySpendCategory(
 }
 
 /**
+ * Premium Amex India cards that are marketed and modeled as travel-first, even when
+ * partner-accelerated shopping % ties or beats base travel in our heuristic ranges.
+ */
+export function isAmexCatalogTravelPrimaryCard(
+  card: CardWithCategoryRewardsInput
+): boolean {
+  if (String(card.network) !== "Amex" || String(card.reward_type) !== "points") {
+    return false;
+  }
+  const n = String(card.card_name ?? "").toLowerCase();
+  if (n.includes("platinum reserve")) return true;
+  if (n.includes("platinum travel")) return true;
+  if (
+    n.includes("american express") &&
+    /\bplatinum\s+card\b/.test(n) &&
+    !n.includes("travel") &&
+    !n.includes("reserve")
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
  * Which spend bucket this card is "strongest" in for category browse / filters.
  * On equal earn %, prefers shopping → dining → travel → fuel (avoids flat cashback
  * cards defaulting to travel when travel was iterated first).
@@ -208,6 +232,8 @@ export function compareCardsBySpendCategory(
 export function primarySpendCategorySlug(
   card: CardWithCategoryRewardsInput
 ): SpendCategorySlug | null {
+  if (isAmexCatalogTravelPrimaryCard(card)) return "travel";
+
   const tieBreak: SpendCategorySlug[] = ["shopping", "dining", "travel", "fuel"];
   const scan: SpendCategorySlug[] = ["dining", "travel", "shopping", "fuel"];
   let best: { slug: SpendCategorySlug; pct: number } | null = null;

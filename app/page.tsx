@@ -25,6 +25,7 @@ import { SITE_ABOUT_LEAD, SITE_NAME } from "@/lib/site";
 import { cardViewDetailsButtonClass } from "@/lib/cardCta";
 import {
   formatCategoryRewardPctRange,
+  isAmexCatalogTravelPrimaryCard,
   rewardPctForSpendCategory,
   rewardPctRangeForSpendCategory,
   SPEND_CATEGORIES,
@@ -198,11 +199,17 @@ function topCategoryReward(card: CreditCard): {
   category: keyof RewardBreakdown;
   value: number;
 } | null {
+  const input = cardCategoryInput(card);
+  if (isAmexCatalogTravelPrimaryCard(input)) {
+    const t = rewardPctForSpendCategory(input, "travel");
+    if (t != null && t > 0) return { category: "travel", value: t };
+  }
+
   const keys: SpendCategorySlug[] = ["dining", "travel", "shopping", "fuel"];
   /** When earn % ties across categories, prefer shopping then dining (typical for flat online cashback cards). */
   const tiePriority: SpendCategorySlug[] = ["shopping", "dining", "travel", "fuel"];
   const valid = keys
-    .map((k) => [k, rewardPctForSpendCategory(cardCategoryInput(card), k)] as const)
+    .map((k) => [k, rewardPctForSpendCategory(input, k)] as const)
     .filter(
       (entry): entry is [SpendCategorySlug, number] =>
         entry[1] != null && entry[1] > 0
