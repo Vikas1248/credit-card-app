@@ -379,7 +379,8 @@ export function deriveSbiAxisCategoryRange(
   }
   if (cardNameNorm.includes("flipkart sbi credit card")) {
     if (slug === "dining") return { min: 1, max: 4 };
-    if (slug === "travel") return { min: 1, max: 5 };
+    // Cleartrip-only uplift; model generic travel at base so travel-focused picks stay accurate.
+    if (slug === "travel") return { min: 1, max: 1 };
     if (slug === "shopping") return { min: 1, max: 7.5 };
     if (slug === "fuel") return { min: 1, max: 1 };
   }
@@ -414,7 +415,8 @@ export function deriveSbiAxisCategoryRange(
   }
   if (cardNameNorm.includes("flipkart axis bank credit card")) {
     if (slug === "dining") return { min: 1, max: 4 };
-    if (slug === "travel") return { min: 1, max: 5 };
+    // Cleartrip partner rate is not broad travel; avoid inflating travel-first recommendations.
+    if (slug === "travel") return { min: 1, max: 1 };
     if (slug === "shopping") return { min: 1, max: 7.5 };
     if (slug === "fuel") return { min: 0, max: 0 };
   }
