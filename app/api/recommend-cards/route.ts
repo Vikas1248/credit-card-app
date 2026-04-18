@@ -7,6 +7,7 @@ import {
   type CardRowForScoring,
 } from "@/lib/recommendV2/scoring";
 import { generateExplanation } from "@/lib/recommendV2/aiExplanation";
+import { CREDGENIE_RECOMMEND_FRESH_HEADER } from "@/lib/recommendV2/recommendCardsFreshHeader";
 
 type RecommendedCard = {
   card_id: string;
@@ -38,14 +39,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
+    const skipCache =
+      request.headers.get(CREDGENIE_RECOMMEND_FRESH_HEADER) === "1";
     const key = cacheKey(parsed.profile);
     const now = Date.now();
-    const cached = cache.get(key);
-    if (cached && cached.expiresAt > now) {
-      return NextResponse.json(cached.payload, {
-        status: 200,
-        headers: { "Cache-Control": "private, max-age=600" },
-      });
+    if (!skipCache) {
+      const cached = cache.get(key);
+      if (cached && cached.expiresAt > now) {
+        return NextResponse.json(cached.payload, {
+          status: 200,
+          headers: { "Cache-Control": "private, max-age=600" },
+        });
+      }
     }
 
     const supabase = getSupabaseServerClient();
@@ -83,11 +88,15 @@ export async function POST(request: Request) {
       })
     );
 
-    cache.set(key, { expiresAt: now + CACHE_TTL_MS, payload: withExplanation });
+    if (!skipCache) {
+      cache.set(key, { expiresAt: now + CACHE_TTL_MS, payload: withExplanation });
+    }
 
     return NextResponse.json(withExplanation, {
       status: 200,
-      headers: { "Cache-Control": "private, max-age=600" },
+      headers: {
+        "Cache-Control": "no-store, private",
+      },
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unexpected error";

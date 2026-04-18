@@ -32,6 +32,12 @@ import {
   type SpendCategorySlug,
 } from "@/lib/spendCategories";
 import type { CardNetwork } from "@/lib/types/card";
+import {
+  parseUserProfile,
+  type UserProfile,
+} from "@/lib/recommendV2/userProfile";
+
+const CREDGENIE_V2_PROFILE_KEY = "credgenie:v2-recommend-profile";
 
 type CreditCard = {
   id: string;
@@ -415,28 +421,7 @@ export default function Home() {
   const [shoppingPreferredMerchant, setShoppingPreferredMerchant] = useState<
     "none" | "flipkart" | "amazon"
   >("none");
-  const [v2Profile, setV2Profile] = useState<{
-    monthlySpend: number;
-    topCategories: string[];
-    preferredRewardType: "cashback" | "points" | "miles";
-    feeSensitivity: "low" | "medium" | "high";
-    lifestyle: string[];
-    spendContext?: {
-      shopping?: {
-        onlinePct: number;
-        preferredMerchant?: "none" | "flipkart" | "amazon";
-      };
-      dining?: {
-        deliveryPct: number;
-        preferredApp?: "none" | "swiggy" | "zomato";
-      };
-      travel?: {
-        modes: Array<"flights" | "trains" | "hotels">;
-        preferredAirline: "none" | "indigo" | "air_india" | "vistara";
-        flightsPct: number;
-      };
-    };
-  } | null>(null);
+  const [v2Profile, setV2Profile] = useState<UserProfile | null>(null);
   const [compareIdA, setCompareIdA] = useState("");
   const [compareIdB, setCompareIdB] = useState("");
   const [featuredFromAi, setFeaturedFromAi] = useState<
@@ -555,6 +540,19 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(CREDGENIE_V2_PROFILE_KEY);
+      if (!raw) return;
+      const parsed = parseUserProfile(JSON.parse(raw) as unknown);
+      if (!parsed.ok) return;
+      setV2Profile(parsed.profile);
+      setShowV2Recommendations(true);
+    } catch {
+      /* ignore corrupt storage */
+    }
+  }, []);
+
+  useEffect(() => {
     if (cards.length === 0) return;
     let cancelled = false;
     (async () => {
@@ -612,7 +610,7 @@ export default function Home() {
           ? "medium"
           : "low";
 
-    setV2Profile({
+    const profile: UserProfile = {
       monthlySpend,
       topCategories: topCategories,
       preferredRewardType: "cashback",
@@ -633,7 +631,13 @@ export default function Home() {
           flightsPct: 60,
         },
       },
-    });
+    };
+    try {
+      sessionStorage.setItem(CREDGENIE_V2_PROFILE_KEY, JSON.stringify(profile));
+    } catch {
+      /* quota / private mode */
+    }
+    setV2Profile(profile);
     setShowV2Recommendations(true);
   };
 

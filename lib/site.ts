@@ -15,6 +15,32 @@ export function getSiteUrl(): string {
   return "http://localhost:3000";
 }
 
+/**
+ * LinkedIn company or profile URL for footer / about.
+ * Override with `NEXT_PUBLIC_LINKEDIN_URL` (must be a linkedin.com URL).
+ */
+export function getSiteLinkedInUrl(): string | null {
+  const raw =
+    process.env.NEXT_PUBLIC_LINKEDIN_URL?.trim() ||
+    "https://www.linkedin.com/company/credgenie";
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    const host = url.hostname.replace(/^www\./, "");
+    if (host !== "linkedin.com" && !host.endsWith(".linkedin.com")) return null;
+    url.search = "";
+    url.hash = "";
+    const out = url
+      .toString()
+      .replace(/\/$/, "")
+      .replace(/^http:\/\//i, "https://");
+    return out;
+  } catch {
+    return null;
+  }
+}
+
 export const SITE_NAME = "CredGenie";
 
 /** Browser tab / PWA install title. */

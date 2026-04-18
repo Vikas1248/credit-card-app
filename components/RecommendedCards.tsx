@@ -1,29 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-
-type UserProfile = {
-  monthlySpend: number;
-  topCategories: string[];
-  preferredRewardType: "cashback" | "points" | "miles";
-  feeSensitivity: "low" | "medium" | "high";
-  lifestyle: string[];
-  spendContext?: {
-    shopping?: {
-      onlinePct: number;
-      preferredMerchant?: "none" | "flipkart" | "amazon";
-    };
-    dining?: {
-      deliveryPct: number;
-      preferredApp?: "none" | "swiggy" | "zomato";
-    };
-    travel?: {
-      modes: Array<"flights" | "trains" | "hotels">;
-      preferredAirline: "none" | "indigo" | "air_india" | "vistara";
-      flightsPct: number;
-    };
-  };
-};
+import { CREDGENIE_RECOMMEND_FRESH_HEADER } from "@/lib/recommendV2/recommendCardsFreshHeader";
+import type { UserProfile } from "@/lib/recommendV2/userProfile";
 
 type RecommendedCard = {
   card_id: string;
@@ -66,7 +45,11 @@ export function RecommendedCards({ profile }: { profile: UserProfile }) {
         setError(null);
         const res = await fetch("/api/recommend-cards", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+            [CREDGENIE_RECOMMEND_FRESH_HEADER]: "1",
+          },
           body: JSON.stringify(requestBody),
         });
         const data = (await res.json()) as

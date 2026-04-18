@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
+import { getSiteLinkedInUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 
 const aboutTitle = `About ${SITE_NAME}`;
 
@@ -20,6 +20,8 @@ export const metadata: Metadata = {
 };
 
 export default function AboutPage() {
+  const linkedInUrl = getSiteLinkedInUrl();
+
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-12 text-zinc-900 dark:text-zinc-100 sm:px-6 sm:py-16">
       <Link
@@ -50,6 +52,21 @@ export default function AboutPage() {
             support@credgenie.in
           </a>
           .
+          {linkedInUrl ? (
+            <>
+              {" "}
+              You can also connect on{" "}
+              <a
+                href={linkedInUrl}
+                target="_blank"
+                rel="noopener noreferrer me"
+                className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+              >
+                LinkedIn
+              </a>
+              .
+            </>
+          ) : null}
         </p>
       </section>
     </main>

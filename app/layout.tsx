@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import {
+  getSiteLinkedInUrl,
   getSiteUrl,
   SITE_DESCRIPTION,
   SITE_NAME,
@@ -81,6 +82,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const linkedInUrl = getSiteLinkedInUrl();
+
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
@@ -121,6 +124,20 @@ export default function RootLayout({
             >
               support@credgenie.in
             </a>
+            {linkedInUrl ? (
+              <>
+                {" "}
+                ·{" "}
+                <a
+                  href={linkedInUrl}
+                  target="_blank"
+                  rel="noopener noreferrer me"
+                  className="font-medium text-zinc-600 hover:underline dark:text-zinc-300"
+                >
+                  LinkedIn
+                </a>
+              </>
+            ) : null}
           </p>
         </footer>
         {/* Plain scripts: Cuelinks’ dashboard checker parses raw HTML; next/script wrapped the config in __next_s. */}
