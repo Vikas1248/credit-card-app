@@ -340,7 +340,28 @@ export function calculateYearlyValue(card: CardRowForScoring, profile: UserProfi
   };
 }
 
-export function scoreCard(card: CardRowForScoring, profile: UserProfile): number {
+/** Human-readable score components (0–1 scales except finalScore 0–100). */
+export type CardScoreBreakdown = {
+  categoryFit: number;
+  /** Reward strength vs yearly spend cap (dimensionless 0–1). */
+  rewardValue: number;
+  feeScore: number;
+  lifestyle: number;
+  /** Sum of focus-category and lifestyle-expectation penalties (0–1 scale each, then added). */
+  penalty: number;
+  finalScore: number;
+};
+
+export type ScoreCardDetails = {
+  score: number;
+  breakdown: CardScoreBreakdown;
+  value: YearlyValue;
+};
+
+/**
+ * Same weighted model as {@link scoreCard}, plus intermediate breakdown for UI / graphs.
+ */
+export function scoreCardWithDetails(card: CardRowForScoring, profile: UserProfile): ScoreCardDetails {
   // Weighted model:
   // - Category match (30%)
   // - Reward value estimation (30%)
@@ -388,6 +409,22 @@ export function scoreCard(card: CardRowForScoring, profile: UserProfile): number
     lifestyleMiss
   );
 
-  return Math.round(score01 * 100);
+  const finalScore = Math.round(score01 * 100);
+  return {
+    score: finalScore,
+    value,
+    breakdown: {
+      categoryFit: cat,
+      rewardValue,
+      feeScore: feeEff,
+      lifestyle,
+      penalty: focusPenalty + lifestyleMiss,
+      finalScore,
+    },
+  };
+}
+
+export function scoreCard(card: CardRowForScoring, profile: UserProfile): number {
+  return scoreCardWithDetails(card, profile).score;
 }
 

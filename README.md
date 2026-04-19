@@ -1,104 +1,180 @@
 # CredGenie
 
-**CredGenie** helps users discover the best Indian credit cards for their spend pattern.
+**CredGenie** is a [Next.js](https://nextjs.org/) app that helps people in India **discover and compare credit cards**: search the catalog, browse by spend category, match cards to monthly spend, compare two products, and get **optional AI** explanations when OpenAI is configured.
 
-It supports:
+Live site: **[credgenie.in](https://credgenie.in)** · Company: **[CredGenie on LinkedIn](https://www.linkedin.com/company/credgenie)**
 
-- **Personalized recommendations** (spend + preferences + optional AI summary)
-- **Browse + search** across the full catalog
-- **Category pages** (dining / travel / shopping / fuel)
-- **Compare two cards** side-by-side (with optional AI narrative)
-- **Apply / affiliate CTAs** (bank-specific routing where available)
+**Maintainer:** [@Vikas1248](https://github.com/Vikas1248) · **Repo:** [github.com/Vikas1248/credit-card-app](https://github.com/Vikas1248/credit-card-app)
 
-Card data is read from Supabase table: **`credit_cards`**.
+---
 
-**Maintainer:** [@Vikas1248](https://github.com/Vikas1248) · **Repo:** `https://github.com/Vikas1248/credit-card-app`
+## Features
+
+- **Personalized recommendations** — Wizard captures income band, spend band, top categories (1–3), fee comfort, lifestyle toggles, and fine-tuning (e.g. online shopping %, airline preference). Top picks use **deterministic scoring** plus optional **one-line AI “why”** per card.
+- **Recommendations survive refresh** — Last submitted profile is stored in **`sessionStorage`**; reload restores the block. Client requests skip the short-lived server cache so picks can refresh after deploys or rule changes.
+- **Browse + search** — Full catalog with filters; optional **AI ranking** for search/browse when configured.
+- **Category pages** — Dining, travel, shopping, fuel with earn-based sort and optional **AI insight** and **AI order**.
+- **Compare two cards** — Side-by-side fees and category earn; optional **AI comparison** narrative.
+- **Card detail** — Per-card view with optional **AI insight**.
+- **Featured carousel** — Optional **AI-picked** featured cards on the home page.
+- **Apply / affiliate CTAs** — Bank-specific apply links (Axis, SBI, HDFC, Amex, IndusInd, etc.) where implemented.
+
+Card data is read from Supabase table **`credit_cards`**. Estimates are illustrative only — always confirm fees and rewards with the issuer.
+
+---
+
+## Tech stack
+
+| Layer | Choice |
+|--------|--------|
+| Framework | **Next.js 16** (App Router), **React 19**, **TypeScript** |
+| Styling | **Tailwind CSS 4** |
+| Data | **Supabase** (`@supabase/supabase-js`; server routes use service role where configured) |
+| AI | **OpenAI Chat Completions** (`gpt-4o-mini` by default) — see [AI & OpenAI](#ai--openai) |
+| PWA | **`@ducanh2912/next-pwa`** (offline shell / precache where enabled) |
+| Affiliates | **Cuelinks** (optional widget + link kit; see layout / env) |
+
+---
 
 ## Quickstart (local)
 
 ```bash
 npm install
 cp .env.example .env.local
+# Edit .env.local — at minimum Supabase URL + anon key
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open **http://localhost:3000**.
+
+```bash
+npm run build   # production build (includes TypeScript)
+npm run start   # run production build locally
+npm run lint    # ESLint
+```
+
+---
+
+## Project layout (high level)
+
+| Path | Role |
+|------|------|
+| `app/` | Routes: home, `/cards`, `/card/[id]`, `/category/[slug]`, `/about`, API routes under `app/api/` |
+| `components/` | Client UI (browse, compare, recommendations, apply links, etc.) |
+| `lib/spendCategories.ts` | Category earn ranges, **primary category** slug for browse chips |
+| `lib/cards/` | Issuer-specific earn derivation (SBI/Axis catalog, Amex, etc.) |
+| `lib/recommendV2/` | Wizard v2 profile parsing, **scoring**, **AI explanation** |
+| `lib/recommend/` | Older spend-based recommend flow + OpenAI summaries |
+| `lib/ai/openaiClient.ts` | Shared OpenAI JSON chat helper |
+| `data/` | Refined JSON sources used by import / pipeline scripts |
+
+---
 
 ## Environment variables
 
-Use `.env.local` for local development. Never commit secrets.
+Use **`.env.local`** locally. Do **not** commit secrets.
 
-### Required (Supabase)
+### Required (hosted catalog)
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-### Recommended (server-side Supabase access)
+### Recommended (server-side)
 
-- `SUPABASE_SERVICE_ROLE_KEY`  
-  Used by API routes to query Supabase server-side. Keep secret.
+- `SUPABASE_SERVICE_ROLE_KEY` — API routes query Supabase with elevated access; keep secret.
 
-### Optional
+### Site & SEO
 
-- `NEXT_PUBLIC_SITE_URL`  
-  Used for sitemap/robots/OG metadata base.
-- `NEXT_PUBLIC_CARD_NETWORK`  
-  Catalog filter: `Visa` | `Mastercard` | `Amex` | unset | `all` | `*`.
-- **AI features**
-  - `OPENAI_API_KEY`
-  - `OPENAI_MODEL` (defaults to `gpt-4o-mini`)
-  - `DISABLE_EXTERNAL_API_CALLS=1` to force-disable any third-party HTTP calls (OpenAI).
-- **Cuelinks**
-  - `NEXT_PUBLIC_CUELINKS_CHANNEL_ID`
-  - `NEXT_PUBLIC_CUELINKS_WIDGET_KEY`
-  - `NEXT_PUBLIC_CUELINKS_DISABLE_V2`
-  - `NEXT_PUBLIC_CUELINKS_PUB_ID`
-- **Data pipeline (optional)**
-  - `GCS_BUCKET`
-  - `GCS_PREFIX`
+- `NEXT_PUBLIC_SITE_URL` — Canonical origin (sitemap, `robots.txt`, Open Graph `metadataBase`). Example: `https://credgenie.in`
+- `NEXT_PUBLIC_LINKEDIN_URL` — Optional override for footer / About LinkedIn link (default is CredGenie company page in code).
 
-See `.env.example` for notes.
+### Catalog filter
 
-## How recommendations work
+- `NEXT_PUBLIC_CARD_NETWORK` — Restrict UI catalog: `Visa` | `Mastercard` | `Amex` | unset | `all` | `*`.
 
-CredGenie ranks cards in two phases:
+### AI (OpenAI)
 
-- **Math ranking (default):** estimates yearly rewards from your monthly spend split across dining / travel / shopping / fuel.
-- **Preference matching:** adjusts ranking using selected preferences (fee comfort, top categories, lifestyle needs) and excludes cards the user already has.
+- `OPENAI_API_KEY` — Enables AI features listed below.
+- `OPENAI_MODEL` — Optional; defaults to **`gpt-4o-mini`**.
+- `DISABLE_EXTERNAL_API_CALLS=1` — Disables third-party HTTP calls (including OpenAI). See `lib/config/externalAccess.ts`.
 
-When OpenAI is configured, CredGenie additionally adds:
+### Cuelinks (optional)
 
-- **One-line AI summary** of why the shortlist fits
-- **Per-card “Why this fits”** short explanation
+- `NEXT_PUBLIC_CUELINKS_CHANNEL_ID`, `NEXT_PUBLIC_CUELINKS_WIDGET_KEY`, `NEXT_PUBLIC_CUELINKS_DISABLE_V2`, `NEXT_PUBLIC_CUELINKS_PUB_ID`
 
-AI output is constrained to the candidate pool produced by the spend model (no invented cards).
+### Data pipeline (local / CI)
 
-## Scripts
+- `GCS_BUCKET`, `GCS_PREFIX` — Used by Python sync scripts when mirroring to GCS / import flows.
 
-```bash
-npm run dev      # local dev server
-npm run build    # production build (includes TypeScript step)
-npm run start    # start built app
-npm run lint     # eslint
-```
+Full notes: **`.env.example`**.
+
+---
+
+## AI & OpenAI
+
+CredGenie uses **only OpenAI** for generative features, via **`https://api.openai.com/v1/chat/completions`**, mostly through **`lib/ai/openaiClient.ts`** (`openAiJsonCompletion`, JSON response format). Default model: **`gpt-4o-mini`** (override with `OPENAI_MODEL`).
+
+If `OPENAI_API_KEY` is missing or external APIs are disabled, each feature **degrades gracefully** (no AI text, or data-only ordering).
+
+| Feature | API / library entry |
+|---------|----------------------|
+| Home featured carousel | `/api/cards/featured-ai` · `lib/featured/aiFeaturedCarousel.ts` |
+| Category page copy / ordering | `/api/cards/category-insight` · `lib/category/aiCategoryInsight.ts` · `/api/cards/category-order-ai` · `lib/category/aiCategoryOrder.ts` |
+| Search & catalog browse order | `/api/cards/search-ai` · `lib/search/aiSearchRank.ts` · `/api/cards/browse-order-ai` · `lib/search/aiBrowseOrder.ts` |
+| Card detail blurb | `/api/cards/detail-ai-insight` · `lib/card/aiCardDetailInsight.ts` |
+| Compare two cards | `/api/cards/compare-ai` · `lib/compare/aiTwoCards.ts` |
+| Wizard “Recommended for you” (v2) | `/api/recommend-cards` · `lib/recommendV2/aiExplanation.ts` — short “why this card” per top pick |
+| Legacy spend recommend flow | `lib/recommend/spendRecommendationSummaryOpenAI.ts`, `spendExplanationOpenAI.ts`, `aiSpendPicks.ts`, `finalizeSpendRecommendations.ts` · `/api/recommend/openai` |
+
+AI is **constrained to real cards** from your Supabase pool for ranking flows; it does not invent products.
+
+---
+
+## How recommendations work (wizard v2)
+
+1. **Spend split** — From total monthly spend and selected top categories, the app builds a heuristic split across dining / travel / shopping / fuel (`lib/recommendV2/scoring.ts`).
+2. **Scoring** — Combines category fit, estimated yearly reward, fee sensitivity, lifestyle text match, and small penalties for weak focus categories.
+3. **OpenAI** — When configured, adds a **brief personalized explanation** for each of the top 3 cards (`generateExplanation`).
+
+Ranking and reward math are **deterministic**; OpenAI only adds narrative.
+
+---
 
 ## Card data & imports
 
-Bundled datasets used by import scripts:
+Bundled refined JSON examples (import / pipeline inputs):
 
 - `data/credit_cards_amex_refined.json`
 - `data/credit_cards_axis_refined.json`
 - `data/credit_cards_sbi_refined.json`
 
-The app reads **whatever is currently in Supabase** (`credit_cards`).
-If you import multiple times without purging, you may see extra or duplicate rows.
+The **running app** reads whatever is in Supabase **`credit_cards`**.
 
-### Common issue: “Why do I see more cards than in my JSON?”
+### Data scripts (`package.json`)
 
-`import_cards_to_supabase.py` inserts rows; it doesn’t delete older imports.
+```bash
+npm run data:sync          # pipeline with docx conversion
+npm run data:sync:mirror   # + mirror GCS
+# See package.json for data:pipeline, data:upload-gcs, data:merge-refined
+```
 
-Options:
+### Common issue: “More cards than in my JSON?”
 
-- **Clean the DB (recommended):** run a delete script in Supabase SQL editor (for example `sql/delete_non_amex_cards.sql`).
-- **Purge on import:** use the service role key and pass the purge flags supported by the import script.
-- **Catalog filter:** set `NEXT_PUBLIC_CARD_NETWORK` to restrict what the UI shows.
+`import_cards_to_supabase.py` **inserts** rows; it does not delete older imports.
+
+- Clean the DB in Supabase SQL (e.g. project `sql/` helpers), or use purge flags if your import script supports them, or restrict the UI with `NEXT_PUBLIC_CARD_NETWORK`.
+
+---
+
+## Heuristic modelling (non-AI)
+
+Some issuer cards use **catalog-derived earn ranges** instead of raw DB columns (e.g. SBI/Axis in `lib/cards/sbiAxisCategoryRewards.ts`). A few product-specific rules keep **category browse** and **recommendations** aligned with how cards are marketed — for example:
+
+- **Amex Platinum / Platinum Reserve** — Treated as **travel-first** for primary category chips when points + name patterns match (`lib/spendCategories.ts`).
+- **Flipkart co-brands** — Broad **travel** is modelled at base tier so **Cleartrip-only** uplift does not dominate travel-focused picks.
+
+---
+
+## License & disclaimer
+
+CredGenie is **not** financial advice and is **not** affiliated with banks or card networks. Fees, rewards, and eligibility change; users must verify with issuers before applying.
