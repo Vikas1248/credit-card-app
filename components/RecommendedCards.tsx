@@ -1,19 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type {
+  RecommendCardsAiMeta,
+  RecommendCardsResponseBody,
+  RecommendedCard,
+} from "@/lib/recommendV2/recommendCardsApiTypes";
 import { CREDGENIE_RECOMMEND_FRESH_HEADER } from "@/lib/recommendV2/recommendCardsFreshHeader";
 import type { UserProfile } from "@/lib/recommendV2/userProfile";
-
-type RecommendedCard = {
-  card_id: string;
-  card_name: string;
-  bank: string;
-  score: number;
-  yearlyReward: number;
-  annualFee: number;
-  netGain: number;
-  explanation: string | null;
-};
 
 function formatInr(value: number): string {
   return new Intl.NumberFormat("en-IN", {
@@ -34,6 +28,7 @@ export function RecommendedCards({ profile }: { profile: UserProfile }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cards, setCards] = useState<RecommendedCard[]>([]);
+  const [ai, setAi] = useState<RecommendCardsAiMeta | null>(null);
 
   const requestBody = useMemo(() => profile, [profile]);
 
@@ -53,20 +48,31 @@ export function RecommendedCards({ profile }: { profile: UserProfile }) {
           body: JSON.stringify(requestBody),
         });
         const data = (await res.json()) as
+          | RecommendCardsResponseBody
           | RecommendedCard[]
           | { error?: string };
         if (cancelled) return;
         if (!res.ok) {
           throw new Error(
-            typeof (data as any)?.error === "string"
-              ? (data as any).error
+            typeof (data as { error?: string })?.error === "string"
+              ? (data as { error: string }).error
               : "Failed to load recommendations."
           );
         }
-        setCards(Array.isArray(data) ? data : []);
+        if (Array.isArray(data)) {
+          setCards(data);
+          setAi(null);
+        } else if (data && typeof data === "object" && "cards" in data && Array.isArray(data.cards)) {
+          setCards(data.cards);
+          setAi(data.ai ?? null);
+        } else {
+          setCards([]);
+          setAi(null);
+        }
       } catch (e) {
         if (cancelled) return;
         setCards([]);
+        setAi(null);
         setError(e instanceof Error ? e.message : "Failed to load recommendations.");
       } finally {
         if (!cancelled) setLoading(false);
@@ -85,10 +91,72 @@ export function RecommendedCards({ profile }: { profile: UserProfile }) {
             Recommended for you
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-            Based on your spend pattern and preferences. Scores reflect overall fit (0–100).
+            Based on your spend pattern and preferences. Scores reflect overall fit (0–100). AI copy
+            is generated from the LangGraph winner and runner-up only; ranking stays deterministic.
           </p>
         </div>
       </div>
+
+      {ai &&
+      (ai.explanation.summary.trim().length > 0 ||
+        ai.explanation.why.length > 0 ||
+        ai.explanation.tradeoffs.length > 0) ? (
+        <div className="mt-6 rounded-2xl border border-violet-200/80 bg-violet-50/60 p-5 dark:border-violet-900/40 dark:bg-violet-950/25">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-sm font-semibold text-violet-950 dark:text-violet-100">
+              AI recommendation
+            </h3>
+            <span className="rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-violet-800 dark:bg-zinc-900/80 dark:text-violet-200">
+              {ai.decisionType === "close_call" ? "Close call" : "Clear winner"}
+            </span>
+            <span className="rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-violet-800 dark:bg-zinc-900/80 dark:text-violet-200">
+              Confidence {(ai.confidence * 100).toFixed(0)}%
+            </span>
+          </div>
+          {ai.explanation.summary.trim() ? (
+            <p className="mt-3 text-sm leading-relaxed text-violet-950/90 dark:text-violet-100/90">
+              {ai.explanation.summary}
+            </p>
+          ) : null}
+          {ai.explanation.why.length > 0 ? (
+            <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm text-violet-950/85 dark:text-violet-100/85">
+              {ai.explanation.why.map((line, i) => (
+                <li key={`why-${i}-${line.slice(0, 24)}`}>{line}</li>
+              ))}
+            </ul>
+          ) : null}
+          {ai.explanation.tradeoffs.length > 0 ? (
+            <div className="mt-4">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-violet-900/70 dark:text-violet-200/80">
+                Tradeoffs
+              </p>
+              <ul className="mt-1.5 list-disc space-y-1.5 pl-5 text-sm text-violet-950/85 dark:text-violet-100/85">
+                {ai.explanation.tradeoffs.map((line, i) => (
+                  <li key={`trade-${i}-${line.slice(0, 24)}`}>{line}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {ai.runnerUp ? (
+            <p className="mt-3 text-xs text-violet-900/75 dark:text-violet-200/75">
+              Runner-up:{" "}
+              <span className="font-medium text-violet-950 dark:text-violet-100">
+                {ai.runnerUp.name}
+              </span>{" "}
+              (score {ai.runnerUp.score}, net ≈ {formatInr(ai.runnerUp.netReward)} / yr).
+            </p>
+          ) : null}
+          {ai.betterAlternative ? (
+            <p className="mt-2 text-xs text-violet-900/75 dark:text-violet-200/75">
+              Worth a look:{" "}
+              <span className="font-medium text-violet-950 dark:text-violet-100">
+                {ai.betterAlternative.name}
+              </span>{" "}
+              — higher reward or category fit vs the top pick for your pattern.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       {error ? (
         <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/50 dark:text-red-200">

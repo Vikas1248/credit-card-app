@@ -38,6 +38,19 @@ export type RecommendationExplanation = {
   tradeoffs: string[];
 };
 
+/** Top picks for the wizard grid (same shape as `/api/recommend-cards` card rows). */
+export type RecommendationCardRow = {
+  card_id: string;
+  card_name: string;
+  bank: string;
+  score: number;
+  yearlyReward: number;
+  annualFee: number;
+  netGain: number;
+  /** Short line for the tile; full narrative is in `explanation` on the result. */
+  explanation: string | null;
+};
+
 /** Payload returned from `getRecommendations` (API contract). */
 export type CredgenieRecommendationResult = {
   winner: ScoredCardSummary;
@@ -46,6 +59,8 @@ export type CredgenieRecommendationResult = {
   decisionType: DecisionType;
   betterAlternative?: ScoredCardSummary;
   explanation: RecommendationExplanation;
+  /** First three ranked cards with yearly value fields for the UI. */
+  topPicks: RecommendationCardRow[];
 };
 
 /** Slim card view for JSON APIs. */

@@ -13,7 +13,7 @@
 
 import { Annotation, END, START, StateGraph } from "@langchain/langgraph";
 
-import type { CardRowForScoring } from "@/lib/recommendV2/scoring";
+import { calculateYearlyValue, type CardRowForScoring } from "@/lib/recommendV2/scoring";
 import type { UserProfile } from "@/lib/recommendV2/userProfile";
 
 import {
@@ -32,6 +32,7 @@ import type {
   CredgenieRecommendationInput,
   CredgenieRecommendationResult,
   DecisionType,
+  RecommendationCardRow,
   RecommendationExplanation,
   ScoredCard,
 } from "./types";
@@ -113,9 +114,26 @@ export async function getRecommendations(
   })) as RecommendationGraphState;
 
   const fin = finalizeOrThrow(state);
+  const profile = state.userProfile!;
 
   const winner = fin.topCards[0];
   const runnerUp = fin.topCards[1] ?? null;
+
+  const topPicks: RecommendationCardRow[] = fin.topCards.slice(0, 3).map((s, idx) => {
+    const value = calculateYearlyValue(s.card, profile);
+    const explanation =
+      idx === 0 ? fin.explanation.summary : (fin.explanation.why[idx] ?? null);
+    return {
+      card_id: s.card.id,
+      card_name: s.card.card_name,
+      bank: s.card.bank,
+      score: s.score,
+      yearlyReward: value.yearlyReward,
+      annualFee: value.annualFee,
+      netGain: value.netGain,
+      explanation,
+    };
+  });
 
   const result: CredgenieRecommendationResult = {
     winner: toScoredCardSummary(winner),
@@ -123,6 +141,7 @@ export async function getRecommendations(
     confidence: fin.confidence,
     decisionType: fin.decisionType,
     explanation: fin.explanation,
+    topPicks,
   };
 
   if (state.betterAlternative) {
