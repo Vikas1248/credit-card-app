@@ -12,6 +12,8 @@ export type RecommendedCard = {
   annualFee: number;
   netGain: number;
   explanation: string | null;
+  /** Short benefit lines for the recommendation card UI. */
+  benefitBullets?: string[];
 };
 
 export type RecommendCardsAiMeta = {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AmexGenericApplyLink } from "@/components/amex-generic-apply-link";
 import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
 import { AxisApplyLink } from "@/components/axis-apply-link";
@@ -10,7 +10,7 @@ import { CardTopRewardTag } from "@/components/card-top-reward-tag";
 import { FeaturedCardsCarousel } from "@/components/featured-cards-carousel";
 import { HdfcApplyLink } from "@/components/hdfc-apply-link";
 import { IndusIndApplyLink } from "@/components/indusind-apply-link";
-import { RecommendedCards } from "@/components/RecommendedCards";
+import { RecommendationSplitExperience } from "@/components/RecommendationSplitExperience";
 import { SbiApplyLink } from "@/components/sbi-apply-link";
 import { isAmexCardUsingGenericApply } from "@/lib/cards/amexGenericApply";
 import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
@@ -32,13 +32,6 @@ import {
   type SpendCategorySlug,
 } from "@/lib/spendCategories";
 import type { CardNetwork } from "@/lib/types/card";
-import {
-  parseUserProfile,
-  type UserProfile,
-} from "@/lib/recommendV2/userProfile";
-
-const CREDGENIE_V2_PROFILE_KEY = "credgenie:v2-recommend-profile";
-
 type CreditCard = {
   id: string;
   card_name: string;
@@ -71,96 +64,6 @@ const CATEGORY_LABELS: { key: keyof RewardBreakdown; label: string }[] = [
   { key: "travel", label: "Travel" },
   { key: "shopping", label: "Shopping" },
   { key: "fuel", label: "Fuel" },
-];
-
-type SalaryBandId =
-  | "r0_5"
-  | "r5_10"
-  | "r10_25"
-  | "r25_50"
-  | "r50_plus";
-
-type MonthlySpendBandId =
-  | "under_20k"
-  | "20k_50k"
-  | "50k_100k"
-  | "100k_plus";
-
-type FeePreferenceId = "lifetime_free" | "low_fee" | "premium_ok";
-
-type LifestyleNeedId =
-  | "movie_offer"
-  | "lounge_domestic"
-  | "lounge_international"
-  | "golf";
-
-const SALARY_BAND_OPTIONS: { id: SalaryBandId; label: string }[] = [
-  { id: "r0_5", label: "0-5 lakh" },
-  { id: "r5_10", label: "5-10 lakh" },
-  { id: "r10_25", label: "10-25 lakh" },
-  { id: "r25_50", label: "25-50 lakh" },
-  { id: "r50_plus", label: "50 lakh & above" },
-];
-
-const SALARY_BAND_SPEND_PRESETS: Record<
-  SalaryBandId,
-  { dining: number; travel: number; shopping: number; fuel: number }
-> = {
-  r0_5: { dining: 4000, travel: 2000, shopping: 5000, fuel: 3000 },
-  r5_10: { dining: 8000, travel: 5000, shopping: 12000, fuel: 6000 },
-  r10_25: { dining: 15000, travel: 12000, shopping: 22000, fuel: 9000 },
-  r25_50: { dining: 25000, travel: 20000, shopping: 35000, fuel: 12000 },
-  r50_plus: { dining: 40000, travel: 35000, shopping: 60000, fuel: 18000 },
-};
-
-const MONTHLY_SPEND_BAND_OPTIONS: {
-  id: MonthlySpendBandId;
-  label: string;
-  multiplier: number;
-  minTotal: number;
-  maxTotal: number | null;
-}[] = [
-  {
-    id: "under_20k",
-    label: "Under Rs20k / month",
-    multiplier: 0.7,
-    minTotal: 0,
-    maxTotal: 20000,
-  },
-  {
-    id: "20k_50k",
-    label: "Rs20k-Rs50k / month",
-    multiplier: 1,
-    minTotal: 20000,
-    maxTotal: 50000,
-  },
-  {
-    id: "50k_100k",
-    label: "Rs50k-Rs100k / month",
-    multiplier: 1.45,
-    minTotal: 50000,
-    maxTotal: 100000,
-  },
-  {
-    id: "100k_plus",
-    label: "Rs100k+ / month",
-    multiplier: 2,
-    minTotal: 100000,
-    maxTotal: null,
-  },
-];
-
-const FEE_PREFERENCE_OPTIONS: { id: FeePreferenceId; label: string }[] = [
-  { id: "lifetime_free", label: "Lifetime free only" },
-  { id: "low_fee", label: "Low annual fee preferred" },
-  { id: "premium_ok", label: "Premium fee is okay" },
-];
-
-const LIFESTYLE_NEED_OPTIONS: { id: LifestyleNeedId; label: string }[] = [
-  { id: "movie_offer", label: "Movie 1+1 offers" },
-  { id: "lounge_domestic", label: "Domestic lounge" },
-  { id: "lounge_international", label: "International lounge" },
-  { id: "golf", label: "Golf benefits" },
 ];
 
 type FeaturedGroup = {
@@ -390,38 +293,12 @@ export default function Home() {
   const router = useRouter();
   const [cards, setCards] = useState<CreditCard[]>([]);
   const [search, setSearch] = useState("");
-  const [salaryBand, setSalaryBand] = useState<SalaryBandId>("r5_10");
-  const [monthlySpendBand, setMonthlySpendBand] =
-    useState<MonthlySpendBandId>("20k_50k");
-  const [topCategories, setTopCategories] = useState<SpendCategorySlug[]>([
-    "shopping",
-    "dining",
-  ]);
-  const [feePreference, setFeePreference] = useState<FeePreferenceId>("low_fee");
-  const [lifestyleNeeds, setLifestyleNeeds] = useState<LifestyleNeedId[]>([]);
-  const [wizardStep, setWizardStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [spendDining, setSpendDining] = useState("8000");
   const [spendTravel, setSpendTravel] = useState("5000");
   const [spendShopping, setSpendShopping] = useState("12000");
   const [spendFuel, setSpendFuel] = useState("6000");
-  const [showV2Recommendations, setShowV2Recommendations] = useState(false);
-  const [shoppingOnlinePct, setShoppingOnlinePct] = useState(70);
-  const [diningDeliveryPct, setDiningDeliveryPct] = useState(55);
-  const [diningPreferredApp, setDiningPreferredApp] = useState<
-    "none" | "swiggy" | "zomato"
-  >("none");
-  const [travelModes, setTravelModes] = useState<
-    Array<"flights" | "trains" | "hotels">
-  >([]);
-  const [preferredAirline, setPreferredAirline] = useState<
-    "none" | "indigo" | "air_india" | "vistara"
-  >("none");
-  const [shoppingPreferredMerchant, setShoppingPreferredMerchant] = useState<
-    "none" | "flipkart" | "amazon"
-  >("none");
-  const [v2Profile, setV2Profile] = useState<UserProfile | null>(null);
   const [compareIdA, setCompareIdA] = useState("");
   const [compareIdB, setCompareIdB] = useState("");
   const [featuredFromAi, setFeaturedFromAi] = useState<
@@ -436,74 +313,12 @@ export default function Home() {
   const [compareAiLoading, setCompareAiLoading] = useState(false);
   const [compareAiError, setCompareAiError] = useState<string | null>(null);
 
-  const toggleTopCategory = (slug: SpendCategorySlug) => {
-    setTopCategories((prev) => {
-      if (prev.includes(slug)) {
-        if (prev.length <= 1) return prev;
-        return prev.filter((x) => x !== slug);
-      }
-      return [...prev, slug];
-    });
-  };
-
-  const toggleLifestyleNeed = (need: LifestyleNeedId) => {
-    setLifestyleNeeds((prev) =>
-      prev.includes(need) ? prev.filter((x) => x !== need) : [...prev, need]
-    );
-  };
-
-  const buildWizardSpendPlan = () => {
-    const base = SALARY_BAND_SPEND_PRESETS[salaryBand];
-    const spendBand =
-      MONTHLY_SPEND_BAND_OPTIONS.find((x) => x.id === monthlySpendBand) ??
-      MONTHLY_SPEND_BAND_OPTIONS[1];
-    const result: Record<SpendCategorySlug, number> = {
-      dining: base.dining * spendBand.multiplier,
-      travel: base.travel * spendBand.multiplier,
-      shopping: base.shopping * spendBand.multiplier,
-      fuel: base.fuel * spendBand.multiplier,
-    };
-    const selected = new Set(topCategories);
-    for (const slug of ["dining", "travel", "shopping", "fuel"] as const) {
-      const focusMultiplier =
-        selected.size === 0 || selected.has(slug) ? 1.3 : 0.78;
-      result[slug] = Math.max(0, Math.round((result[slug] * focusMultiplier) / 100) * 100);
-    }
-
-    const total =
-      result.dining + result.travel + result.shopping + result.fuel;
-    let targetTotal = total;
-    if (total < spendBand.minTotal) {
-      targetTotal = spendBand.minTotal;
-    } else if (spendBand.maxTotal != null && total > spendBand.maxTotal) {
-      targetTotal = spendBand.maxTotal;
-    }
-
-    if (total > 0 && targetTotal !== total) {
-      const scale = targetTotal / total;
-      for (const slug of ["dining", "travel", "shopping", "fuel"] as const) {
-        result[slug] = Math.max(
-          0,
-          Math.round((result[slug] * scale) / 100) * 100
-        );
-      }
-
-      const adjustedTotal =
-        result.dining + result.travel + result.shopping + result.fuel;
-      const roundingDelta = targetTotal - adjustedTotal;
-      if (roundingDelta !== 0) {
-        const primarySlug =
-          topCategories[0] ??
-          (["shopping", "dining", "travel", "fuel"] as const)[0];
-        result[primarySlug] = Math.max(
-          0,
-          result[primarySlug] + roundingDelta
-        );
-      }
-    }
-
-    return result;
-  };
+  const handleRecommendSpendSplit = useCallback((split: Record<SpendCategorySlug, number>) => {
+    setSpendDining(String(Math.round(split.dining)));
+    setSpendTravel(String(Math.round(split.travel)));
+    setSpendShopping(String(Math.round(split.shopping)));
+    setSpendFuel(String(Math.round(split.fuel)));
+  }, []);
 
   const loadCards = async () => {
     try {
@@ -537,19 +352,6 @@ export default function Home() {
 
   useEffect(() => {
     void loadCards();
-  }, []);
-
-  useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem(CREDGENIE_V2_PROFILE_KEY);
-      if (!raw) return;
-      const parsed = parseUserProfile(JSON.parse(raw) as unknown);
-      if (!parsed.ok) return;
-      setV2Profile(parsed.profile);
-      setShowV2Recommendations(true);
-    } catch {
-      /* ignore corrupt storage */
-    }
   }, []);
 
   useEffect(() => {
@@ -589,57 +391,6 @@ export default function Home() {
       cancelled = true;
     };
   }, [cards]);
-
-  const loadRecommendations = () => {
-    const wizardSpend = buildWizardSpendPlan();
-    const dining = wizardSpend.dining;
-    const travel = wizardSpend.travel;
-    const shopping = wizardSpend.shopping;
-    const fuel = wizardSpend.fuel;
-
-    setSpendDining(String(dining));
-    setSpendTravel(String(travel));
-    setSpendShopping(String(shopping));
-    setSpendFuel(String(fuel));
-
-    const monthlySpend = dining + travel + shopping + fuel;
-    const feeSensitivity =
-      feePreference === "lifetime_free"
-        ? "high"
-        : feePreference === "low_fee"
-          ? "medium"
-          : "low";
-
-    const profile: UserProfile = {
-      monthlySpend,
-      topCategories: topCategories,
-      preferredRewardType: "cashback",
-      feeSensitivity,
-      lifestyle: lifestyleNeeds,
-      spendContext: {
-        shopping: {
-          onlinePct: shoppingOnlinePct,
-          preferredMerchant: shoppingPreferredMerchant,
-        },
-        dining: {
-          deliveryPct: diningDeliveryPct,
-          preferredApp: diningPreferredApp,
-        },
-        travel: {
-          modes: travelModes,
-          preferredAirline,
-          flightsPct: 60,
-        },
-      },
-    };
-    try {
-      sessionStorage.setItem(CREDGENIE_V2_PROFILE_KEY, JSON.stringify(profile));
-    } catch {
-      /* quota / private mode */
-    }
-    setV2Profile(profile);
-    setShowV2Recommendations(true);
-  };
 
   const cardsSortedByName = useMemo(
     () => [...cards].sort((a, b) => a.card_name.localeCompare(b.card_name)),
@@ -838,16 +589,11 @@ export default function Home() {
     });
   }, [displayFeaturedCarouselItems]);
 
-  const topPicksCards = useMemo(() => {
-    const bestOverall = featuredGroups.find((g) => g.id === "best-overall");
-    return (bestOverall?.cards ?? []).slice(0, 3);
-  }, [featuredGroups]);
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-zinc-100/80 text-zinc-900 dark:from-zinc-950 dark:to-zinc-950 dark:text-zinc-100">
       <SiteHeader />
 
-      <main className="mx-auto max-w-4xl px-4 py-14 sm:px-6 sm:py-20">
+      <main className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
         <header className="rounded-3xl bg-gradient-to-br from-white to-blue-50/50 p-7 shadow-sm shadow-zinc-900/[0.06] dark:from-zinc-900 dark:to-zinc-900 sm:p-10">
           <div className="mx-auto max-w-2xl text-center">
             <p className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-300">
@@ -1001,7 +747,7 @@ export default function Home() {
 
           <section
             id="spend-picks"
-            className="scroll-mt-28 rounded-3xl bg-white p-8 shadow-sm shadow-zinc-900/[0.06] dark:bg-zinc-900/70 dark:shadow-black/35 sm:p-10"
+            className="scroll-mt-28 rounded-3xl bg-white p-6 pb-28 shadow-sm shadow-zinc-900/[0.06] dark:bg-zinc-900/70 dark:shadow-black/35 sm:p-8 sm:pb-10 lg:p-10"
             aria-labelledby="spend-picks-heading"
           >
             <div className={sectionHeaderRowClass}>
@@ -1011,555 +757,13 @@ export default function Home() {
                   Recommended cards for you
                 </h2>
                 <p className={sectionLeadClass}>
-                  Tell us your spend pattern and preferences. AI ranks your best-fit cards,
-                  estimates yearly rewards, and explains the "why" in one line.
+                  Adjust your spend mix and see top cards update in real time. Ranking uses the same
+                  deterministic CredGenie score; AI only narrates the winner and runner-up.
                 </p>
               </div>
             </div>
 
-            <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.05fr]">
-              <div className="rounded-2xl bg-zinc-50/80 p-5 shadow-sm shadow-zinc-900/[0.04] dark:bg-zinc-950/40 sm:p-6">
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-                    Step {wizardStep} of 5
-                  </p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {Math.round((wizardStep / 5) * 100)}% complete
-                  </p>
-                </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-                  <div
-                    className="h-full rounded-full bg-blue-600 transition-all dark:bg-blue-500"
-                    style={{ width: `${(wizardStep / 5) * 100}%` }}
-                  />
-                </div>
-
-                <div className="mt-5">
-                  {wizardStep === 1 ? (
-                    <div>
-                      <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                        Income range
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {SALARY_BAND_OPTIONS.map((opt) => (
-                          <button
-                            key={opt.id}
-                            type="button"
-                            onClick={() => setSalaryBand(opt.id)}
-                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                              salaryBand === opt.id
-                                ? "border-blue-500 bg-blue-600 text-white"
-                                : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
-                            }`}
-                          >
-                            {opt.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {wizardStep === 2 ? (
-                    <div>
-                      <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                        Total monthly spend
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {MONTHLY_SPEND_BAND_OPTIONS.map((opt) => (
-                          <button
-                            key={opt.id}
-                            type="button"
-                            onClick={() => setMonthlySpendBand(opt.id)}
-                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                              monthlySpendBand === opt.id
-                                ? "border-blue-500 bg-blue-600 text-white"
-                                : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
-                            }`}
-                          >
-                            {opt.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {wizardStep === 3 ? (
-                    <div>
-                      <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                        Top categories (choose 1-3)
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {SPEND_CATEGORIES.map((cat) => {
-                          const active = topCategories.includes(cat.slug);
-                          return (
-                            <button
-                              key={cat.slug}
-                              type="button"
-                              onClick={() => toggleTopCategory(cat.slug)}
-                              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                                active
-                                  ? "border-blue-500 bg-blue-600 text-white"
-                                  : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
-                              }`}
-                            >
-                              <SpendCategoryIcon slug={cat.slug} className="h-3.5 w-3.5" />
-                              {cat.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {wizardStep === 4 ? (
-                    <div>
-                      <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                        Fee preference
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {FEE_PREFERENCE_OPTIONS.map((opt) => (
-                          <button
-                            key={opt.id}
-                            type="button"
-                            onClick={() => setFeePreference(opt.id)}
-                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                              feePreference === opt.id
-                                ? "border-blue-500 bg-blue-600 text-white"
-                                : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
-                            }`}
-                          >
-                            {opt.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {wizardStep === 5 ? (
-                    <div>
-                      <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                        Travel / lifestyle needs
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {LIFESTYLE_NEED_OPTIONS.map((opt) => {
-                          const selected = lifestyleNeeds.includes(opt.id);
-                          return (
-                            <button
-                              key={opt.id}
-                              type="button"
-                              onClick={() => toggleLifestyleNeed(opt.id)}
-                              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                                selected
-                                  ? "border-blue-500 bg-blue-600 text-white"
-                                  : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
-                              }`}
-                            >
-                              {opt.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-
-                <details className="group mt-6 rounded-2xl bg-white/80 px-4 py-3 shadow-sm shadow-zinc-900/[0.04] dark:bg-zinc-950/30">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    <span>Optional: fine-tune rewards</span>
-                    <span
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-zinc-200/60 bg-white/90 text-zinc-600 transition group-open:rotate-180 dark:border-zinc-700/60 dark:bg-zinc-900 dark:text-zinc-300"
-                      aria-hidden
-                    >
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </span>
-                  </summary>
-
-                  <div className="mt-4 space-y-5">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                        Shopping
-                      </p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {(
-                          [
-                            [40, "Mostly offline (40%)"],
-                            [70, "Balanced (70%)"],
-                            [90, "Mostly online (90%)"],
-                          ] as const
-                        ).map(([value, label]) => (
-                          <button
-                            key={value}
-                            type="button"
-                            onClick={() => setShoppingOnlinePct(value)}
-                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                              shoppingOnlinePct === value
-                                ? "border-blue-500 bg-blue-600 text-white"
-                                : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
-                            }`}
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {(
-                          [
-                            ["none", "No specific app"],
-                            ["flipkart", "Flipkart"],
-                            ["amazon", "Amazon"],
-                          ] as const
-                        ).map(([id, label]) => (
-                          <button
-                            key={id}
-                            type="button"
-                            onClick={() => setShoppingPreferredMerchant(id)}
-                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                              shoppingPreferredMerchant === id
-                                ? "border-blue-500 bg-blue-600 text-white"
-                                : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
-                            }`}
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                        Dining
-                      </p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {(
-                          [
-                            [30, "Mostly dine-in (30%)"],
-                            [55, "Balanced (55%)"],
-                            [80, "Mostly delivery (80%)"],
-                          ] as const
-                        ).map(([value, label]) => (
-                          <button
-                            key={value}
-                            type="button"
-                            onClick={() => setDiningDeliveryPct(value)}
-                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                              diningDeliveryPct === value
-                                ? "border-blue-500 bg-blue-600 text-white"
-                                : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
-                            }`}
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {(
-                          [
-                            ["none", "No specific app"],
-                            ["swiggy", "Swiggy"],
-                            ["zomato", "Zomato"],
-                          ] as const
-                        ).map(([id, label]) => (
-                          <button
-                            key={id}
-                            type="button"
-                            onClick={() => setDiningPreferredApp(id)}
-                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                              diningPreferredApp === id
-                                ? "border-blue-500 bg-blue-600 text-white"
-                                : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
-                            }`}
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                        Travel
-                      </p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {(
-                          [
-                            ["flights", "Flights"],
-                            ["trains", "Trains"],
-                            ["hotels", "Hotels"],
-                          ] as const
-                        ).map(([id, label]) => {
-                          const active = travelModes.includes(id);
-                          return (
-                            <button
-                              key={id}
-                              type="button"
-                              onClick={() =>
-                                setTravelModes((prev) =>
-                                  active ? prev.filter((x) => x !== id) : [...prev, id]
-                                )
-                              }
-                              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                                active
-                                  ? "border-blue-500 bg-blue-600 text-white"
-                                  : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
-                              }`}
-                            >
-                              {label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <div className="mt-3 space-y-3">
-                        <div>
-                          <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                            Preferred airline
-                          </p>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {(
-                              [
-                                ["none", "No preference"],
-                                ["indigo", "IndiGo"],
-                                ["air_india", "Air India"],
-                                ["vistara", "Vistara"],
-                              ] as const
-                            ).map(([id, label]) => (
-                              <button
-                                key={id}
-                                type="button"
-                                onClick={() => setPreferredAirline(id)}
-                                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                                  preferredAirline === id
-                                    ? "border-blue-500 bg-blue-600 text-white"
-                                    : "border-zinc-200/80 bg-white text-zinc-700 hover:border-blue-300/80 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300"
-                                }`}
-                              >
-                                {label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
-                      This helps estimate rewards for co-branded cards (Flipkart/Amazon/IndiGo)
-                      more realistically. You can skip it.
-                    </p>
-                  </div>
-                </details>
-
-                <div className="mt-5 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setWizardStep((s) => Math.max(1, s - 1))}
-                    disabled={wizardStep === 1}
-                    className={
-                      wizardStep === 1
-                        ? btnGhost
-                        : "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-                    }
-                  >
-                    Back
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setWizardStep((s) => Math.min(5, s + 1))}
-                    disabled={wizardStep === 5}
-                    className={
-                      wizardStep === 5
-                        ? btnGhost
-                        : "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-blue-500 bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-blue-400 dark:bg-blue-500 dark:hover:bg-blue-400"
-                    }
-                  >
-                    Next
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void loadRecommendations()}
-                    disabled={wizardStep !== 5}
-                    className={btnPrimary}
-                  >
-                    Show my recommendations
-                  </button>
-                </div>
-              </div>
-
-              <div className="rounded-2xl bg-white p-5 shadow-sm shadow-zinc-900/[0.05] dark:bg-zinc-950/35 sm:p-6">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                      Your inputs
-                    </p>
-                    <p className="mt-1 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
-                      We use these to rank the catalog (and exclude your existing cards).
-                    </p>
-                  </div>
-                  <a
-                    href="#spend-picks"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setWizardStep(1);
-                    }}
-                    className="shrink-0 rounded-full border border-zinc-200/60 bg-white/90 px-3 py-1.5 text-xs font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700/60 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                  >
-                    Edit
-                  </a>
-                </div>
-
-                <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-                  <div className="rounded-xl bg-zinc-50/90 px-3 py-3 dark:bg-zinc-900/45">
-                    <dt className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                      Focus
-                    </dt>
-                    <dd className="mt-1 flex flex-wrap gap-1.5">
-                      {topCategories.map((slug) => (
-                        <span
-                          key={slug}
-                          className="rounded-full bg-blue-600/10 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
-                        >
-                          {SPEND_CATEGORIES.find((c) => c.slug === slug)?.label ?? slug}
-                        </span>
-                      ))}
-                    </dd>
-                  </div>
-                  <div className="rounded-xl bg-zinc-50/90 px-3 py-3 dark:bg-zinc-900/45">
-                    <dt className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                      Fee
-                    </dt>
-                    <dd className="mt-1 text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                      {FEE_PREFERENCE_OPTIONS.find((o) => o.id === feePreference)?.label ??
-                        "—"}
-                    </dd>
-                  </div>
-                  <div className="rounded-xl bg-zinc-50/90 px-3 py-3 dark:bg-zinc-900/45">
-                    <dt className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                      Lifestyle
-                    </dt>
-                    <dd className="mt-1 flex flex-wrap gap-1.5">
-                      {lifestyleNeeds.length > 0 ? (
-                        lifestyleNeeds.map((id) => (
-                          <span
-                            key={id}
-                            className="rounded-full bg-indigo-600/10 px-2 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300"
-                          >
-                            {LIFESTYLE_NEED_OPTIONS.find((o) => o.id === id)?.label ?? id}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-                          None
-                        </span>
-                      )}
-                    </dd>
-                  </div>
-                </dl>
-
-                <div className="mt-4 rounded-xl bg-white/90 px-4 py-3 shadow-sm shadow-zinc-900/[0.03] dark:bg-zinc-900/35">
-                  <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-200">
-                    What you’ll get
-                  </p>
-                  <ul className="mt-2 space-y-1 text-xs text-zinc-500 dark:text-zinc-400">
-                    <li>- Top 3 picks with estimated monthly rewards</li>
-                    <li>- Fee-aware ranking and preference matching</li>
-                    <li>- One-line AI summary when available</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            {showV2Recommendations && v2Profile ? (
-              <div className="mt-10">
-                <RecommendedCards profile={v2Profile} />
-              </div>
-            ) : null}
-          </section>
-
-          <section className={sectionShell} aria-labelledby="how-we-rank-heading">
-            <div className={sectionHeaderRowClass}>
-              <div className={sectionHeaderAccentClass} aria-hidden />
-              <div className="min-w-0 flex-1">
-                <h2 id="how-we-rank-heading" className={sectionTitleClass}>
-                  How we rank
-                </h2>
-                <p className={sectionLeadClass}>
-                  A quick, transparent view of what goes into your recommendations.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm shadow-zinc-900/[0.05] dark:bg-zinc-900/45">
-              <details className="group">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50 dark:text-zinc-100 dark:hover:bg-zinc-800/40">
-                  <span>See what’s included in the ranking</span>
-                  <span
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-zinc-200/60 bg-white/90 text-zinc-600 transition group-open:rotate-180 dark:border-zinc-700/60 dark:bg-zinc-900 dark:text-zinc-300"
-                    aria-hidden
-                  >
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </span>
-                </summary>
-
-                <div className="border-t border-zinc-200/50 px-5 py-5 dark:border-zinc-700/50">
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-2xl bg-zinc-50/90 p-4 text-sm dark:bg-zinc-950/35">
-                      <p className="font-semibold text-zinc-900 dark:text-zinc-100">
-                        Spend-based math
-                      </p>
-                      <p className="mt-1 text-zinc-600 dark:text-zinc-400">
-                        We estimate rewards from your monthly spend across dining, travel,
-                        shopping, and fuel.
-                      </p>
-                    </div>
-                    <div className="rounded-2xl bg-zinc-50/90 p-4 text-sm dark:bg-zinc-950/35">
-                      <p className="font-semibold text-zinc-900 dark:text-zinc-100">
-                        Preference matching
-                      </p>
-                      <p className="mt-1 text-zinc-600 dark:text-zinc-400">
-                        Fee comfort, selected categories, lifestyle needs, and your existing
-                        cards influence ranking.
-                      </p>
-                    </div>
-                    <div className="rounded-2xl bg-zinc-50/90 p-4 text-sm dark:bg-zinc-950/35">
-                      <p className="font-semibold text-zinc-900 dark:text-zinc-100">
-                        AI (when available)
-                      </p>
-                      <p className="mt-1 text-zinc-600 dark:text-zinc-400">
-                        A one-line summary and per-card “why” help explain the shortlist
-                        (never inventing cards outside the candidate pool).
-                      </p>
-                    </div>
-                  </div>
-
-                  <p className="mt-4 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
-                    Tip: If you don’t see exact matches, we’ll show the nearest options
-                    from the current catalog.
-                  </p>
-                </div>
-              </details>
-            </div>
+            <RecommendationSplitExperience onSpendSplitChange={handleRecommendSpendSplit} />
           </section>
 
           <section

@@ -460,7 +460,7 @@ export default async function CardDetailsPage({ params }: CardDetailsPageProps) 
                 {card.network}
               </span>
             </div>
-            <div className="mt-5 hidden sm:flex">
+            <div id="apply" className="mt-5 hidden scroll-mt-28 sm:flex">
               {hasApply ? (
                 <DetailApplyCta card={card} />
               ) : (

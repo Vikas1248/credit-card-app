@@ -38,6 +38,32 @@ function buildAiMetaFromGraph(result: CredgenieRecommendationResult): RecommendC
   };
 }
 
+function truncateLine(s: string, max: number): string {
+  const t = s.trim();
+  if (t.length <= max) return t;
+  return `${t.slice(0, max - 1)}…`;
+}
+
+function benefitBulletsFromRow(card: CardRowForScoring | undefined): string[] {
+  if (!card) return [];
+  const out: string[] = [];
+  if (card.best_for?.trim()) {
+    out.push(truncateLine(card.best_for, 120));
+  }
+  if (card.key_benefits?.trim()) {
+    const parts = card.key_benefits
+      .split(/\n|•/)
+      .map((x) => x.trim())
+      .filter((x) => x.length > 6);
+    for (const p of parts) {
+      if (out.length >= 3) break;
+      const line = truncateLine(p, 100);
+      if (!out.some((x) => x === line || x.includes(line.slice(0, 40)))) out.push(line);
+    }
+  }
+  return out.slice(0, 3);
+}
+
 const SELECT_FIELDS =
   "id, card_name, bank, joining_fee, annual_fee, reward_type, reward_rate, lounge_access, best_for, key_benefits, dining_reward, travel_reward, shopping_reward, fuel_reward, network, metadata";
 
@@ -96,8 +122,14 @@ export async function POST(request: Request) {
       candidatesOverride: cards,
     });
 
+    const byId = new Map(cards.map((c) => [c.id, c]));
+    const enrichedCards: RecommendedCard[] = graphResult.topPicks.map((row) => ({
+      ...row,
+      benefitBullets: benefitBulletsFromRow(byId.get(row.card_id)),
+    }));
+
     const payload: RecommendCardsResponseBody = {
-      cards: graphResult.topPicks as RecommendedCard[],
+      cards: enrichedCards,
       ai: buildAiMetaFromGraph(graphResult),
     };
 
