@@ -1,6 +1,17 @@
 export type UserProfile = {
   monthlySpend: number;
   topCategories: string[]; // e.g. ["shopping", "travel"]
+  /**
+   * Optional normalized per-category weights (any positive scale — not required to sum to 1).
+   * When present, scoring uses these as the actual spend split instead of a coarse
+   * `topCategories` heuristic. Populated by the slider-based UI.
+   */
+  categoryWeights?: {
+    shopping?: number;
+    dining?: number;
+    travel?: number;
+    fuel?: number;
+  };
   preferredRewardType: "cashback" | "points" | "miles";
   feeSensitivity: "low" | "medium" | "high";
   lifestyle: string[]; // ["traveler", "online_shopper"]
@@ -58,6 +69,18 @@ export function parseUserProfile(
   const feeSensitivity = o.feeSensitivity;
   if (feeSensitivity !== "low" && feeSensitivity !== "medium" && feeSensitivity !== "high") {
     return { ok: false, error: `"feeSensitivity" must be "low", "medium", or "high".` };
+  }
+
+  const rawWeights = o.categoryWeights;
+  let categoryWeights: UserProfile["categoryWeights"] | undefined;
+  if (rawWeights && typeof rawWeights === "object") {
+    const w = rawWeights as Record<string, unknown>;
+    const out: NonNullable<UserProfile["categoryWeights"]> = {};
+    for (const k of ["shopping", "dining", "travel", "fuel"] as const) {
+      const v = w[k];
+      if (typeof v === "number" && Number.isFinite(v) && v >= 0) out[k] = v;
+    }
+    if (Object.keys(out).length > 0) categoryWeights = out;
   }
 
   const lifestyleRaw = o.lifestyle;
@@ -120,6 +143,7 @@ export function parseUserProfile(
     profile: {
       monthlySpend,
       topCategories: topCategories.slice(0, 8),
+      ...(categoryWeights ? { categoryWeights } : {}),
       preferredRewardType,
       feeSensitivity,
       lifestyle: lifestyle.slice(0, 10),

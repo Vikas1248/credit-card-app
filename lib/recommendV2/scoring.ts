@@ -1,6 +1,7 @@
 import { rewardCalculator, type SpendByCategory } from "@/lib/recommend/rewardCalculator";
 import {
   rewardPctForSpendCategory,
+  rewardPctMidpointForSpendCategory,
   type SpendCategorySlug,
 } from "@/lib/spendCategories";
 import type { UserProfile } from "@/lib/recommendV2/userProfile";
@@ -76,22 +77,37 @@ function airlineKeyword(
 }
 
 function buildSpendSplit(profile: UserProfile): SpendByCategory {
-  // Heuristic split:
-  // - 60% into top categories (evenly)
-  // - remaining 40% into others (evenly)
   const cats = ["dining", "travel", "shopping", "fuel"] as const;
+  const spend = Math.max(0, profile.monthlySpend);
+  const result: SpendByCategory = { dining: 0, travel: 0, shopping: 0, fuel: 0 };
+
+  // Prefer explicit normalized weights from the profile (e.g. set by the UI sliders)
+  // so shopping:50/dining:30/travel:10/fuel:10 actually translates to spend proportions.
+  const w = profile.categoryWeights;
+  if (w) {
+    let sum = 0;
+    for (const c of cats) {
+      const v = w[c];
+      if (typeof v === "number" && Number.isFinite(v) && v > 0) sum += v;
+    }
+    if (sum > 0) {
+      for (const c of cats) {
+        const v = w[c];
+        result[c] = typeof v === "number" && Number.isFinite(v) && v > 0 ? (spend * v) / sum : 0;
+      }
+      return result;
+    }
+  }
+
+  // Fallback heuristic when no explicit weights: 60% across `topCategories`, 40% across the rest.
   const top = new Set(profile.topCategories.map((c) => c.toLowerCase()));
   const topCats = cats.filter((c) => top.has(c));
   const otherCats = cats.filter((c) => !top.has(c));
-  const spend = profile.monthlySpend;
-
-  const result: SpendByCategory = { dining: 0, travel: 0, shopping: 0, fuel: 0 };
   const topPortion = spend * 0.6;
   const otherPortion = spend * 0.4;
-
   const topEach = topCats.length > 0 ? topPortion / topCats.length : 0;
-  const otherEach = otherCats.length > 0 ? otherPortion / otherCats.length : otherPortion / cats.length;
-
+  const otherEach =
+    otherCats.length > 0 ? otherPortion / otherCats.length : otherPortion / cats.length;
   for (const c of cats) {
     if (topCats.includes(c)) result[c] = topEach;
     else result[c] = otherEach;
@@ -114,37 +130,47 @@ function profileCategorySlugs(profile: UserProfile): SpendCategorySlug[] {
     );
 }
 
+function cardForPctLookup(card: CardRowForScoring) {
+  return {
+    card_name: card.card_name,
+    bank: card.bank,
+    network: (card.network as string | undefined) ?? undefined,
+    reward_type: card.reward_type,
+    best_for: card.best_for,
+    reward_rate: card.reward_rate,
+    metadata: card.metadata ?? null,
+    key_benefits: card.key_benefits ?? null,
+    dining_reward: card.dining_reward ?? null,
+    travel_reward: card.travel_reward ?? null,
+    shopping_reward: card.shopping_reward ?? null,
+    fuel_reward: card.fuel_reward ?? null,
+  };
+}
+
+/** Max of the derived range ("up to" marketing number). Used for boost / merchant uplift lookups. */
 function categoryPct(card: CardRowForScoring, slug: SpendCategorySlug): number {
-  const pct = rewardPctForSpendCategory(
-    {
-      card_name: card.card_name,
-      bank: card.bank,
-      network: (card.network as any) ?? undefined,
-      reward_type: card.reward_type,
-      best_for: card.best_for,
-      reward_rate: card.reward_rate,
-      metadata: card.metadata ?? null,
-      key_benefits: card.key_benefits ?? null,
-      dining_reward: card.dining_reward ?? null,
-      travel_reward: card.travel_reward ?? null,
-      shopping_reward: card.shopping_reward ?? null,
-      fuel_reward: card.fuel_reward ?? null,
-    },
-    slug
-  );
+  const pct = rewardPctForSpendCategory(cardForPctLookup(card), slug);
   return typeof pct === "number" && Number.isFinite(pct) && pct > 0 ? pct : 0;
+}
+
+/** Midpoint of the derived range. Preferred for fit scoring — a 1%–5% card should not
+ * be treated as "5% everywhere" just because the max catalog entry is 5%. */
+function categoryPctMidpoint(card: CardRowForScoring, slug: SpendCategorySlug): number {
+  const pct = rewardPctMidpointForSpendCategory(cardForPctLookup(card), slug);
+  return Number.isFinite(pct) && pct > 0 ? pct : 0;
 }
 
 function categoryMatchScore(card: CardRowForScoring, profile: UserProfile): number {
   const focusCats = profileCategorySlugs(profile);
   if (focusCats.length === 0) return 0.5;
 
-  const focusPcts = focusCats.map((slug) => categoryPct(card, slug));
+  // Use midpoint earn % so optimistic marketing ranges (e.g. 1%–5% cashback) don't
+  // make a card look category-best when the realistic average is much lower.
+  const focusMidPcts = focusCats.map((slug) => categoryPctMidpoint(card, slug));
   const avgFocusPct =
-    focusPcts.reduce((sum, value) => sum + value, 0) / Math.max(1, focusPcts.length);
-  const bestFocusedPct = Math.max(...focusPcts, 0);
+    focusMidPcts.reduce((sum, value) => sum + value, 0) / Math.max(1, focusMidPcts.length);
+  const bestFocusedPct = Math.max(...focusMidPcts, 0);
 
-  // Strongly prefer cards with genuinely good earn on selected focus categories.
   return clamp01(avgFocusPct / 8) * 0.65 + clamp01(bestFocusedPct / 10) * 0.35;
 }
 
@@ -152,7 +178,8 @@ function focusCategoryPenalty(card: CardRowForScoring, profile: UserProfile): nu
   const focusCats = profileCategorySlugs(profile);
   if (focusCats.length === 0) return 0;
 
-  const weakestFocusedPct = Math.min(...focusCats.map((slug) => categoryPct(card, slug)));
+  // Midpoint here too so the penalty reflects realistic average earn, not best-case.
+  const weakestFocusedPct = Math.min(...focusCats.map((slug) => categoryPctMidpoint(card, slug)));
   if (weakestFocusedPct >= 3) return 0;
   if (weakestFocusedPct > 0) return 0.08;
   return 0.18;
@@ -228,8 +255,12 @@ function lifestyleExpectationPenalty(card: CardRowForScoring, profile: UserProfi
 }
 
 function rewardTypeAlignment(card: CardRowForScoring, profile: UserProfile): number {
+  // `calculateYearlyValue` already converts points/miles to INR using redemption rates,
+  // so a hard 0.35 penalty for mismatched reward_type was double-counting against
+  // points cards. Keep a light directional nudge (0.85) when the user explicitly
+  // prefers one format, but stop it from dominating the 30% reward-value weight.
   const pref = profile.preferredRewardType === "miles" ? "points" : profile.preferredRewardType;
-  return card.reward_type === pref ? 1 : 0.35;
+  return card.reward_type === pref ? 1 : 0.85;
 }
 
 export function calculateYearlyValue(card: CardRowForScoring, profile: UserProfile): YearlyValue {
@@ -250,7 +281,7 @@ export function calculateYearlyValue(card: CardRowForScoring, profile: UserProfi
       bank: card.bank,
       reward_type: card.reward_type,
       reward_rate: card.reward_rate,
-      network: (card.network as any) ?? null,
+      network: card.network ?? undefined,
       best_for: card.best_for,
       key_benefits: card.key_benefits,
       metadata: card.metadata ?? null,

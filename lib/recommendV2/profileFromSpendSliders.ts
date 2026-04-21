@@ -88,6 +88,15 @@ export function buildUserProfileFromSpendUi(opts: {
   return {
     monthlySpend: Math.max(0, Math.round(opts.monthlySpendTotal)),
     topCategories: topCategories.length > 0 ? topCategories : ["shopping"],
+    categoryWeights: {
+      shopping: effective.shopping,
+      dining: effective.dining,
+      travel: effective.travel,
+      fuel: effective.fuel,
+    },
+    // Slider UI has no reward-type selector; scoring normalizes points/cashback to INR
+    // in `calculateYearlyValue` and `rewardTypeAlignment` only applies a light nudge for
+    // mismatches, so the choice here is directional, not decisive.
     preferredRewardType: "cashback",
     feeSensitivity,
     lifestyle: [],

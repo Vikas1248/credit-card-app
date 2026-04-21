@@ -100,6 +100,9 @@ export async function normalizeUserInput(
   const userProfile: UserProfile = {
     monthlySpend: input.monthlySpend,
     topCategories: topCategories.length > 0 ? topCategories : ["shopping"],
+    // Surface the normalized weights on the profile so `buildSpendSplit` can compute
+    // a proportional split instead of dumping 40% into the non-top categories.
+    categoryWeights,
     preferredRewardType: input.profileOverrides?.preferredRewardType ?? "cashback",
     feeSensitivity: input.profileOverrides?.feeSensitivity ?? "medium",
     lifestyle: input.profileOverrides?.lifestyle ?? [],
