@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
-  RecommendCardsAiMeta,
   RecommendCardsResponseBody,
   RecommendedCard,
 } from "@/lib/recommendV2/recommendCardsApiTypes";
@@ -11,8 +10,6 @@ import { CREDGENIE_RECOMMEND_FRESH_HEADER } from "@/lib/recommendV2/recommendCar
 import {
   buildUserProfileFromSpendUi,
   DEFAULT_CATEGORY_WEIGHTS,
-  describeTopCategoriesForInsight,
-  feeTierLabel,
   monthlyRupeeSplitFromWeights,
   type CategoryWeightDraft,
   type FeeTierUi,
@@ -67,7 +64,6 @@ export function RecommendationSplitExperience({
   const [monthlySpend, setMonthlySpend] = useState(35_000);
   const [feeTier, setFeeTier] = useState<FeeTierUi>("low");
   const [cards, setCards] = useState<RecommendedCard[]>([]);
-  const [ai, setAi] = useState<RecommendCardsAiMeta | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement | null>(null);
@@ -146,18 +142,14 @@ export function RecommendationSplitExperience({
         }
         if (Array.isArray(data)) {
           setCards(data);
-          setAi(null);
         } else if (data && typeof data === "object" && "cards" in data && Array.isArray(data.cards)) {
           setCards(data.cards);
-          setAi(data.ai ?? null);
         } else {
           setCards([]);
-          setAi(null);
         }
       } catch (e) {
         if (!cancelled) {
           setCards([]);
-          setAi(null);
           setError(e instanceof Error ? e.message : "Failed to load recommendations.");
         }
       } finally {
@@ -170,11 +162,6 @@ export function RecommendationSplitExperience({
   }, [debouncedProfile]);
 
   const topYearlyReward = cards[0]?.yearlyReward ?? 0;
-
-  const insightLine = useMemo(() => {
-    const cats = describeTopCategoriesForInsight(weights);
-    return `You're optimizing for ${cats}. These cards maximize rewards with ${feeTierLabel(feeTier)}.`;
-  }, [weights, feeTier]);
 
   const setWeight = useCallback((key: keyof CategoryWeightDraft, v: number) => {
     const n = Math.max(0, Math.min(100, Math.round(v)));
@@ -325,58 +312,6 @@ export function RecommendationSplitExperience({
             Based on estimated yearly rewards on your top match (illustrative).
           </p>
         </div>
-
-        <div className="rounded-2xl border border-indigo-200/70 bg-indigo-50/50 p-5 shadow-sm dark:border-indigo-900/40 dark:bg-indigo-950/30 sm:p-6">
-          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-800 dark:text-indigo-200">
-            AI insight
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-indigo-950/90 dark:text-indigo-100/90">
-            {insightLine}
-          </p>
-        </div>
-
-        {ai &&
-        (ai.explanation.summary.trim().length > 0 ||
-          ai.explanation.why.length > 0 ||
-          ai.explanation.tradeoffs.length > 0) ? (
-          <div className="rounded-2xl border border-violet-200/80 bg-violet-50/60 p-5 dark:border-violet-900/40 dark:bg-violet-950/25 sm:p-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-sm font-semibold text-violet-950 dark:text-violet-100">
-                AI recommendation
-              </h3>
-              <span className="rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-violet-800 dark:bg-zinc-900/80 dark:text-violet-200">
-                {ai.decisionType === "close_call" ? "Close call" : "Clear winner"}
-              </span>
-              <span className="rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-violet-800 dark:bg-zinc-900/80 dark:text-violet-200">
-                Confidence {(ai.confidence * 100).toFixed(0)}%
-              </span>
-            </div>
-            {ai.explanation.summary.trim() ? (
-              <p className="mt-3 text-sm leading-relaxed text-violet-950/90 dark:text-violet-100/90">
-                {ai.explanation.summary}
-              </p>
-            ) : null}
-            {ai.explanation.why.length > 0 ? (
-              <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm text-violet-950/85 dark:text-violet-100/85">
-                {ai.explanation.why.map((line, i) => (
-                  <li key={`why-${i}-${line.slice(0, 20)}`}>{line}</li>
-                ))}
-              </ul>
-            ) : null}
-            {ai.explanation.tradeoffs.length > 0 ? (
-              <div className="mt-4">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-violet-900/70 dark:text-violet-200/80">
-                  Tradeoffs
-                </p>
-                <ul className="mt-1.5 list-disc space-y-1.5 pl-5 text-sm text-violet-950/85 dark:text-violet-100/85">
-                  {ai.explanation.tradeoffs.map((line, i) => (
-                    <li key={`tr-${i}-${line.slice(0, 20)}`}>{line}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-          </div>
-        ) : null}
 
         {error ? (
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/50 dark:text-red-200">
