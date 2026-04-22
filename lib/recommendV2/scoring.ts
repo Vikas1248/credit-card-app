@@ -266,39 +266,25 @@ function rewardTypeAlignment(card: CardRowForScoring, profile: UserProfile): num
 export function calculateYearlyValue(card: CardRowForScoring, profile: UserProfile): YearlyValue {
   const annualFee = Number.isFinite(card.annual_fee) ? card.annual_fee : 0;
   const spendSplit = buildSpendSplit(profile);
-
-  // Primary: if category columns exist, compute from category pct model.
-  const hasCategoryCols =
-    typeof card.dining_reward === "number" ||
-    typeof card.travel_reward === "number" ||
-    typeof card.shopping_reward === "number" ||
-    typeof card.fuel_reward === "number";
-
-  let yearlyReward = 0;
-  if (hasCategoryCols) {
-    yearlyReward = rewardCalculator.computeYearlyRewards(spendSplit, {
-      card_name: card.card_name,
-      bank: card.bank,
-      reward_type: card.reward_type,
-      reward_rate: card.reward_rate,
-      network: card.network ?? undefined,
-      best_for: card.best_for,
-      key_benefits: card.key_benefits,
-      metadata: card.metadata ?? null,
-      dining_reward: card.dining_reward ?? null,
-      travel_reward: card.travel_reward ?? null,
-      shopping_reward: card.shopping_reward ?? null,
-      fuel_reward: card.fuel_reward ?? null,
-    }).yearlyTotal;
-  } else {
-    // Fallback: parse a global % from reward_rate text (best-effort).
-    const pct = toPctMaybe(card.reward_rate);
-    if (pct != null) {
-      yearlyReward = profile.monthlySpend * 12 * (pct / 100);
-    } else {
-      yearlyReward = 0;
-    }
-  }
+  // Always compute through category-aware reward resolution. This path can use:
+  // - explicit category columns when present
+  // - issuer/catalog-derived category ranges from copy/metadata when columns are absent
+  // Avoid using a single global "%" fallback, which overstates broad spend returns
+  // for cards whose top % applies only to a subset (e.g. online-only cashback tiers).
+  let yearlyReward = rewardCalculator.computeYearlyRewards(spendSplit, {
+    card_name: card.card_name,
+    bank: card.bank,
+    reward_type: card.reward_type,
+    reward_rate: card.reward_rate,
+    network: card.network ?? undefined,
+    best_for: card.best_for,
+    key_benefits: card.key_benefits,
+    metadata: card.metadata ?? null,
+    dining_reward: card.dining_reward ?? null,
+    travel_reward: card.travel_reward ?? null,
+    shopping_reward: card.shopping_reward ?? null,
+    fuel_reward: card.fuel_reward ?? null,
+  }).yearlyTotal;
 
   // Optional spend context uplift: adjust only when user specifies a primary app/airline
   // and card text clearly indicates the same co-brand / affinity.
