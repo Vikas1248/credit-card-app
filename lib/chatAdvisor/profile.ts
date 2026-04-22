@@ -88,25 +88,38 @@ export function missingProfileFields(profile: AdvisorProfile): string[] {
 }
 
 export function nextQuestionForProfile(profile: AdvisorProfile): string {
-  if (!profile.preferred_rewards) {
+  const next = nextMissingProfileField(profile);
+  if (next === "preferred_rewards") {
     return "Do you prefer cashback, travel rewards, or a balanced mix?";
   }
-  if (!profile.fees) {
+  if (next === "fees") {
     return "How fee-sensitive are you: low fee, medium fee, or premium perks with higher fee?";
   }
-  if (!profile.shopping) {
+  if (next === "shopping") {
     return "How much of your monthly spend goes to shopping: low, medium, or high?";
   }
-  if (!profile.dining) {
+  if (next === "dining") {
     return "How much do you spend on dining/food delivery: low, medium, or high?";
   }
-  if (!profile.travel) {
+  if (next === "travel") {
     return "How travel-heavy are you each month: low, medium, or high?";
   }
-  if (!profile.fuel) {
+  if (next === "fuel") {
     return "How much do you spend on fuel: low, medium, or high?";
   }
   return "Tell me your top priority, and I will refine the picks.";
+}
+
+export function nextMissingProfileField(
+  profile: AdvisorProfile
+): keyof AdvisorProfile | null {
+  if (!profile.preferred_rewards) return "preferred_rewards";
+  if (!profile.fees) return "fees";
+  if (!profile.shopping) return "shopping";
+  if (!profile.dining) return "dining";
+  if (!profile.travel) return "travel";
+  if (!profile.fuel) return "fuel";
+  return null;
 }
 
 export function isProfileSufficient(profile: AdvisorProfile): boolean {

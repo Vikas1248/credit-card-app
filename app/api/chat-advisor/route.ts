@@ -4,6 +4,7 @@ import {
   isProfileSufficient,
   mergeAdvisorProfile,
   missingProfileFields,
+  nextMissingProfileField,
   nextQuestionForProfile,
   toRecommendUserProfile,
 } from "@/lib/chatAdvisor/profile";
@@ -57,6 +58,60 @@ function filledFieldCount(profile: AdvisorProfile): number {
   );
 }
 
+function contextualFollowUpIntent(
+  message: string,
+  currentProfile: AdvisorProfile,
+  extracted: Partial<AdvisorProfile>
+): Partial<AdvisorProfile> {
+  const out: Partial<AdvisorProfile> = { ...extracted };
+  const normalized = message.trim().toLowerCase();
+  const hasAnyExtracted = Object.keys(extracted).length > 0;
+
+  if (hasAnyExtracted) return out;
+
+  const nextField = nextMissingProfileField(currentProfile);
+  if (!nextField) return out;
+
+  if (isAdvisorLevel(normalized)) {
+    if (
+      nextField === "shopping" ||
+      nextField === "dining" ||
+      nextField === "travel" ||
+      nextField === "fuel" ||
+      nextField === "fees"
+    ) {
+      out[nextField] = normalized;
+      return out;
+    }
+  }
+
+  if (isAdvisorReward(normalized)) {
+    if (nextField === "preferred_rewards") {
+      out.preferred_rewards = normalized;
+      return out;
+    }
+  }
+
+  if (
+    nextField === "preferred_rewards" &&
+    /\b(cashback|cash back)\b/.test(normalized)
+  ) {
+    out.preferred_rewards = "cashback";
+  } else if (
+    nextField === "preferred_rewards" &&
+    /\b(travel|miles|points)\b/.test(normalized)
+  ) {
+    out.preferred_rewards = "travel";
+  } else if (
+    nextField === "preferred_rewards" &&
+    /\b(mix|mixed|both|balanced)\b/.test(normalized)
+  ) {
+    out.preferred_rewards = "mixed";
+  }
+
+  return out;
+}
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as ChatAdvisorRequestBody;
@@ -67,7 +122,8 @@ export async function POST(request: Request) {
 
     const currentProfile = sanitizeProfile(body.profile);
     const extracted = await extractAdvisorIntent(message);
-    const profile = mergeAdvisorProfile(currentProfile, extracted);
+    const contextual = contextualFollowUpIntent(message, currentProfile, extracted);
+    const profile = mergeAdvisorProfile(currentProfile, contextual);
 
     const shouldRecommendNow =
       isProfileSufficient(profile) || filledFieldCount(profile) >= 3;
