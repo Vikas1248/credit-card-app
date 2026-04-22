@@ -12,6 +12,7 @@ import { HdfcApplyLink } from "@/components/hdfc-apply-link";
 import { IndusIndApplyLink } from "@/components/indusind-apply-link";
 import { RecommendationSplitExperience } from "@/components/RecommendationSplitExperience";
 import { SbiApplyLink } from "@/components/sbi-apply-link";
+import { CreditAdvisorChat } from "@/components/chat/CreditAdvisorChat";
 import { isAmexCardUsingGenericApply } from "@/lib/cards/amexGenericApply";
 import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
 import { isAxisBankCard } from "@/lib/cards/axisApply";
@@ -271,6 +272,7 @@ function SiteHeader() {
                 ["#search", "Search"],
                 ["#categories", "Categories"],
                 ["#featured", "Featured"],
+                ["#chat-advisor", "AI advisor"],
                 ["#spend-picks", "Top spends"],
                 ["#compare", "Compare"],
               ] as const
@@ -636,6 +638,9 @@ export default function Home() {
               <a href="#spend-picks" className={btnPrimary}>
                 Get Personalized Recommendations
               </a>
+              <a href="#chat-advisor" className={btnGhost}>
+                Find my card with AI →
+              </a>
               <Link
                 href="/cards"
                 className={btnGhost}
@@ -743,6 +748,27 @@ export default function Home() {
               items={featuredCarouselSlides}
               loading={loading}
             />
+          </section>
+
+          <section
+            id="chat-advisor"
+            className="scroll-mt-28 rounded-3xl bg-white p-6 shadow-sm shadow-zinc-900/[0.06] dark:bg-zinc-900/70 dark:shadow-black/35 sm:p-8 lg:p-10"
+            aria-labelledby="chat-advisor-heading"
+          >
+            <div className={sectionHeaderRowClass}>
+              <div className={sectionHeaderAccentClass} aria-hidden />
+              <div className="min-w-0 flex-1">
+                <h2 id="chat-advisor-heading" className={sectionTitleClass}>
+                  Conversational card advisor
+                </h2>
+                <p className={sectionLeadClass}>
+                  Tell us your preferences in plain language. We extract intent, ask a few
+                  follow-up questions, and rank cards with the same deterministic CredGenie scoring.
+                </p>
+              </div>
+            </div>
+
+            <CreditAdvisorChat />
           </section>
 
           <section
