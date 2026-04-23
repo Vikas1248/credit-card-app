@@ -10,7 +10,9 @@ Live site: **[credgenie.in](https://credgenie.in)** · Company: **[CredGenie on 
 
 ## Features
 
-- **Personalized recommendations** — Wizard captures income band, spend band, top categories (1–3), fee comfort, lifestyle toggles, and fine-tuning (e.g. online shopping %, airline preference). Top picks use **deterministic scoring** plus optional **one-line AI “why”** per card.
+- **Personalized recommendations (wizard v2)** — Split-layout slider flow captures spend mix + monthly spend + fee preference, then ranks cards with **deterministic scoring** and optional short AI explanation text.
+- **Conversational advisor chat** — “Find my card with AI” chat extracts structured preferences from free text, asks targeted follow-ups, and returns top picks using the **same deterministic scoring pipeline**.
+- **Graceful no-LLM behavior** — If OpenAI is unavailable, recommendations still work. Chat intent falls back to keyword rules and card explanations fall back to rule-based copy.
 - **Recommendations survive refresh** — Last submitted profile is stored in **`sessionStorage`**; reload restores the block. Client requests skip the short-lived server cache so picks can refresh after deploys or rule changes.
 - **Browse + search** — Full catalog with filters; optional **AI ranking** for search/browse when configured.
 - **Category pages** — Dining, travel, shopping, fuel with earn-based sort and optional **AI insight** and **AI order**.
@@ -61,9 +63,11 @@ npm run lint    # ESLint
 |------|------|
 | `app/` | Routes: home, `/cards`, `/card/[id]`, `/category/[slug]`, `/about`, API routes under `app/api/` |
 | `components/` | Client UI (browse, compare, recommendations, apply links, etc.) |
+| `components/chat/` | Chat advisor UI (`CreditAdvisorChat`) |
 | `lib/spendCategories.ts` | Category earn ranges, **primary category** slug for browse chips |
 | `lib/cards/` | Issuer-specific earn derivation (SBI/Axis catalog, Amex, etc.) |
 | `lib/recommendV2/` | Wizard v2 profile parsing, **scoring**, **AI explanation** |
+| `lib/chatAdvisor/` | Chat advisor intent extraction, profile merge logic, deterministic recommendation adapter |
 | `lib/recommend/` | Older spend-based recommend flow + OpenAI summaries |
 | `lib/ai/openaiClient.ts` | Shared OpenAI JSON chat helper |
 | `data/` | Refined JSON sources used by import / pipeline scripts |
@@ -124,19 +128,28 @@ If `OPENAI_API_KEY` is missing or external APIs are disabled, each feature **deg
 | Card detail blurb | `/api/cards/detail-ai-insight` · `lib/card/aiCardDetailInsight.ts` |
 | Compare two cards | `/api/cards/compare-ai` · `lib/compare/aiTwoCards.ts` |
 | Wizard “Recommended for you” (v2) | `/api/recommend-cards` · `lib/recommendV2/aiExplanation.ts` — short “why this card” per top pick |
+| Conversational advisor (chat) | `/api/chat-advisor` · `lib/chatAdvisor/intent.ts` (intent extraction) · `lib/chatAdvisor/recommend.ts` (deterministic ranking + explanation text) |
 | Legacy spend recommend flow | `lib/recommend/spendRecommendationSummaryOpenAI.ts`, `spendExplanationOpenAI.ts`, `aiSpendPicks.ts`, `finalizeSpendRecommendations.ts` · `/api/recommend/openai` |
 
-AI is **constrained to real cards** from your Supabase pool for ranking flows; it does not invent products.
+AI is **constrained to real cards** from your Supabase pool for ranking flows; it does not invent products. In recommendation/chat flows, AI does not choose winners — it only extracts intent and writes explanation copy.
 
 ---
 
-## How recommendations work (wizard v2)
+## How recommendations work
 
-1. **Spend split** — From total monthly spend and selected top categories, the app builds a heuristic split across dining / travel / shopping / fuel (`lib/recommendV2/scoring.ts`).
-2. **Scoring** — Combines category fit, estimated yearly reward, fee sensitivity, lifestyle text match, and small penalties for weak focus categories.
-3. **OpenAI** — When configured, adds a **brief personalized explanation** for each of the top 3 cards (`generateExplanation`).
+### Wizard v2 (`/api/recommend-cards`)
 
-Ranking and reward math are **deterministic**; OpenAI only adds narrative.
+1. **Profile construction** — UI sliders map to normalized category weights + fee sensitivity (`lib/recommendV2/profileFromSpendSliders.ts`).
+2. **Spend split + value** — Scoring uses explicit category weights when available (fallback: heuristic), then computes category-aware yearly value (`lib/recommendV2/scoring.ts`).
+3. **Deterministic ranking** — Cards are ranked by deterministic score; OpenAI (if enabled) only generates explanation text.
+
+### Conversational advisor (`/api/chat-advisor`)
+
+1. **Intent extraction** — Parse user text into structured profile fields (`dining/travel/shopping/fuel/fees/preferred_rewards`) using OpenAI JSON or keyword fallback.
+2. **Profile merge + follow-up** — Merge new signals without degrading stronger existing values; ask next best question if needed.
+3. **Deterministic picks** — Convert chat profile into scoring profile, rank top cards deterministically, then add explanation copy (LLM or rule-based fallback).
+
+Ranking and reward math remain **deterministic** across both flows.
 
 ---
 
