@@ -1,35 +1,7 @@
 import { isOpenAiConfigured, openAiJsonCompletion } from "@/lib/ai/openaiClient";
 import { areThirdPartyApisDisabled } from "@/lib/config/externalAccess";
-import type { AdvisorLevel, AdvisorProfile, AdvisorRewardPreference } from "./types";
-
-const VALID_LEVELS = ["low", "medium", "high"] as const;
-const VALID_REWARDS = ["cashback", "travel", "mixed"] as const;
-
-function isAdvisorLevel(value: string): value is AdvisorLevel {
-  return (VALID_LEVELS as readonly string[]).includes(value);
-}
-
-function isAdvisorReward(value: string): value is AdvisorRewardPreference {
-  return (VALID_REWARDS as readonly string[]).includes(value);
-}
-
-function sanitizeExtractedIntent(raw: unknown): Partial<AdvisorProfile> {
-  if (!raw || typeof raw !== "object") return {};
-  const o = raw as Record<string, unknown>;
-  const out: Partial<AdvisorProfile> = {};
-
-  for (const key of ["dining", "travel", "shopping", "fuel", "fees"] as const) {
-    const value = o[key];
-    if (typeof value === "string" && isAdvisorLevel(value)) {
-      out[key] = value;
-    }
-  }
-  const reward = o.preferred_rewards;
-  if (typeof reward === "string" && isAdvisorReward(reward)) {
-    out.preferred_rewards = reward;
-  }
-  return out;
-}
+import type { AdvisorProfile } from "./types";
+import { extractIntentViaLangflow, normalizeAdvisorIntent } from "./langflowClient";
 
 function hasIntensifier(text: string): boolean {
   return /\b(very|mostly|frequent|frequently|often|a lot|high|heavy|regularly)\b/.test(text);
@@ -69,21 +41,53 @@ function fallbackIntentFromText(message: string): Partial<AdvisorProfile> {
 }
 
 export async function extractAdvisorIntent(message: string): Promise<Partial<AdvisorProfile>> {
-  if (areThirdPartyApisDisabled() || !isOpenAiConfigured()) {
+  if (areThirdPartyApisDisabled()) {
+    console.log("intent_source:", "keyword");
+    console.log("langflow_success:", false);
+    console.log("fallback_triggered:", "external_apis_disabled");
     return fallbackIntentFromText(message);
   }
 
+  // Primary extractor: Langflow service.
   try {
-    const raw = await openAiJsonCompletion(
-      "Extract structured credit card preferences from user input.\n\nReturn JSON:\n{\n  \"dining\": \"low\"|\"medium\"|\"high\"|null,\n  \"travel\": \"low\"|\"medium\"|\"high\"|null,\n  \"shopping\": \"low\"|\"medium\"|\"high\"|null,\n  \"fuel\": \"low\"|\"medium\"|\"high\"|null,\n  \"fees\": \"low\"|\"medium\"|\"high\"|null,\n  \"preferred_rewards\": \"cashback\"|\"travel\"|\"mixed\"|null\n}\n\nOnly extract what is clearly mentioned. Do not guess.",
-      message,
-      0
-    );
-    const parsed = sanitizeExtractedIntent(raw);
-    if (Object.keys(parsed).length > 0) return parsed;
-  } catch {
-    // Fallback on parser errors or API failure.
+    const langflowParsed = await extractIntentViaLangflow(message);
+    if (Object.keys(langflowParsed).length > 0) {
+      console.log("intent_source:", "langflow");
+      console.log("langflow_success:", true);
+      console.log("fallback_triggered:", "none");
+      return langflowParsed;
+    }
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : "langflow_unknown_error";
+    console.log("langflow_success:", false);
+    console.log("fallback_triggered:", `langflow:${reason}`);
   }
 
+  // Secondary fallback: existing OpenAI intent extraction.
+  if (isOpenAiConfigured()) {
+    try {
+      const raw = await openAiJsonCompletion(
+        "Extract structured credit card preferences from user input.\n\nReturn JSON:\n{\n  \"dining\": \"low\"|\"medium\"|\"high\"|null,\n  \"travel\": \"low\"|\"medium\"|\"high\"|null,\n  \"shopping\": \"low\"|\"medium\"|\"high\"|null,\n  \"fuel\": \"low\"|\"medium\"|\"high\"|null,\n  \"fees\": \"low\"|\"medium\"|\"high\"|null,\n  \"preferred_rewards\": \"cashback\"|\"travel\"|\"mixed\"|null\n}\n\nOnly extract what is clearly mentioned. Do not guess.",
+        message,
+        0
+      );
+      const parsed = normalizeAdvisorIntent(raw);
+      if (Object.keys(parsed).length > 0) {
+        console.log("intent_source:", "openai");
+        console.log("langflow_success:", false);
+        console.log("fallback_triggered:", "langflow_failed");
+        return parsed;
+      }
+      console.log("fallback_triggered:", "openai_empty_intent");
+    } catch (err) {
+      const reason = err instanceof Error ? err.message : "openai_unknown_error";
+      console.log("fallback_triggered:", `openai:${reason}`);
+    }
+  } else {
+    console.log("fallback_triggered:", "openai_not_configured");
+  }
+
+  console.log("intent_source:", "keyword");
+  console.log("langflow_success:", false);
   return fallbackIntentFromText(message);
 }
