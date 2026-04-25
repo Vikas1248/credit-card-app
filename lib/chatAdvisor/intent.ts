@@ -49,18 +49,20 @@ export async function extractAdvisorIntent(message: string): Promise<Partial<Adv
   }
 
   // Primary extractor: Langflow service.
-  try {
-    const langflowParsed = await extractIntentViaLangflow(message);
-    if (Object.keys(langflowParsed).length > 0) {
+  const langflowParsed = await extractIntentViaLangflow(message);
+  if (langflowParsed) {
+    const normalizedLangflow = normalizeAdvisorIntent(langflowParsed);
+    if (Object.keys(normalizedLangflow).length > 0) {
       console.log("intent_source:", "langflow");
       console.log("langflow_success:", true);
       console.log("fallback_triggered:", "none");
-      return langflowParsed;
+      return normalizedLangflow;
     }
-  } catch (err) {
-    const reason = err instanceof Error ? err.message : "langflow_unknown_error";
     console.log("langflow_success:", false);
-    console.log("fallback_triggered:", `langflow:${reason}`);
+    console.log("fallback_triggered:", "langflow_invalid_fields");
+  } else {
+    console.log("langflow_success:", false);
+    console.log("fallback_triggered:", "langflow_null_or_failed");
   }
 
   // Secondary fallback: existing OpenAI intent extraction.

@@ -3,7 +3,7 @@ import type { AdvisorLevel, AdvisorProfile, AdvisorRewardPreference } from "./ty
 
 const VALID_LEVELS = ["low", "medium", "high"] as const;
 const VALID_REWARDS = ["cashback", "travel", "mixed"] as const;
-const TIMEOUT = process.env.NODE_ENV === "production" ? 1500 : 2500;
+const TIMEOUT = 2000;
 const CIRCUIT_OPEN_MS = 60_000;
 const CIRCUIT_WINDOW_REQUESTS = 10;
 const CIRCUIT_FAILURE_THRESHOLD = 5;
@@ -34,6 +34,7 @@ function isCircuitOpen(): boolean {
   return Date.now() < circuitOpenUntil;
 }
 
+// Langflow's response shape is nested and can vary by component wiring.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractTextFromLangflow(data: any): string | null {
   try {
@@ -101,17 +102,18 @@ export function normalizeAdvisorIntent(raw: unknown): Partial<AdvisorProfile> {
 
 export async function extractIntentViaLangflow(
   input: string
-): Promise<Partial<AdvisorProfile>> {
+): Promise<Partial<AdvisorProfile> | null> {
   if (areThirdPartyApisDisabled()) {
-    throw new Error("External APIs disabled (DISABLE_EXTERNAL_API_CALLS).");
+    return null;
   }
 
   const apiUrl = process.env.LANGFLOW_API_URL?.trim();
   if (!apiUrl) {
-    throw new Error("LANGFLOW_API_URL is not set.");
+    return null;
   }
   if (isCircuitOpen()) {
-    throw new Error("LANGFLOW_CIRCUIT_OPEN");
+    console.log("fallback_triggered:", "langflow_circuit_open");
+    return null;
   }
 
   const cacheKey = input.trim().toLowerCase();
@@ -131,33 +133,39 @@ export async function extractIntentViaLangflow(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+        ...(apiKey ? { "x-api-key": apiKey } : {}),
       },
       body: JSON.stringify({
-        input,
-        message: input,
+        input_value: input,
+        input_type: "chat",
+        output_type: "chat",
       }),
       signal: controller.signal,
     });
 
     if (!response.ok) {
-      const text = await response.text();
       recordLangflowOutcome(false);
-      throw new Error(`Langflow API error (${response.status}): ${text}`);
+      throw new Error(`Langflow request failed: ${response.status}`);
     }
 
     const raw = (await response.json()) as unknown;
-    if (raw && typeof raw === "object") {
-      const keys = Object.keys(raw as Record<string, unknown>);
-      console.debug("[chat-advisor] Langflow response keys:", keys);
-    } else {
-      console.debug("[chat-advisor] Langflow response type:", typeof raw);
+    const text = extractTextFromLangflow(raw);
+    console.log("langflow_response:", text);
+    if (!text) {
+      recordLangflowOutcome(false);
+      return null;
     }
 
-    const normalized = normalizeAdvisorIntent(raw);
+    const parsed = safeJsonParse(text);
+    if (!parsed) {
+      recordLangflowOutcome(false);
+      return null;
+    }
+
+    const normalized = normalizeAdvisorIntent(parsed);
     if (Object.keys(normalized).length === 0) {
       recordLangflowOutcome(false);
-      throw new Error("Langflow response did not contain valid intent fields.");
+      return null;
     }
     recordLangflowOutcome(true);
     if (cacheKey.length > 0) {
@@ -165,11 +173,9 @@ export async function extractIntentViaLangflow(
     }
     return normalized;
   } catch (err) {
-    if (err instanceof Error && err.name === "AbortError") {
-      recordLangflowOutcome(false);
-      throw new Error("Langflow timeout.");
-    }
-    throw err;
+    recordLangflowOutcome(false);
+    console.error("Langflow error:", err);
+    return null;
   } finally {
     clearTimeout(timer);
   }
