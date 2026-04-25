@@ -38,7 +38,7 @@ export function HeroSection() {
             </span>
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-8 text-zinc-600 sm:text-lg">
-            AI-powered recommendations. No spam. No credit score impact.
+            AI-powered recommendations. No spam.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">

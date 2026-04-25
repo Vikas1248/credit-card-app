@@ -10,17 +10,14 @@ export function AIChatAdvisor() {
   return (
     <section
       id="chat-advisor"
-      className="scroll-mt-28 overflow-hidden rounded-[2rem] border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-blue-50 p-5 shadow-lg shadow-blue-900/[0.06] sm:p-8 lg:p-10"
+      className="scroll-mt-28 overflow-hidden rounded-[2rem] border border-zinc-200/70 bg-white p-5 shadow-md shadow-zinc-900/[0.04] sm:p-8 lg:p-10"
       aria-labelledby="chat-advisor-heading"
     >
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <span className="inline-flex rounded-full bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-violet-700 shadow-sm">
-            Colorful AI advisor
-          </span>
           <h2
             id="chat-advisor-heading"
-            className="mt-4 text-3xl font-black tracking-tight text-zinc-950 sm:text-4xl"
+            className="text-3xl font-black tracking-tight text-zinc-950 sm:text-4xl"
           >
             Ask in plain English. Get card matches instantly.
           </h2>
