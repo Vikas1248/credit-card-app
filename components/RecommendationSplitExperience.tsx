@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { SendRecommendationEmailButton } from "@/components/send-recommendation-email-button";
 import type {
   RecommendCardsResponseBody,
   RecommendedCard,
@@ -399,6 +400,16 @@ export function RecommendationSplitExperience({
                   >
                     Apply
                   </Link>
+                </div>
+                <div className="mt-2">
+                  <SendRecommendationEmailButton
+                    cardName={c.card_name}
+                    applyLink={`/card/${c.card_id}#apply`}
+                    rewards={
+                      c.explanation ??
+                      `Estimated yearly reward: ${formatInr(c.yearlyReward)}`
+                    }
+                  />
                 </div>
               </article>
             ))

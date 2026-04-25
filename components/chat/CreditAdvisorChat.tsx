@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { SendRecommendationEmailButton } from "@/components/send-recommendation-email-button";
 import type { AdvisorProfile, ChatAdvisorResponseBody } from "@/lib/chatAdvisor/types";
 import type { RecommendedCard } from "@/lib/recommendV2/recommendCardsApiTypes";
 
@@ -325,6 +326,16 @@ export function CreditAdvisorChat() {
                   >
                     Apply
                   </Link>
+                </div>
+                <div className="mt-2">
+                  <SendRecommendationEmailButton
+                    cardName={card.card_name}
+                    applyLink={`/card/${card.card_id}#apply`}
+                    rewards={
+                      card.explanation ??
+                      `Estimated yearly reward: ${formatInr(card.yearlyReward)}`
+                    }
+                  />
                 </div>
               </article>
             ))}

@@ -32,7 +32,7 @@ Card data is read from Supabase table **`credit_cards`**. Estimates are illustra
 | Framework | **Next.js 16** (App Router), **React 19**, **TypeScript** |
 | Styling | **Tailwind CSS 4** |
 | Data | **Supabase** (`@supabase/supabase-js`; server routes use service role where configured) |
-| AI | **OpenAI Chat Completions** (`gpt-4o-mini` by default) — see [AI & OpenAI](#ai--openai) |
+| AI | **Langflow** for chat intent extraction, **OpenAI Chat Completions** for fallback/explanations — see [AI, Langflow & OpenAI](#ai-langflow--openai) |
 | PWA | **`@ducanh2912/next-pwa`** (offline shell / precache where enabled) |
 | Affiliates | **Cuelinks** (optional widget + link kit; see layout / env) |
 
@@ -96,11 +96,13 @@ Use **`.env.local`** locally. Do **not** commit secrets.
 
 - `NEXT_PUBLIC_CARD_NETWORK` — Restrict UI catalog: `Visa` | `Mastercard` | `Amex` | unset | `all` | `*`.
 
-### AI (OpenAI)
+### AI (Langflow + OpenAI)
 
+- `LANGFLOW_API_URL` — Primary conversational advisor intent endpoint. Example: `http://<VM_IP>:7860/api/v1/run/<FLOW_ID>`.
+- `LANGFLOW_API_KEY` — Optional; sent as `x-api-key` when configured.
 - `OPENAI_API_KEY` — Enables AI features listed below.
 - `OPENAI_MODEL` — Optional; defaults to **`gpt-4o-mini`**.
-- `DISABLE_EXTERNAL_API_CALLS=1` — Disables third-party HTTP calls (including OpenAI). See `lib/config/externalAccess.ts`.
+- `DISABLE_EXTERNAL_API_CALLS=1` — Disables third-party HTTP calls (including Langflow and OpenAI). See `lib/config/externalAccess.ts`.
 
 ### Cuelinks (optional)
 
@@ -114,11 +116,14 @@ Full notes: **`.env.example`**.
 
 ---
 
-## AI & OpenAI
+## AI, Langflow & OpenAI
 
-CredGenie uses **only OpenAI** for generative features, via **`https://api.openai.com/v1/chat/completions`**, mostly through **`lib/ai/openaiClient.ts`** (`openAiJsonCompletion`, JSON response format). Default model: **`gpt-4o-mini`** (override with `OPENAI_MODEL`).
+CredGenie uses AI only for structured intent extraction and explanation copy. It does **not** let AI pick the winning cards.
 
-If `OPENAI_API_KEY` is missing or external APIs are disabled, each feature **degrades gracefully** (no AI text, or data-only ordering).
+- **Langflow** is the primary intent extractor for the conversational advisor (`lib/chatAdvisor/langflowClient.ts`). The app posts chat text to `LANGFLOW_API_URL` using Langflow's run API payload (`input_value`, `input_type: "chat"`, `output_type: "chat"`).
+- **OpenAI** remains available for fallback intent extraction and explanation copy, via **`https://api.openai.com/v1/chat/completions`** and `lib/ai/openaiClient.ts` (`openAiJsonCompletion`, JSON response format). Default model: **`gpt-4o-mini`** (override with `OPENAI_MODEL`).
+
+If Langflow, OpenAI, or external APIs are unavailable, each feature **degrades gracefully** (keyword intent extraction, no AI text, or data-only ordering).
 
 | Feature | API / library entry |
 |---------|----------------------|
@@ -128,10 +133,23 @@ If `OPENAI_API_KEY` is missing or external APIs are disabled, each feature **deg
 | Card detail blurb | `/api/cards/detail-ai-insight` · `lib/card/aiCardDetailInsight.ts` |
 | Compare two cards | `/api/cards/compare-ai` · `lib/compare/aiTwoCards.ts` |
 | Wizard “Recommended for you” (v2) | `/api/recommend-cards` · `lib/recommendV2/aiExplanation.ts` — short “why this card” per top pick |
-| Conversational advisor (chat) | `/api/chat-advisor` · `lib/chatAdvisor/intent.ts` (intent extraction) · `lib/chatAdvisor/recommend.ts` (deterministic ranking + explanation text) |
+| Conversational advisor (chat) | `/api/chat-advisor` · `lib/chatAdvisor/langflowClient.ts` (Langflow primary intent extraction) · `lib/chatAdvisor/intent.ts` (fallback chain) · `lib/chatAdvisor/recommend.ts` (deterministic ranking + explanation text) |
 | Legacy spend recommend flow | `lib/recommend/spendRecommendationSummaryOpenAI.ts`, `spendExplanationOpenAI.ts`, `aiSpendPicks.ts`, `finalizeSpendRecommendations.ts` · `/api/recommend/openai` |
 
 AI is **constrained to real cards** from your Supabase pool for ranking flows; it does not invent products. In recommendation/chat flows, AI does not choose winners — it only extracts intent and writes explanation copy.
+
+### Verifying Langflow locally
+
+Run the app and send a chat prompt such as `I use Swiggy a lot and want cashback with low fees`. In the Next.js server logs, Langflow success looks like:
+
+```text
+langflow_response: ...
+intent_source: langflow
+langflow_success: true
+fallback_triggered: none
+```
+
+If Langflow fails or is missing, the app falls back and logs `intent_source: openai` or `intent_source: keyword`.
 
 ---
 
@@ -145,7 +163,7 @@ AI is **constrained to real cards** from your Supabase pool for ranking flows; i
 
 ### Conversational advisor (`/api/chat-advisor`)
 
-1. **Intent extraction** — Parse user text into structured profile fields (`dining/travel/shopping/fuel/fees/preferred_rewards`) using OpenAI JSON or keyword fallback.
+1. **Intent extraction** — Parse user text into structured profile fields (`dining/travel/shopping/fuel/fees/preferred_rewards`) using Langflow first, then OpenAI fallback, then keyword fallback.
 2. **Profile merge + follow-up** — Merge new signals without degrading stronger existing values; ask next best question if needed.
 3. **Deterministic picks** — Convert chat profile into scoring profile, rank top cards deterministically, then add explanation copy (LLM or rule-based fallback).
 
