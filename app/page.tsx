@@ -599,10 +599,6 @@ export default function Home() {
       <SiteHeader />
 
       <main className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
-        <div className="mx-auto mb-3 hidden max-w-xl rounded-lg bg-gradient-to-r from-violet-600 to-blue-600 px-5 py-2 text-center text-sm font-semibold text-white shadow-lg shadow-blue-600/20 sm:block">
-          Recommended UI Style: Modern · Clean · Friendly · Trustworthy
-        </div>
-
         <header className="relative overflow-hidden rounded-[2rem] border border-white/80 bg-[radial-gradient(circle_at_12%_18%,#ffffff_0,#f4f1ff_24%,#e7f7ff_58%,#ffffff_100%)] p-6 shadow-2xl shadow-blue-900/[0.10] dark:border-zinc-800 dark:bg-[radial-gradient(circle_at_15%_15%,#1e1b4b_0,#0f172a_42%,#09090b_100%)] sm:p-8 lg:p-10">
           <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl dark:bg-blue-500/10" />
           <div className="pointer-events-none absolute bottom-10 right-1/3 h-44 w-44 rounded-full bg-violet-400/20 blur-3xl dark:bg-violet-500/10" />
@@ -674,9 +670,6 @@ export default function Home() {
             </div>
 
             <div className="relative mx-auto w-full max-w-md">
-              <div className="absolute -left-8 top-8 hidden rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-sm font-medium text-zinc-700 shadow-lg shadow-blue-900/[0.08] backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-zinc-200 sm:block">
-                Analyzing your profile...
-              </div>
               <div className="absolute -right-4 top-16 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-2xl text-white shadow-lg shadow-emerald-900/20">
                 ₹
               </div>
@@ -732,7 +725,6 @@ export default function Home() {
 
               <div className="mx-auto mt-4 grid max-w-sm grid-cols-2 gap-3 text-center text-xs sm:grid-cols-4">
                 {[
-                  ["👥", "50,000+ users"],
                   ["🛡", "Secure"],
                   ["🏆", "Top banks"],
                   ["⭐", "User first"],
