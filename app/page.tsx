@@ -146,10 +146,10 @@ const inputClass =
   "w-full rounded-xl border border-zinc-200/90 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm transition placeholder:text-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-600/90 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-400";
 
 const btnPrimary =
-  "inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:pointer-events-none disabled:opacity-55 dark:hover:bg-blue-500 sm:w-auto";
+  "inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:from-violet-700 hover:to-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:pointer-events-none disabled:opacity-55 dark:hover:from-violet-500 dark:hover:to-blue-500 sm:w-auto";
 
 const btnGhost =
-  "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-200/80 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800";
+  "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-violet-100 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm transition hover:border-violet-200 hover:bg-violet-50 disabled:opacity-50 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800";
 
 /** Enterprise-style panels: depth from soft shadow instead of heavy outlines. */
 const sectionShell =
@@ -247,24 +247,24 @@ function HomeSearchBar({
 
 function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-200/50 bg-white/85 backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-950/85">
-      <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6">
+    <header className="sticky top-0 z-50 border-b border-violet-100/70 bg-white/90 backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-950/85">
+      <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
           <Link
             href="/"
             className="flex shrink-0 items-center gap-2.5 rounded-xl pr-2 text-zinc-900 dark:text-zinc-100"
           >
             <span
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-xs font-bold leading-tight text-white shadow-md"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 via-blue-600 to-cyan-500 text-lg font-bold leading-tight text-white shadow-md shadow-blue-600/20"
               aria-hidden
             >
-              CG
+              ✦
             </span>
-            <span className="text-sm font-bold tracking-tight">{SITE_NAME}</span>
+            <span className="text-sm font-black tracking-tight">{SITE_NAME} AI</span>
           </Link>
 
           <nav
-            className="flex gap-1 overflow-x-auto rounded-full border border-zinc-200/50 bg-zinc-50/90 p-1 pb-1 sm:pb-1 dark:border-zinc-700/50 dark:bg-zinc-900/70 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex gap-1 overflow-x-auto rounded-full border border-violet-100 bg-violet-50/80 p-1 pb-1 sm:pb-1 dark:border-zinc-700/50 dark:bg-zinc-900/70 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             aria-label="Sections"
           >
             {(
@@ -285,6 +285,9 @@ function SiteHeader() {
               All cards
             </Link>
           </nav>
+          <a href="#chat-advisor" className="hidden rounded-full bg-gradient-to-r from-violet-600 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-600/20 transition hover:from-violet-700 hover:to-blue-700 lg:inline-flex">
+            Get Started
+          </a>
         </div>
       </div>
     </header>
@@ -592,19 +595,23 @@ export default function Home() {
   }, [displayFeaturedCarouselItems]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-zinc-100/80 text-zinc-900 dark:from-zinc-950 dark:to-zinc-950 dark:text-zinc-100">
+    <div className="min-h-screen bg-[linear-gradient(180deg,#f8f7ff_0%,#eef7ff_42%,#f8fafc_100%)] text-zinc-900 dark:from-zinc-950 dark:to-zinc-950 dark:text-zinc-100">
       <SiteHeader />
 
       <main className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
-        <header className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-[radial-gradient(circle_at_15%_15%,#eef2ff_0,#eff6ff_28%,#f8fafc_56%,#ffffff_100%)] p-6 shadow-xl shadow-blue-900/[0.08] dark:border-zinc-800 dark:bg-[radial-gradient(circle_at_15%_15%,#1e1b4b_0,#0f172a_42%,#09090b_100%)] sm:p-8 lg:p-10">
+        <div className="mx-auto mb-3 hidden max-w-xl rounded-lg bg-gradient-to-r from-violet-600 to-blue-600 px-5 py-2 text-center text-sm font-semibold text-white shadow-lg shadow-blue-600/20 sm:block">
+          Recommended UI Style: Modern · Clean · Friendly · Trustworthy
+        </div>
+
+        <header className="relative overflow-hidden rounded-[2rem] border border-white/80 bg-[radial-gradient(circle_at_12%_18%,#ffffff_0,#f4f1ff_24%,#e7f7ff_58%,#ffffff_100%)] p-6 shadow-2xl shadow-blue-900/[0.10] dark:border-zinc-800 dark:bg-[radial-gradient(circle_at_15%_15%,#1e1b4b_0,#0f172a_42%,#09090b_100%)] sm:p-8 lg:p-10">
           <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl dark:bg-blue-500/10" />
           <div className="pointer-events-none absolute bottom-10 right-1/3 h-44 w-44 rounded-full bg-violet-400/20 blur-3xl dark:bg-violet-500/10" />
 
           <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] lg:items-center">
             <div>
-              <p className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-white/80 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-violet-700 shadow-sm dark:border-violet-900/50 dark:bg-violet-950/40 dark:text-violet-200">
+              <p className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-white/85 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-violet-700 shadow-sm dark:border-violet-900/50 dark:bg-violet-950/40 dark:text-violet-200">
                 <span aria-hidden>✦</span>
-                AI-powered · personalized · transparent
+                AI-powered · personalized · perfect for you
               </p>
               <h1 className="mt-5 max-w-2xl text-4xl font-black tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-5xl lg:text-6xl">
                 Find the best credit card{" "}
@@ -613,20 +620,25 @@ export default function Home() {
                 </span>
               </h1>
               <p className="mt-4 max-w-xl text-base leading-relaxed text-zinc-700 dark:text-zinc-300 sm:text-lg">
-                Tell CredGenie how you spend. We compare real cards, estimate yearly value, and explain why each pick fits you.
+                Our AI advisor analyzes your spending, lifestyle and goals to recommend credit cards that fit your rewards style.
               </p>
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              <div className="mt-6 space-y-4">
                 {[
-                  ["AI match", "Smart profile-based picks"],
-                  ["Rewards", "Cashback, points & perks"],
-                  ["Private", "No spam, transparent math"],
-                ].map(([title, subtitle]) => (
+                  ["🧠", "AI-powered recommendations", "Smart matching based on your profile"],
+                  ["💰", "Maximize your rewards", "Get cashback, points and useful benefits"],
+                  ["🛡", "100% secure & private", "No spam — transparent calculations"],
+                ].map(([icon, title, subtitle]) => (
                   <div
                     key={title}
-                    className="rounded-2xl border border-white/70 bg-white/75 p-3 shadow-sm shadow-blue-900/[0.04] backdrop-blur dark:border-zinc-700/70 dark:bg-zinc-900/60"
+                    className="flex items-center gap-3 rounded-2xl border border-white/70 bg-white/70 p-3 shadow-sm shadow-blue-900/[0.04] backdrop-blur dark:border-zinc-700/70 dark:bg-zinc-900/60"
                   >
-                    <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{title}</p>
-                    <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{subtitle}</p>
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-blue-600 text-lg text-white shadow-md shadow-blue-600/20">
+                      {icon}
+                    </span>
+                    <span>
+                      <span className="block text-sm font-bold text-zinc-900 dark:text-zinc-100">{title}</span>
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400">{subtitle}</span>
+                    </span>
                   </div>
                 ))}
               </div>
@@ -719,11 +731,17 @@ export default function Home() {
               </div>
 
               <div className="mx-auto mt-4 grid max-w-sm grid-cols-2 gap-3 text-center text-xs sm:grid-cols-4">
-                {["50k+ users", "Secure", "Top banks", "User first"].map((item) => (
+                {[
+                  ["👥", "50,000+ users"],
+                  ["🛡", "Secure"],
+                  ["🏆", "Top banks"],
+                  ["⭐", "User first"],
+                ].map(([icon, item]) => (
                   <div
                     key={item}
-                    className="rounded-2xl border border-white/70 bg-white/70 px-3 py-2 font-semibold text-zinc-700 shadow-sm backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200"
+                    className="rounded-2xl border border-white/70 bg-white/75 px-3 py-2 font-semibold text-zinc-700 shadow-sm backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200"
                   >
+                    <span className="block text-base">{icon}</span>
                     {item}
                   </div>
                 ))}
