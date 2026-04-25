@@ -68,8 +68,10 @@ export async function POST(request: Request) {
     }
 
     const resend = new Resend(apiKey);
-    await resend.emails.send({
-      from: "CredGenie <noreply@credgenie.in>",
+    const from =
+      process.env.RESEND_FROM_EMAIL?.trim() || "CredGenie <noreply@credgenie.in>";
+    const result = await resend.emails.send({
+      from,
       to: email,
       subject: "Your credit card recommendation",
       html: `
@@ -90,7 +92,15 @@ export async function POST(request: Request) {
       `,
     });
 
-    return NextResponse.json({ success: true });
+    if (result.error) {
+      console.error("send-recommendation resend error:", result.error);
+      return NextResponse.json(
+        { error: result.error.message || "Email provider rejected the request." },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json({ success: true, id: result.data?.id ?? null });
   } catch (error) {
     console.error("send-recommendation error:", error);
     return NextResponse.json(
