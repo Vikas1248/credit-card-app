@@ -596,59 +596,140 @@ export default function Home() {
       <SiteHeader />
 
       <main className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
-        <header className="rounded-3xl bg-gradient-to-br from-white to-blue-50/50 p-7 shadow-sm shadow-zinc-900/[0.06] dark:from-zinc-900 dark:to-zinc-900 sm:p-10">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-300">
-              {SITE_NAME}
-            </p>
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
-              Find your next credit card faster
-            </h1>
-            <p className="mt-4 text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-              AI helps match your spend pattern to the right cards, explain each pick,
-              and highlight likely yearly rewards.
-            </p>
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-              <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-300">
-                AI spend matching
-              </span>
-              <span className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-indigo-300">
-                AI card explanations
-              </span>
-              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">
-                AI compare insights
-              </span>
+        <header className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-[radial-gradient(circle_at_15%_15%,#eef2ff_0,#eff6ff_28%,#f8fafc_56%,#ffffff_100%)] p-6 shadow-xl shadow-blue-900/[0.08] dark:border-zinc-800 dark:bg-[radial-gradient(circle_at_15%_15%,#1e1b4b_0,#0f172a_42%,#09090b_100%)] sm:p-8 lg:p-10">
+          <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl dark:bg-blue-500/10" />
+          <div className="pointer-events-none absolute bottom-10 right-1/3 h-44 w-44 rounded-full bg-violet-400/20 blur-3xl dark:bg-violet-500/10" />
+
+          <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] lg:items-center">
+            <div>
+              <p className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-white/80 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-violet-700 shadow-sm dark:border-violet-900/50 dark:bg-violet-950/40 dark:text-violet-200">
+                <span aria-hidden>✦</span>
+                AI-powered · personalized · transparent
+              </p>
+              <h1 className="mt-5 max-w-2xl text-4xl font-black tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-5xl lg:text-6xl">
+                Find the best credit card{" "}
+                <span className="bg-gradient-to-r from-violet-600 via-blue-600 to-cyan-500 bg-clip-text text-transparent">
+                  for you
+                </span>
+              </h1>
+              <p className="mt-4 max-w-xl text-base leading-relaxed text-zinc-700 dark:text-zinc-300 sm:text-lg">
+                Tell CredGenie how you spend. We compare real cards, estimate yearly value, and explain why each pick fits you.
+              </p>
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                {[
+                  ["AI match", "Smart profile-based picks"],
+                  ["Rewards", "Cashback, points & perks"],
+                  ["Private", "No spam, transparent math"],
+                ].map(([title, subtitle]) => (
+                  <div
+                    key={title}
+                    className="rounded-2xl border border-white/70 bg-white/75 p-3 shadow-sm shadow-blue-900/[0.04] backdrop-blur dark:border-zinc-700/70 dark:bg-zinc-900/60"
+                  >
+                    <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{title}</p>
+                    <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{subtitle}</p>
+                  </div>
+                ))}
+              </div>
+
+              <form
+                className="mt-8 max-w-xl"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const q = search.trim();
+                  router.push(q ? `/cards?q=${encodeURIComponent(q)}` : "/cards");
+                }}
+              >
+                <HomeSearchBar
+                  id="search"
+                  search={search}
+                  onSearchChange={setSearch}
+                />
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-x-3 sm:gap-y-2">
+                  <a href="#chat-advisor" className={btnPrimary}>
+                    Find My Best Card →
+                  </a>
+                  <a href="#spend-picks" className={btnGhost}>
+                    Use spend sliders
+                  </a>
+                  <Link
+                    href="/cards"
+                    className={btnGhost}
+                  >
+                    Browse All Cards
+                  </Link>
+                </div>
+              </form>
+            </div>
+
+            <div className="relative mx-auto w-full max-w-md">
+              <div className="absolute -left-8 top-8 hidden rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-sm font-medium text-zinc-700 shadow-lg shadow-blue-900/[0.08] backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-zinc-200 sm:block">
+                Analyzing your profile...
+              </div>
+              <div className="absolute -right-4 top-16 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-2xl text-white shadow-lg shadow-emerald-900/20">
+                ₹
+              </div>
+              <div className="absolute -right-2 bottom-28 flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-600 text-2xl text-white shadow-lg shadow-violet-900/20">
+                ✈
+              </div>
+
+              <div className="rounded-[2rem] border border-white/80 bg-white/85 p-4 shadow-2xl shadow-blue-900/[0.14] backdrop-blur dark:border-zinc-700/70 dark:bg-zinc-900/80">
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-300">
+                      Top picks for you
+                    </p>
+                    <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                      Personalized matches
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-950/50 dark:text-blue-200">
+                    Live
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  {[
+                    ["Infinite Cashback Card", "5%", "Cashback", "Best overall", "from-slate-950 to-blue-950"],
+                    ["Travel Rewards Card", "10X", "Points", "Best for travel", "from-blue-700 to-indigo-700"],
+                    ["Shopping Rewards Card", "8%", "Savings", "Best for shopping", "from-fuchsia-700 to-violet-700"],
+                  ].map(([name, rate, type, badge, gradient]) => (
+                    <div
+                      key={name}
+                      className={`rounded-2xl bg-gradient-to-r ${gradient} p-4 text-white shadow-md`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="mb-3 h-6 w-9 rounded-md bg-yellow-300/90 shadow-inner" />
+                          <p className="text-sm font-bold">{name}</p>
+                          <p className="mt-2 text-[11px] tracking-[0.35em] text-white/70">
+                            **** **** **** 4567
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-black leading-none">{rate}</p>
+                          <p className="text-[11px] text-white/75">{type}</p>
+                        </div>
+                      </div>
+                      <span className="mt-3 inline-flex rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-semibold">
+                        {badge}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mx-auto mt-4 grid max-w-sm grid-cols-2 gap-3 text-center text-xs sm:grid-cols-4">
+                {["50k+ users", "Secure", "Top banks", "User first"].map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-2xl border border-white/70 bg-white/70 px-3 py-2 font-semibold text-zinc-700 shadow-sm backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-
-          <form
-            className="mx-auto mt-8 max-w-xl"
-            onSubmit={(e) => {
-              e.preventDefault();
-              const q = search.trim();
-              router.push(q ? `/cards?q=${encodeURIComponent(q)}` : "/cards");
-            }}
-          >
-            <HomeSearchBar
-              id="search"
-              search={search}
-              onSearchChange={setSearch}
-            />
-            <div className="mt-4 flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-3 sm:gap-y-2">
-              <a href="#spend-picks" className={btnPrimary}>
-                Get Personalized Recommendations
-              </a>
-              <a href="#chat-advisor" className={btnGhost}>
-                Find my card with AI →
-              </a>
-              <Link
-                href="/cards"
-                className={btnGhost}
-              >
-                Browse All Cards
-              </Link>
-            </div>
-          </form>
         </header>
 
         <div className="mt-2 flex flex-col gap-16 sm:mt-3 sm:gap-20">
