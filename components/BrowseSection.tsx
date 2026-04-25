@@ -2,6 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 export type BrowseCreditCard = {
   id: string;
@@ -94,12 +98,12 @@ export function BrowseSection({
     >
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <span className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
+          <Badge variant="blue" className="uppercase tracking-[0.18em]">
             Browse cards
-          </span>
+          </Badge>
           <h2
             id="browse-heading"
-            className="mt-2 text-3xl font-black tracking-tight text-zinc-950"
+            className="mt-3 text-3xl font-black tracking-tight text-zinc-950"
           >
             Search and filter the catalog.
           </h2>
@@ -108,87 +112,98 @@ export function BrowseSection({
             for deeper browsing.
           </p>
         </div>
-        <Link
-          href="/cards"
-          className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-zinc-950 px-5 text-sm font-bold text-white transition hover:bg-zinc-800"
-        >
-          Open full catalog
+        <Link href="/cards" className="inline-flex">
+          <span className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-zinc-950 px-5 text-sm font-bold text-white transition hover:bg-zinc-800">
+            Open full catalog
+          </span>
         </Link>
       </div>
 
-      <div className="mt-7 rounded-3xl border border-zinc-200 bg-zinc-50 p-4">
-        <div className="relative">
-          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
-            ⌕
-          </span>
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search cards, banks, rewards..."
-            className="h-12 w-full rounded-2xl border border-zinc-200 bg-white pl-10 pr-4 text-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20"
-          />
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {filters.map((filter) => (
-            <button
-              key={filter}
-              type="button"
-              onClick={() =>
-                setActiveFilter((current) => (current === filter ? null : filter))
-              }
-              className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${
-                activeFilter === filter
-                  ? "border-blue-200 bg-blue-50 text-blue-700"
-                  : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-              }`}
-            >
-              {filter}
-            </button>
-          ))}
-        </div>
-      </div>
+      <Card className="mt-7 bg-zinc-50 shadow-none">
+        <CardContent className="p-4">
+          <div className="relative">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
+              ⌕
+            </span>
+            <Input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search cards, banks, rewards..."
+              className="pl-10"
+            />
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {filters.map((filter) => (
+              <button
+                key={filter}
+                type="button"
+                onClick={() =>
+                  setActiveFilter((current) =>
+                    current === filter ? null : filter
+                  )
+                }
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-xs font-bold transition",
+                  activeFilter === filter
+                    ? "border-blue-200 bg-blue-50 text-blue-700"
+                    : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                )}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {(loading ? mockCards : visibleCards).slice(0, 6).map((card) => {
           const matchedFilter =
             filters.find((filter) => matchesFilter(card, filter)) ?? "Top pick";
           return (
-            <article
+            <Card
               key={card.id}
-              className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+              className="shadow-sm transition hover:-translate-y-1 hover:shadow-md"
             >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="line-clamp-2 text-base font-black text-zinc-950">
-                    {card.card_name}
-                  </h3>
-                  <p className="mt-1 text-sm font-medium text-zinc-500">
-                    {card.bank}
-                  </p>
+              <CardHeader>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="line-clamp-2 text-base font-black text-zinc-950">
+                      {card.card_name}
+                    </h3>
+                    <p className="mt-1 text-sm font-medium text-zinc-500">
+                      {card.bank}
+                    </p>
+                  </div>
+                  <Badge variant="violet" className="text-[11px]">
+                    {matchedFilter}
+                  </Badge>
                 </div>
-                <span className="rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-black text-violet-700">
-                  {matchedFilter}
-                </span>
-              </div>
-              <p className="mt-4 text-sm font-semibold text-zinc-800">
-                {card.reward_rate ?? card.best_for ?? "Rewards and benefits"}
-              </p>
-              <p className="mt-2 line-clamp-2 text-sm text-zinc-600">
-                {card.key_benefits ?? "Compare fees, rewards, and category fit."}
-              </p>
-              <div className="mt-5 flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wide text-zinc-500">
-                  Fee {formatInr(card.annual_fee)}
-                </span>
-                <Link
-                  href={card.id.startsWith("mock") ? "/cards" : `/card/${card.id}`}
-                  className="rounded-xl border border-zinc-200 px-3 py-2 text-xs font-bold text-zinc-800 transition hover:bg-zinc-50"
-                >
-                  Details
-                </Link>
-              </div>
-            </article>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm font-semibold text-zinc-800">
+                  {card.reward_rate ?? card.best_for ?? "Rewards and benefits"}
+                </p>
+                <p className="mt-2 line-clamp-2 text-sm text-zinc-600">
+                  {card.key_benefits ??
+                    "Compare fees, rewards, and category fit."}
+                </p>
+                <div className="mt-5 flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wide text-zinc-500">
+                    Fee {formatInr(card.annual_fee)}
+                  </span>
+                  <Link
+                    href={
+                      card.id.startsWith("mock") ? "/cards" : `/card/${card.id}`
+                    }
+                    className="rounded-xl border border-zinc-200 px-3 py-2 text-xs font-bold text-zinc-800 transition hover:bg-zinc-50"
+                  >
+                    Details
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
           );
         })}
       </div>
