@@ -18,6 +18,11 @@ const SAMPLE_PROMPTS = [
   "I want a simple card for fuel and daily spends with no annual fee.",
 ] as const;
 
+type QuickReply = {
+  label: string;
+  value: string;
+};
+
 function formatInr(value: number): string {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -37,6 +42,33 @@ function assistantTextFromResponse(payload: ChatAdvisorResponseBody): string {
   return payload.nextQuestion ?? "Tell me a bit more about your spend habits.";
 }
 
+function quickRepliesForQuestion(question: string | null): QuickReply[] {
+  if (!question) return [];
+  const q = question.toLowerCase();
+  if (q.includes("cashback") || q.includes("travel rewards") || q.includes("balanced")) {
+    return [
+      { label: "Cashback", value: "cashback" },
+      { label: "Travel rewards", value: "travel" },
+      { label: "Balanced mix", value: "mixed" },
+    ];
+  }
+  if (q.includes("fee-sensitive") || q.includes("low fee") || q.includes("premium perks")) {
+    return [
+      { label: "Low fee", value: "low" },
+      { label: "Medium fee", value: "medium" },
+      { label: "Premium perks", value: "high" },
+    ];
+  }
+  if (q.includes("low, medium, or high")) {
+    return [
+      { label: "Low", value: "low" },
+      { label: "Medium", value: "medium" },
+      { label: "High", value: "high" },
+    ];
+  }
+  return [];
+}
+
 export function CreditAdvisorChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -50,6 +82,7 @@ export function CreditAdvisorChat() {
   const [recommendations, setRecommendations] = useState<RecommendedCard[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastNextQuestion, setLastNextQuestion] = useState<string | null>(null);
 
   const profilePills = useMemo(() => {
     const out: string[] = [];
@@ -62,6 +95,11 @@ export function CreditAdvisorChat() {
     return out;
   }, [profile]);
 
+  const quickReplies = useMemo(
+    () => quickRepliesForQuestion(lastNextQuestion),
+    [lastNextQuestion]
+  );
+
   const sendMessage = async (sampleText?: string) => {
     const text = (sampleText ?? input).trim();
     if (!text || loading) return;
@@ -73,6 +111,7 @@ export function CreditAdvisorChat() {
     };
     setInput("");
     setError(null);
+    setLastNextQuestion(null);
     setMessages((prev) => [...prev, userMessage]);
     setLoading(true);
 
@@ -97,6 +136,7 @@ export function CreditAdvisorChat() {
 
       const advisorPayload = payload as ChatAdvisorResponseBody;
       setProfile(advisorPayload.profile ?? {});
+      setLastNextQuestion(advisorPayload.nextQuestion ?? null);
       if (advisorPayload.recommendations) {
         setRecommendations(advisorPayload.recommendations);
       }
@@ -186,6 +226,27 @@ export function CreditAdvisorChat() {
           <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-200">
             {error}
           </p>
+        ) : null}
+
+        {quickReplies.length > 0 ? (
+          <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50/60 p-3 dark:border-blue-900/40 dark:bg-blue-950/20">
+            <p className="text-xs font-medium text-blue-800 dark:text-blue-200">
+              Select an option or type your answer:
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {quickReplies.map((reply) => (
+                <button
+                  key={reply.value}
+                  type="button"
+                  disabled={loading}
+                  onClick={() => void sendMessage(reply.value)}
+                  className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-blue-700 shadow-sm ring-1 ring-blue-200 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-900 dark:text-blue-200 dark:ring-blue-800 dark:hover:bg-blue-950"
+                >
+                  {reply.label}
+                </button>
+              ))}
+            </div>
+          </div>
         ) : null}
 
         <form
