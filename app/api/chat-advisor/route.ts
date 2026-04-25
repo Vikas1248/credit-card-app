@@ -144,7 +144,8 @@ export async function POST(request: Request) {
       }
     }
 
-    const missing = missingProfileFields(profile);
+    const hasRecommendations = Boolean(recommendations && recommendations.length > 0);
+    const missing = hasRecommendations ? [] : missingProfileFields(profile);
     const response: ChatAdvisorResponseBody = {
       profile,
       ...(missing.length > 0 ? { nextQuestion: nextQuestionForProfile(profile) } : {}),

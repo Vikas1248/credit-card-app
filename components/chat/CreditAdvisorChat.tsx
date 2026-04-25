@@ -25,7 +25,7 @@ function assistantTextFromResponse(payload: ChatAdvisorResponseBody): string {
     if (payload.nextQuestion) {
       return `I found early matches. ${payload.nextQuestion}`;
     }
-    return "Great, I have enough context. These are your top card matches.";
+    return "Great, I have enough context. These are your top card matches — you can keep chatting to refine them.";
   }
   return payload.nextQuestion ?? "Tell me a bit more about your spend habits.";
 }
@@ -116,7 +116,7 @@ export function CreditAdvisorChat() {
           Chat with credit advisor
         </h3>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Share your spending habits. I ask up to 3-4 quick questions.
+          Share your spending habits. I’ll ask only a couple of quick follow-ups before showing picks.
         </p>
 
         {profilePills.length > 0 ? (
