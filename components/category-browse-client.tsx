@@ -227,63 +227,67 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
     .length;
 
   return (
-    <main className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
-        <div className="mb-8 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium">
+    <main className="min-h-screen bg-[#FAFAFA] text-zinc-950">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+        <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-bold">
           <Link
             href="/#categories"
-            className="inline-flex items-center gap-2 text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+            className="inline-flex items-center gap-2 text-zinc-600 transition hover:text-zinc-950"
           >
             <span aria-hidden>←</span> All categories
           </Link>
           <Link
             href="/cards"
-            className="inline-flex items-center gap-2 text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+            className="inline-flex items-center gap-2 text-zinc-600 transition hover:text-zinc-950"
           >
             Full catalog <span aria-hidden>→</span>
           </Link>
         </div>
 
-        <header className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
-          <div
-            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-blue-600/10 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
-            aria-hidden
-          >
-            <SpendCategoryIcon slug={slug} className="h-8 w-8" />
-          </div>
-          <div className="min-w-0">
-            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-4xl">
-              {meta.label} cards
-            </h1>
-            <p className="mt-3 max-w-2xl text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-              {meta.blurb} The full catalog is listed here—cards without a
-              published {meta.label.toLowerCase()} rate show — and sort after
-              cards with data. Default order is by that earn % (highest first).
-              Switch to AI ranking for a holistic order when AI is available.
-            </p>
-            {aiParagraph ? (
-              <p className="mt-4 max-w-2xl rounded-xl border border-indigo-200/70 bg-indigo-50/50 p-4 text-sm leading-relaxed text-zinc-700 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-zinc-300">
-                {aiParagraph}
+        <section className="rounded-[2rem] border border-zinc-200/70 bg-white p-5 shadow-md shadow-zinc-900/[0.04] sm:p-8 lg:p-10">
+          <header className="mb-8 flex flex-col gap-5 border-b border-zinc-100 pb-6 sm:flex-row sm:items-start sm:gap-6">
+            <div
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-blue-600 text-white shadow-md shadow-blue-600/20"
+              aria-hidden
+            >
+              <SpendCategoryIcon slug={slug} className="h-8 w-8" />
+            </div>
+            <div className="min-w-0">
+              <span className="inline-flex rounded-full border border-violet-100 bg-violet-50 px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-violet-700">
+                Category section
+              </span>
+              <h1 className="mt-3 text-3xl font-black tracking-tight text-zinc-950 sm:text-4xl">
+                {meta.label} cards
+              </h1>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-600 sm:text-base">
+                {meta.blurb} The full catalog is listed here—cards without a
+                published {meta.label.toLowerCase()} rate show — and sort after
+                cards with data. Default order is by that earn % (highest first).
+                Switch to AI ranking for a holistic order when AI is available.
               </p>
-            ) : null}
-            {aiInsightError ? (
-              <p className="mt-2 text-sm text-amber-800 dark:text-amber-200/90">
-                {aiInsightError}
-              </p>
-            ) : null}
+              {aiParagraph ? (
+                <p className="mt-4 max-w-3xl rounded-2xl border border-indigo-100 bg-gradient-to-br from-violet-50 to-blue-50 p-4 text-sm leading-relaxed text-zinc-700">
+                  {aiParagraph}
+                </p>
+              ) : null}
+              {aiInsightError ? (
+                <p className="mt-2 text-sm text-amber-800">
+                  {aiInsightError}
+                </p>
+              ) : null}
 
             {!loading && !error && cards.length > 0 ? (
               <div className="mt-4 flex flex-wrap items-center gap-2">
-                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                <span className="text-xs font-bold text-zinc-500">
                   List order:
                 </span>
                 <button
                   type="button"
                   onClick={() => setListSort("earn")}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                  className={`rounded-full px-3 py-1.5 text-xs font-bold transition ${
                     listSort === "earn"
-                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                      : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                      ? "bg-zinc-950 text-white"
+                      : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"
                   }`}
                 >
                   Earn % (data)
@@ -292,10 +296,10 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                   type="button"
                   onClick={() => setListSort("ai")}
                   disabled={categoryOrderLoading}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition disabled:opacity-50 ${
+                  className={`rounded-full px-3 py-1.5 text-xs font-bold transition disabled:opacity-50 ${
                     listSort === "ai"
-                      ? "bg-indigo-600 text-white dark:bg-indigo-500"
-                      : "border border-indigo-200 bg-indigo-50 text-indigo-950 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-100 dark:hover:bg-indigo-900/50"
+                      ? "bg-gradient-to-r from-violet-600 to-blue-600 text-white"
+                      : "border border-indigo-200 bg-indigo-50 text-indigo-950 hover:bg-indigo-100"
                   }`}
                 >
                   {categoryOrderLoading ? "AI order…" : "AI ranking"}
@@ -311,7 +315,7 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
             ) : null}
 
             {!loading && !error ? (
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-500">
+              <p className="mt-2 text-sm font-medium text-zinc-500">
                 {primaryCategoryCards.length}{" "}
                 {primaryCategoryCards.length === 1 ? "card" : "cards"}
                 {withRate > 0
@@ -319,27 +323,27 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
                   : ""}
               </p>
             ) : null}
-          </div>
-        </header>
+            </div>
+          </header>
 
         {loading ? (
           <ul className="space-y-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <li
                 key={i}
-                className="h-24 animate-pulse rounded-2xl bg-zinc-200/80 dark:bg-zinc-800"
+                className="h-24 animate-pulse rounded-3xl bg-zinc-100"
               />
             ))}
           </ul>
         ) : error ? (
           <div
-            className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/50 dark:text-red-200"
+            className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
             role="alert"
           >
             {error}
           </div>
         ) : sorted.length === 0 ? (
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="text-sm text-zinc-600">
             No cards in the catalog yet.
           </p>
         ) : (
@@ -348,7 +352,7 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
               return (
                 <li
                   key={card.id}
-                  className={`group flex h-full min-h-[26rem] flex-col rounded-2xl border p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-6 ${issuerBrandTileClass(card.bank, card.network)}`}
+                  className={`group flex h-full min-h-[26rem] flex-col rounded-3xl border p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg sm:p-6 ${issuerBrandTileClass(card.bank, card.network)}`}
                 >
                   <div className="mb-3 flex flex-wrap items-center gap-2">
                     <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-700 shadow-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200">
@@ -429,6 +433,7 @@ export function CategoryBrowseClient({ slug }: { slug: SpendCategorySlug }) {
             })}
           </ul>
         )}
+        </section>
       </div>
     </main>
   );

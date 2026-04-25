@@ -20,7 +20,6 @@ import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import {
   primarySpendCategorySlug,
-  type SpendCategorySlug,
 } from "@/lib/spendCategories";
 import { isSbiCard } from "@/lib/cards/sbiApply";
 import {
@@ -190,25 +189,25 @@ const inputClass =
   "w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm transition placeholder:text-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-400";
 
 const sectionShell =
-  "rounded-3xl border border-zinc-300/90 bg-white p-8 shadow-md shadow-zinc-900/[0.06] ring-1 ring-zinc-950/[0.04] dark:border-zinc-600 dark:bg-zinc-900/70 dark:shadow-black/40 dark:ring-white/[0.06] sm:p-10";
+  "rounded-[2rem] border border-zinc-200/70 bg-white p-5 shadow-md shadow-zinc-900/[0.04] sm:p-8 lg:p-10";
 
 const sectionTitleClass =
-  "text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-2xl";
+  "text-3xl font-black tracking-tight text-zinc-950 sm:text-4xl";
 
 const sectionLeadClass =
-  "mt-2 max-w-xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400";
+  "mt-3 max-w-2xl text-sm leading-7 text-zinc-600";
 
 const sectionHeaderRowClass =
-  "flex gap-3 border-b border-zinc-200 pb-6 dark:border-zinc-600 sm:gap-4";
+  "flex gap-4 border-b border-zinc-100 pb-6";
 
 const sectionHeaderAccentClass =
-  "mt-2 h-11 w-1.5 shrink-0 rounded-full bg-gradient-to-b from-blue-500 to-indigo-600 shadow-sm shadow-blue-500/30";
+  "mt-2 h-12 w-2 shrink-0 rounded-full bg-gradient-to-b from-violet-600 to-blue-600 shadow-sm shadow-blue-500/30";
 
 const headerInputClass =
-  "w-full rounded-xl border border-zinc-200 bg-zinc-50/90 py-2.5 pl-10 pr-3.5 text-sm text-zinc-900 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-600 dark:bg-zinc-900/80 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-500";
+  "w-full rounded-2xl border border-zinc-200 bg-white py-3 pl-11 pr-4 text-sm text-zinc-950 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20";
 
 const browseToolbarBtnClass =
-  "relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border text-zinc-700 shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:text-zinc-200";
+  "relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border text-zinc-700 shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600";
 
 function Spinner({ className }: { className?: string }) {
   return (
@@ -903,8 +902,11 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
   const sidebarChipClass = browseSidebarChipBase;
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
+    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
       <section className={sectionShell}>
+        <div className="mb-6 inline-flex rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-blue-700">
+          Full catalog
+        </div>
         <div className={sectionHeaderRowClass}>
           <div className={sectionHeaderAccentClass} aria-hidden />
           <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -930,9 +932,9 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                   </span>
                 ) : null}
               </p>
-              <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="mt-3 text-xs font-medium text-zinc-500">
                 Desktop: filters in the left column. Phone: filters sit under the
-                list. Tap <span className="font-medium text-zinc-600 dark:text-zinc-300">Sort</span>{" "}
+                list. Tap <span className="font-bold text-zinc-700">Sort</span>{" "}
                 to change order.
               </p>
             </div>
@@ -947,7 +949,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                   onClick={() => {
                     setBrowseSortOpen((o) => !o);
                   }}
-                  className={`${browseToolbarBtnClass} border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800 ${
+                  className={`${browseToolbarBtnClass} border-zinc-200 bg-white hover:bg-zinc-50 ${
                     browseSortOpen
                       ? "border-blue-400 ring-2 ring-blue-500/30 dark:border-blue-500/50"
                       : ""
@@ -980,7 +982,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
           {showFacetSidebar ? (
             <aside
               id="browse-filter-panel"
-              className="mb-6 shrink-0 rounded-xl border border-zinc-200 bg-zinc-50/80 p-3 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/50 sm:p-3.5 lg:sticky lg:top-20 lg:mb-0 lg:max-h-[min(100vh-5.5rem,42rem)] lg:overflow-y-auto lg:overflow-x-hidden lg:pr-0.5"
+              className="mb-6 shrink-0 rounded-3xl border border-zinc-200 bg-zinc-50 p-4 shadow-sm sm:p-4 lg:sticky lg:top-24 lg:mb-0 lg:max-h-[min(100vh-6rem,42rem)] lg:overflow-y-auto lg:overflow-x-hidden lg:pr-1"
               aria-label="Catalog filters"
             >
             <div className="flex flex-col divide-y divide-zinc-200/80 dark:divide-zinc-600/50">
@@ -1334,7 +1336,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
         {!loading && !error && cards.length > 0 && browseSortOpen ? (
           <div
             id="browse-sort-panel"
-            className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50/60 p-4 dark:border-zinc-700 dark:bg-zinc-950/40"
+            className="mt-3 rounded-3xl border border-zinc-200 bg-zinc-50 p-4"
           >
             <h2 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
               <SortIcon className="h-3.5 w-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" />
@@ -1437,7 +1439,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
             {displayBrowseCards.map((card) => (
               <li
                 key={card.id}
-                className={`group flex h-full min-h-[26rem] flex-col rounded-2xl border p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-6 ${issuerBrandTileClass(card.bank, card.network)}`}
+                className={`group flex h-full min-h-[26rem] flex-col rounded-3xl border p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg sm:p-6 ${issuerBrandTileClass(card.bank, card.network)}`}
               >
                 <div className="mb-3 flex flex-wrap items-center gap-2">
                   <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-700 shadow-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200">

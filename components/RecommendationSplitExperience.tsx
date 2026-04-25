@@ -177,20 +177,20 @@ export function RecommendationSplitExperience({
     <div className="mt-6 flex flex-col gap-8 lg:mt-8 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:items-start lg:gap-10">
       {/* LEFT — inputs */}
       <div className="order-1 flex flex-col lg:sticky lg:top-24 lg:order-none lg:self-start">
-        <div className="rounded-2xl border border-zinc-200/80 bg-zinc-50/90 p-5 shadow-sm dark:border-zinc-700/80 dark:bg-zinc-950/40 sm:p-6">
-          <h3 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm shadow-zinc-900/[0.03] sm:p-6">
+          <h3 className="text-lg font-black tracking-tight text-zinc-950">
             Tell us about your spending
           </h3>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-zinc-600">
             Takes less than 30 seconds — updates live as you adjust.
           </p>
 
           <div className="mt-6 space-y-5">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-zinc-500">
                 Spending mix
               </p>
-              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-500">
+              <p className="mt-1 text-xs text-zinc-500">
                 Relative weights (shown as % of your mix). Bill pay is folded into shopping &amp; fuel
                 for scoring.
               </p>
@@ -198,10 +198,10 @@ export function RecommendationSplitExperience({
                 {SLIDER_CONFIG.map(({ key, label }) => (
                   <div key={key} className="space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                      <span className="text-sm font-semibold text-zinc-800">
                         {label}
                       </span>
-                      <span className="text-xs tabular-nums text-zinc-500 dark:text-zinc-400">
+                      <span className="text-xs tabular-nums text-zinc-500">
                         {pctOfTotal(weights, key).toFixed(0)}%
                       </span>
                     </div>
@@ -211,7 +211,7 @@ export function RecommendationSplitExperience({
                       max={100}
                       value={weights[key]}
                       onChange={(e) => setWeight(key, Number(e.target.value))}
-                      className="h-2 w-full cursor-pointer appearance-none rounded-full bg-zinc-200 accent-blue-600 transition dark:bg-zinc-700 dark:accent-blue-500"
+                      className="h-2 w-full cursor-pointer appearance-none rounded-full bg-zinc-200 accent-blue-600 transition"
                     />
                   </div>
                 ))}
@@ -222,11 +222,11 @@ export function RecommendationSplitExperience({
               <div className="flex items-center justify-between gap-2">
                 <label
                   htmlFor="monthly-spend-slider"
-                  className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400"
+                  className="text-xs font-black uppercase tracking-[0.18em] text-zinc-500"
                 >
                   Monthly spend
                 </label>
-                <span className="text-sm font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+                <span className="text-sm font-bold tabular-nums text-zinc-950">
                   {formatInr(monthlySpend)}
                 </span>
               </div>
@@ -238,15 +238,15 @@ export function RecommendationSplitExperience({
                 step={1000}
                 value={monthlySpend}
                 onChange={(e) => setMonthlySpend(Number(e.target.value))}
-                className="mt-3 h-2 w-full cursor-pointer appearance-none rounded-full bg-zinc-200 accent-blue-600 transition dark:bg-zinc-700 dark:accent-blue-500"
+                className="mt-3 h-2 w-full cursor-pointer appearance-none rounded-full bg-zinc-200 accent-blue-600 transition"
               />
-              <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-500">
+              <p className="mt-1 text-[11px] text-zinc-500">
                 ₹5,000 — ₹1,00,000 / month
               </p>
             </div>
 
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-zinc-500">
                 Fee preference
               </p>
               <div className="mt-3 flex flex-col gap-2">
@@ -261,8 +261,8 @@ export function RecommendationSplitExperience({
                     key={opt.id}
                     className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-all duration-300 ${
                       feeTier === opt.id
-                        ? "border-blue-500 bg-blue-50/80 ring-1 ring-blue-500/20 dark:border-blue-500 dark:bg-blue-950/40 dark:ring-blue-500/25"
-                        : "border-zinc-200/80 bg-white/80 hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900/50"
+                        ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500/20"
+                        : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50"
                     }`}
                   >
                     <input
@@ -273,10 +273,10 @@ export function RecommendationSplitExperience({
                       className="mt-1"
                     />
                     <span>
-                      <span className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                      <span className="block text-sm font-semibold text-zinc-950">
                         {opt.label}
                       </span>
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400">{opt.sub}</span>
+                      <span className="text-xs text-zinc-500">{opt.sub}</span>
                     </span>
                   </label>
                 ))}
@@ -285,11 +285,11 @@ export function RecommendationSplitExperience({
           </div>
         </div>
 
-        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 border-t border-zinc-200/90 bg-white/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-md dark:border-zinc-700 dark:bg-zinc-950/95 lg:pointer-events-auto lg:static lg:z-0 lg:mt-6 lg:border-0 lg:bg-transparent lg:p-0 lg:pb-0 lg:backdrop-blur-none">
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 border-t border-zinc-200/90 bg-white/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-md lg:pointer-events-auto lg:static lg:z-0 lg:mt-6 lg:border-0 lg:bg-transparent lg:p-0 lg:pb-0 lg:backdrop-blur-none">
           <button
             type="button"
             onClick={scrollToResults}
-            className="pointer-events-auto inline-flex w-full min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-md shadow-blue-600/20 transition-all duration-300 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400 lg:shadow-sm"
+            className="pointer-events-auto inline-flex w-full min-h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 px-5 text-sm font-black text-white shadow-md shadow-blue-600/20 transition-all duration-300 hover:-translate-y-0.5 lg:shadow-sm"
           >
             See My Best Cards →
           </button>
@@ -302,20 +302,20 @@ export function RecommendationSplitExperience({
         id="recommendation-live-results"
         className="order-2 min-w-0 scroll-mt-28 space-y-6 lg:order-none"
       >
-        <div className="rounded-2xl border border-zinc-200/80 bg-gradient-to-b from-white to-zinc-50/80 p-5 shadow-sm dark:border-zinc-700/80 dark:from-zinc-900 dark:to-zinc-950/80 sm:p-6">
-          <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">At a glance</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-3xl">
+        <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm shadow-zinc-900/[0.03] sm:p-6">
+          <p className="text-sm font-semibold text-zinc-600">At a glance</p>
+          <p className="mt-2 text-2xl font-black tracking-tight text-zinc-950 sm:text-3xl">
             You could earn{" "}
-            <span className="text-blue-600 dark:text-blue-400">{formatInr(topYearlyReward)}</span>
-            <span className="text-lg font-semibold text-zinc-600 dark:text-zinc-400"> / year</span>
+            <span className="bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">{formatInr(topYearlyReward)}</span>
+            <span className="text-lg font-semibold text-zinc-600"> / year</span>
           </p>
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-500">
+          <p className="mt-1 text-xs text-zinc-500">
             Based on estimated yearly rewards on your top match (illustrative).
           </p>
         </div>
 
         {error ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/50 dark:text-red-200">
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
             {error}
           </div>
         ) : null}
@@ -326,7 +326,7 @@ export function RecommendationSplitExperience({
               {[0, 1, 2].map((i) => (
                 <div
                   key={i}
-                  className="h-64 animate-pulse rounded-2xl bg-zinc-200/60 dark:bg-zinc-800/50"
+                  className="h-64 animate-pulse rounded-3xl bg-zinc-100"
                 />
               ))}
             </div>
@@ -335,38 +335,38 @@ export function RecommendationSplitExperience({
               <article
                 key={c.card_id}
                 style={{ transitionDelay: `${idx * 40}ms` }}
-                className={`flex flex-col rounded-2xl border bg-white p-5 shadow-sm transition-all duration-300 dark:bg-zinc-950/50 sm:p-6 ${
+                className={`flex flex-col rounded-3xl border bg-white p-5 shadow-sm shadow-zinc-900/[0.03] transition-all duration-300 sm:p-6 ${
                   idx === 0
-                    ? "border-emerald-200/90 ring-1 ring-emerald-200/60 dark:border-emerald-900/40 dark:ring-emerald-900/30"
-                    : "border-zinc-200/80 dark:border-zinc-700/80"
+                    ? "border-orange-200 ring-1 ring-orange-200/70"
+                    : "border-zinc-200"
                 } ${loading ? "opacity-70" : "opacity-100"}`}
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <span className="inline-block rounded-full bg-blue-600/10 px-2.5 py-1 text-[11px] font-semibold text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">
+                    <span className="inline-block rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-black text-blue-700 ring-1 ring-blue-200">
                       {idx === 0 ? "Best match" : `#${idx + 1}`}
                     </span>
-                    <h4 className="mt-2 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+                    <h4 className="mt-2 text-lg font-black text-zinc-950">
                       {c.card_name}
                     </h4>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">{c.bank}</p>
+                    <p className="text-sm text-zinc-500">{c.bank}</p>
                   </div>
-                  <span className="rounded-full bg-zinc-100 px-3 py-1 text-sm font-bold tabular-nums text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">
+                  <span className="rounded-full bg-gradient-to-r from-violet-600 to-blue-600 px-3 py-1 text-sm font-black tabular-nums text-white">
                     {c.score}%
                   </span>
                 </div>
 
-                <dl className="mt-4 rounded-xl bg-zinc-50/90 p-4 dark:bg-zinc-900/40">
-                  <dt className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <dl className="mt-4 rounded-2xl bg-zinc-50 p-4">
+                  <dt className="text-[11px] font-black uppercase tracking-[0.18em] text-zinc-500">
                     Est. yearly reward
                   </dt>
-                  <dd className="mt-1 text-xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                  <dd className="mt-1 text-xl font-black tabular-nums text-zinc-950">
                     {formatInr(c.yearlyReward)}
                   </dd>
                 </dl>
 
                 {c.benefitBullets && c.benefitBullets.length > 0 ? (
-                  <ul className="mt-4 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                  <ul className="mt-4 space-y-2 text-sm text-zinc-700">
                     {c.benefitBullets.map((b, i) => (
                       <li key={i} className="flex gap-2">
                         <span className="text-blue-500" aria-hidden>
@@ -378,11 +378,11 @@ export function RecommendationSplitExperience({
                   </ul>
                 ) : null}
 
-                <div className="mt-4 rounded-xl border border-zinc-200/70 bg-zinc-50/50 p-4 dark:border-zinc-700/60 dark:bg-zinc-900/30">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-zinc-500">
                     Why this card
                   </p>
-                  <p className="mt-2 text-sm leading-relaxed text-zinc-800 dark:text-zinc-200">
+                  <p className="mt-2 text-sm leading-relaxed text-zinc-800">
                     {c.explanation ?? "—"}
                   </p>
                 </div>
@@ -390,13 +390,13 @@ export function RecommendationSplitExperience({
                 <div className="mt-5 flex flex-col gap-2 sm:flex-row">
                   <Link
                     href={`/card/${c.card_id}`}
-                    className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                    className="inline-flex min-h-11 flex-1 items-center justify-center rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-bold text-zinc-900 shadow-sm transition hover:bg-zinc-50"
                   >
                     View details
                   </Link>
                   <Link
                     href={`/card/${c.card_id}#apply`}
-                    className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400"
+                    className="inline-flex min-h-11 flex-1 items-center justify-center rounded-2xl bg-zinc-950 px-4 text-sm font-bold text-white shadow-sm transition hover:bg-zinc-800"
                   >
                     Apply
                   </Link>
@@ -416,7 +416,7 @@ export function RecommendationSplitExperience({
           )}
         </div>
 
-        <p className="text-center text-[11px] leading-relaxed text-zinc-500 dark:text-zinc-500">
+        <p className="text-center text-[11px] leading-relaxed text-zinc-500">
           No sponsored rankings · No spam · Transparent calculations
         </p>
       </div>

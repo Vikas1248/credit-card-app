@@ -41,27 +41,27 @@ export default async function CategoryPage({ params }: PageProps) {
 
   return (
     <>
-      <div className="border-b border-zinc-200/80 bg-white/80 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/80">
-        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+      <div className="sticky top-0 z-40 border-b border-zinc-200/70 bg-white/90 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
           <Link
             href="/"
-            className="flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100"
+            className="flex items-center gap-2.5 text-sm font-black text-zinc-950"
           >
             <span
-              className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-[10px] font-bold leading-tight text-white"
+              className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-blue-600 text-lg font-black leading-tight text-white shadow-md shadow-blue-600/20"
               aria-hidden
             >
-              CG
+              ✦
             </span>
-            {SITE_NAME}
+            {SITE_NAME} AI
           </Link>
           <nav
-            className="flex flex-wrap items-center gap-1 rounded-full border border-zinc-200/80 bg-zinc-50/90 p-1 text-sm dark:border-zinc-700/80 dark:bg-zinc-900/70"
+            className="flex gap-1 overflow-x-auto rounded-full border border-zinc-200 bg-zinc-50 p-1 text-sm [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             aria-label="Catalog"
           >
             <Link
               href="/cards"
-              className="inline-flex items-center rounded-full border border-transparent px-2.5 py-1.5 font-medium text-zinc-600 transition hover:border-zinc-200 hover:bg-white hover:text-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+              className="inline-flex items-center rounded-full border border-transparent px-3 py-1.5 font-bold text-zinc-600 transition hover:bg-white hover:text-zinc-950 hover:shadow-sm"
             >
               All cards
             </Link>
@@ -69,7 +69,7 @@ export default async function CategoryPage({ params }: PageProps) {
               <Link
                 key={c.slug}
                 href={`/category/${c.slug}`}
-                className="inline-flex items-center gap-1.5 rounded-full border border-transparent px-2.5 py-1.5 font-medium text-zinc-600 transition hover:border-zinc-200 hover:bg-white hover:text-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+                className="inline-flex items-center gap-1.5 rounded-full border border-transparent px-3 py-1.5 font-bold text-zinc-600 transition hover:bg-white hover:text-zinc-950 hover:shadow-sm"
               >
                 <SpendCategoryIcon slug={c.slug} className="h-4 w-4" />
                 {c.label}
