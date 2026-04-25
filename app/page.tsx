@@ -1,50 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { AmexGenericApplyLink } from "@/components/amex-generic-apply-link";
-import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
-import { AxisApplyLink } from "@/components/axis-apply-link";
-import { CardTopRewardTag } from "@/components/card-top-reward-tag";
-import { FeaturedCardsCarousel } from "@/components/featured-cards-carousel";
-import { HdfcApplyLink } from "@/components/hdfc-apply-link";
-import { IndusIndApplyLink } from "@/components/indusind-apply-link";
-import { RecommendationSplitExperience } from "@/components/RecommendationSplitExperience";
-import { SbiApplyLink } from "@/components/sbi-apply-link";
-import { CreditAdvisorChat } from "@/components/chat/CreditAdvisorChat";
-import { isAmexCardUsingGenericApply } from "@/lib/cards/amexGenericApply";
-import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
-import { isAxisBankCard } from "@/lib/cards/axisApply";
-import { hdfcCardShowsApply } from "@/lib/cards/hdfcApply";
-import { indusindCardShowsApply } from "@/lib/cards/indusindApply";
-import { isSbiCard } from "@/lib/cards/sbiApply";
-import { SpendCategoryIcon } from "@/components/spend-category-icons";
+import { useCallback, useEffect, useState } from "react";
+import { AIChatAdvisor } from "@/components/AIChatAdvisor";
+import { BrowseSection, type BrowseCreditCard } from "@/components/BrowseSection";
+import { CompareDrawer } from "@/components/CompareDrawer";
+import { HeroSection } from "@/components/HeroSection";
+import { RecommendationQuiz } from "@/components/RecommendationQuiz";
+import { RecommendationResults } from "@/components/RecommendationResults";
+import { TrustStrip } from "@/components/TrustStrip";
+import { SITE_NAME } from "@/lib/site";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
-import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
-import { SITE_ABOUT_LEAD, SITE_NAME } from "@/lib/site";
-import { cardViewDetailsButtonClass } from "@/lib/cardCta";
-import {
-  formatCategoryRewardPctRange,
-  isAmexCatalogTravelPrimaryCard,
-  rewardPctForSpendCategory,
-  rewardPctRangeForSpendCategory,
-  SPEND_CATEGORIES,
-  type SpendCategorySlug,
-} from "@/lib/spendCategories";
+import type { SpendCategorySlug } from "@/lib/spendCategories";
 import type { CardNetwork } from "@/lib/types/card";
-type CreditCard = {
-  id: string;
-  card_name: string;
-  bank: string;
+
+type CreditCard = BrowseCreditCard & {
   network: CardNetwork;
   joining_fee: number;
-  annual_fee: number;
-  reward_type: "cashback" | "points";
-  reward_rate: string | null;
   lounge_access: string | null;
-  best_for: string | null;
-  key_benefits: string | null;
   last_updated: string;
   dining_reward: number | null;
   travel_reward: number | null;
@@ -53,1289 +26,157 @@ type CreditCard = {
   metadata?: Record<string, unknown> | null;
 };
 
-type RewardBreakdown = {
-  dining: number;
-  travel: number;
-  shopping: number;
-  fuel: number;
-};
-
-const CATEGORY_LABELS: { key: keyof RewardBreakdown; label: string }[] = [
-  { key: "dining", label: "Dining" },
-  { key: "travel", label: "Travel" },
-  { key: "shopping", label: "Shopping" },
-  { key: "fuel", label: "Fuel" },
-];
-
-type FeaturedGroup = {
-  id: "best-overall" | "cashback" | "travel" | "lifetime-free";
-  title: string;
-  subtitle: string;
-  cards: CreditCard[];
-};
-
-function formatInr(value: number): string {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
-function formatPct(value: number | null | undefined): string {
-  if (value == null || !Number.isFinite(value)) return "—";
-  return `${value}%`;
-}
-
-function cardCategoryInput(card: CreditCard) {
-  return {
-    card_name: card.card_name,
-    bank: card.bank,
-    dining_reward: card.dining_reward,
-    travel_reward: card.travel_reward,
-    shopping_reward: card.shopping_reward,
-    fuel_reward: card.fuel_reward,
-    network: card.network,
-    reward_type: card.reward_type,
-    best_for: card.best_for,
-    reward_rate: card.reward_rate,
-    key_benefits: card.key_benefits ?? null,
-    metadata: card.metadata ?? null,
-  };
-}
-
-function topCategoryReward(card: CreditCard): {
-  category: keyof RewardBreakdown;
-  value: number;
-} | null {
-  const input = cardCategoryInput(card);
-  if (isAmexCatalogTravelPrimaryCard(input)) {
-    const t = rewardPctForSpendCategory(input, "travel");
-    if (t != null && t > 0) return { category: "travel", value: t };
-  }
-
-  const keys: SpendCategorySlug[] = ["dining", "travel", "shopping", "fuel"];
-  /** When earn % ties across categories, prefer shopping then dining (typical for flat online cashback cards). */
-  const tiePriority: SpendCategorySlug[] = ["shopping", "dining", "travel", "fuel"];
-  const valid = keys
-    .map((k) => [k, rewardPctForSpendCategory(input, k)] as const)
-    .filter(
-      (entry): entry is [SpendCategorySlug, number] =>
-        entry[1] != null && entry[1] > 0
-    );
-  if (valid.length === 0) return null;
-  valid.sort((a, b) => {
-    if (b[1] !== a[1]) return b[1] - a[1];
-    return tiePriority.indexOf(a[0]) - tiePriority.indexOf(b[0]);
-  });
-  return { category: valid[0][0], value: valid[0][1] };
-}
-
-function categoryLabel(key: keyof RewardBreakdown): string {
-  return CATEGORY_LABELS.find((c) => c.key === key)?.label ?? key;
-}
-
-function categoryEarnDisplay(card: CreditCard, key: SpendCategorySlug): string {
-  return formatCategoryRewardPctRange(
-    rewardPctRangeForSpendCategory(cardCategoryInput(card), key)
-  );
-}
-
-const inputClass =
-  "w-full rounded-xl border border-zinc-200/90 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm transition placeholder:text-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-600/90 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-400";
-
-const btnPrimary =
-  "inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:from-violet-700 hover:to-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:pointer-events-none disabled:opacity-55 dark:hover:from-violet-500 dark:hover:to-blue-500 sm:w-auto";
-
-const btnGhost =
-  "inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-violet-100 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm transition hover:border-violet-200 hover:bg-violet-50 disabled:opacity-50 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800";
-
-/** Enterprise-style panels: depth from soft shadow instead of heavy outlines. */
-const sectionShell =
-  "rounded-3xl bg-white p-8 shadow-sm shadow-zinc-900/[0.06] dark:bg-zinc-900/70 dark:shadow-black/35 sm:p-10";
-
-/** In-page section titles (distinct from sticky page header). */
-const sectionTitleClass =
-  "text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-2xl";
-
-const sectionLeadClass =
-  "mt-2 max-w-xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400";
-
-const sectionHeaderRowClass =
-  "flex gap-3 border-b border-zinc-200/50 pb-6 dark:border-zinc-700/50 sm:gap-4";
-
-const sectionHeaderAccentClass =
-  "mt-2 h-11 w-1.5 shrink-0 rounded-full bg-gradient-to-b from-blue-500 to-indigo-600 shadow-sm shadow-blue-500/30";
-
-const headerInputClass =
-  "w-full rounded-2xl border border-zinc-200/80 bg-zinc-50/90 py-3 pl-11 pr-4 text-sm text-zinc-900 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-600/80 dark:bg-zinc-900/80 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-500";
-
-const headerNavLinkClass =
-  "shrink-0 rounded-full border border-transparent px-3 py-1.5 text-sm font-medium text-zinc-600 transition hover:border-zinc-200 hover:bg-white hover:text-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:bg-zinc-900 dark:hover:text-zinc-100";
-
-function Spinner({ className }: { className?: string }) {
-  return (
-    <svg
-      className={`animate-spin ${className ?? "h-4 w-4"}`}
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      aria-hidden
-    >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-      />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-      />
-    </svg>
-  );
-}
-
-function HomeSearchBar({
-  id,
-  className,
-  search,
-  onSearchChange,
-}: {
-  id?: string;
-  className?: string;
-  search: string;
-  onSearchChange: (value: string) => void;
-}) {
-  return (
-    <div
-      id={id}
-      className={`relative min-w-0 scroll-mt-28 ${className ?? ""}`}
-    >
-      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
-        <svg
-          className="h-4 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-          aria-hidden
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M21 21l-5.2-5.2M11 18a7 7 0 100-14 7 7 0 000 14z"
-          />
-        </svg>
-      </span>
-      <input
-        type="search"
-        name="q"
-        value={search}
-        onChange={(e) => onSearchChange(e.target.value)}
-        placeholder="Search cards or banks…"
-        className={headerInputClass}
-        aria-label="Search cards"
-      />
-    </div>
-  );
-}
+const navItems = [
+  ["#chat-advisor", "AI advisor"],
+  ["#recommendation-quiz", "Quiz"],
+  ["#results", "Results"],
+  ["#compare", "Compare"],
+  ["#browse", "Browse"],
+] as const;
 
 function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-violet-100/70 bg-white/90 backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-950/85">
-      <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
-          <Link
-            href="/"
-            className="flex shrink-0 items-center gap-2.5 rounded-xl pr-2 text-zinc-900 dark:text-zinc-100"
+    <header className="sticky top-0 z-40 border-b border-zinc-200/70 bg-white/90 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+        <Link href="/" className="flex items-center gap-2.5">
+          <span
+            className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-blue-600 text-lg font-black text-white shadow-md shadow-blue-600/20"
+            aria-hidden
           >
-            <span
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 via-blue-600 to-cyan-500 text-lg font-bold leading-tight text-white shadow-md shadow-blue-600/20"
-              aria-hidden
-            >
-              ✦
-            </span>
-            <span className="text-sm font-black tracking-tight">{SITE_NAME} AI</span>
-          </Link>
+            ✦
+          </span>
+          <span className="text-sm font-black tracking-tight text-zinc-950">
+            {SITE_NAME} AI
+          </span>
+        </Link>
 
-          <nav
-            className="flex gap-1 overflow-x-auto rounded-full border border-violet-100 bg-violet-50/80 p-1 pb-1 sm:pb-1 dark:border-zinc-700/50 dark:bg-zinc-900/70 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            aria-label="Sections"
-          >
-            {(
-              [
-                ["#search", "Search"],
-                ["#categories", "Categories"],
-                ["#featured", "Featured"],
-                ["#chat-advisor", "AI advisor"],
-                ["#spend-picks", "Top spends"],
-                ["#compare", "Compare"],
-              ] as const
-            ).map(([href, label]) => (
-              <a key={href} href={href} className={headerNavLinkClass}>
-                {label}
-              </a>
-            ))}
-            <Link href="/cards" className={headerNavLinkClass}>
-              All cards
-            </Link>
-          </nav>
-          <a href="#chat-advisor" className="hidden rounded-full bg-gradient-to-r from-violet-600 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-600/20 transition hover:from-violet-700 hover:to-blue-700 lg:inline-flex">
-            Get Started
-          </a>
-        </div>
+        <nav
+          className="flex gap-1 overflow-x-auto rounded-full border border-zinc-200 bg-zinc-50 p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          aria-label="Homepage sections"
+        >
+          {navItems.map(([href, label]) => (
+            <a
+              key={href}
+              href={href}
+              className="shrink-0 rounded-full px-3 py-1.5 text-sm font-bold text-zinc-600 transition hover:bg-white hover:text-zinc-950 hover:shadow-sm"
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+
+        <a
+          href="#recommendation-quiz"
+          className="hidden rounded-full bg-gradient-to-r from-violet-600 to-blue-600 px-4 py-2 text-sm font-black text-white shadow-md shadow-blue-600/20 transition hover:-translate-y-0.5 lg:inline-flex"
+        >
+          Get started
+        </a>
       </div>
     </header>
   );
 }
 
 export default function Home() {
-  const router = useRouter();
   const [cards, setCards] = useState<CreditCard[]>([]);
-  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [spendDining, setSpendDining] = useState("8000");
-  const [spendTravel, setSpendTravel] = useState("5000");
-  const [spendShopping, setSpendShopping] = useState("12000");
-  const [spendFuel, setSpendFuel] = useState("6000");
-  const [compareIdA, setCompareIdA] = useState("");
-  const [compareIdB, setCompareIdB] = useState("");
-  const [featuredFromAi, setFeaturedFromAi] = useState<
-    { card: CreditCard; tag: string }[] | null
-  >(null);
-  const [compareAi, setCompareAi] = useState<{
-    overview: string;
-    when_left_better: string;
-    when_right_better: string;
-    caveat: string;
-  } | null>(null);
-  const [compareAiLoading, setCompareAiLoading] = useState(false);
-  const [compareAiError, setCompareAiError] = useState<string | null>(null);
+  const [spendSplit, setSpendSplit] = useState<Record<SpendCategorySlug, number>>({
+    dining: 8000,
+    travel: 5000,
+    shopping: 12000,
+    fuel: 6000,
+  });
 
-  const handleRecommendSpendSplit = useCallback((split: Record<SpendCategorySlug, number>) => {
-    setSpendDining(String(Math.round(split.dining)));
-    setSpendTravel(String(Math.round(split.travel)));
-    setSpendShopping(String(Math.round(split.shopping)));
-    setSpendFuel(String(Math.round(split.fuel)));
-  }, []);
-
-  const loadCards = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const params = new URLSearchParams({ limit: "200" });
-      const catalogNetwork = getOptionalCardNetworkFilter();
-      if (catalogNetwork) {
-        params.set("network", catalogNetwork);
-      }
-      const response = await fetch(`/api/cards?${params.toString()}`, {
-        cache: "no-store",
-      });
-      const result: { cards?: CreditCard[]; error?: string } =
-        await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error ?? "Failed to fetch cards");
-      }
-
-      setCards(result.cards ?? []);
-    } catch (fetchError) {
-      const message =
-        fetchError instanceof Error ? fetchError.message : "Unexpected error";
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handleRecommendSpendSplit = useCallback(
+    (split: Record<SpendCategorySlug, number>) => {
+      setSpendSplit(split);
+    },
+    []
+  );
 
   useEffect(() => {
-    void loadCards();
-  }, []);
-
-  useEffect(() => {
-    if (cards.length === 0) return;
     let cancelled = false;
-    (async () => {
+    async function loadCards() {
       try {
-        const params = new URLSearchParams();
-        const n = getOptionalCardNetworkFilter();
-        if (n) params.set("network", n);
-        const res = await fetch(`/api/cards/featured-ai?${params}`, {
+        setLoading(true);
+        setError(null);
+        const params = new URLSearchParams({ limit: "200" });
+        const catalogNetwork = getOptionalCardNetworkFilter();
+        if (catalogNetwork) params.set("network", catalogNetwork);
+
+        const response = await fetch(`/api/cards?${params.toString()}`, {
           cache: "no-store",
         });
-        const data: {
-          source?: string;
-          picks?: { card_id: string; tag: string }[];
-        } = await res.json();
-        if (cancelled) return;
-        if (data.source !== "ai" || !Array.isArray(data.picks)) {
-          setFeaturedFromAi([]);
-          return;
+        const result = (await response.json()) as {
+          cards?: CreditCard[];
+          error?: string;
+        };
+
+        if (!response.ok) {
+          throw new Error(result.error ?? "Failed to fetch cards");
         }
-        const items: { card: CreditCard; tag: string }[] = [];
-        for (const p of data.picks) {
-          if (typeof p.card_id !== "string" || typeof p.tag !== "string") {
-            continue;
-          }
-          const c = cards.find((x) => x.id === p.card_id);
-          if (c) items.push({ card: c, tag: p.tag });
+
+        if (!cancelled) setCards(result.cards ?? []);
+      } catch (fetchError) {
+        if (!cancelled) {
+          setCards([]);
+          setError(
+            fetchError instanceof Error ? fetchError.message : "Unexpected error"
+          );
         }
-        setFeaturedFromAi(items.length >= 3 ? items : []);
-      } catch {
-        if (!cancelled) setFeaturedFromAi([]);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    })();
+    }
+
+    void loadCards();
     return () => {
       cancelled = true;
     };
-  }, [cards]);
+  }, []);
 
-  const cardsSortedByName = useMemo(
-    () => [...cards].sort((a, b) => a.card_name.localeCompare(b.card_name)),
-    [cards]
+  const monthlyTotal = Object.values(spendSplit).reduce(
+    (total, value) => total + value,
+    0
   );
-
-  const featuredGroups = useMemo<FeaturedGroup[]>(() => {
-    const byAnnualFee = [...cards].sort((a, b) => a.annual_fee - b.annual_fee);
-    const byTopRate = [...cards].sort((a, b) => {
-      const aTop = topCategoryReward(a)?.value ?? 0;
-      const bTop = topCategoryReward(b)?.value ?? 0;
-      return bTop - aTop;
-    });
-
-    const bestOverall = [...cards]
-      .sort((a, b) => {
-        const aScore = (topCategoryReward(a)?.value ?? 0) * 10 - a.annual_fee / 1000;
-        const bScore = (topCategoryReward(b)?.value ?? 0) * 10 - b.annual_fee / 1000;
-        return bScore - aScore;
-      })
-      .slice(0, 8);
-
-    const cashback = [...cards]
-      .filter((c) => c.reward_type === "cashback")
-      .sort((a, b) => (topCategoryReward(b)?.value ?? 0) - (topCategoryReward(a)?.value ?? 0))
-      .slice(0, 8);
-
-    const travel = [...cards]
-      .filter((c) => {
-        const text = `${c.best_for ?? ""} ${c.reward_rate ?? ""} ${c.key_benefits ?? ""}`.toLowerCase();
-        return text.includes("travel") || text.includes("lounge");
-      })
-      .sort((a, b) => (topCategoryReward(b)?.value ?? 0) - (topCategoryReward(a)?.value ?? 0))
-      .slice(0, 8);
-
-    const lifetimeFree = byAnnualFee.filter((c) => c.annual_fee === 0).slice(0, 8);
-
-    return [
-      {
-        id: "best-overall",
-        title: "Best overall",
-        subtitle: "Balanced reward + fee value",
-        cards: bestOverall.length > 0 ? bestOverall : byTopRate.slice(0, 8),
-      },
-      {
-        id: "cashback",
-        title: "Cashback cards",
-        subtitle: "High cash return cards",
-        cards: cashback.length > 0 ? cashback : byTopRate.slice(0, 8),
-      },
-      {
-        id: "travel",
-        title: "Travel cards",
-        subtitle: "Lounge and travel oriented picks",
-        cards: travel.length > 0 ? travel : byTopRate.slice(0, 8),
-      },
-      {
-        id: "lifetime-free",
-        title: "Lifetime free cards",
-        subtitle: "No annual fee picks",
-        cards: lifetimeFree.length > 0 ? lifetimeFree : byAnnualFee.slice(0, 8),
-      },
-    ];
-  }, [cards]);
-
-  /** One card per featured category, max 5 (fills with a top-scored extra if needed). */
-  const featuredCarouselItems = useMemo(() => {
-    const result: { card: CreditCard; tag: string }[] = [];
-    const seen = new Set<string>();
-    for (const group of featuredGroups) {
-      const pick = group.cards.find((c) => !seen.has(c.id));
-      if (pick) {
-        seen.add(pick.id);
-        result.push({ card: pick, tag: group.title });
-      }
-    }
-    if (result.length < 5 && cards.length > 0) {
-      const scored = [...cards].sort((a, b) => {
-        const aS =
-          (topCategoryReward(a)?.value ?? 0) * 10 - a.annual_fee / 1000;
-        const bS =
-          (topCategoryReward(b)?.value ?? 0) * 10 - b.annual_fee / 1000;
-        return bS - aS;
-      });
-      for (const c of scored) {
-        if (result.length >= 5) break;
-        if (!seen.has(c.id)) {
-          seen.add(c.id);
-          result.push({ card: c, tag: "Top pick" });
-        }
-      }
-    }
-    return result.slice(0, 5);
-  }, [featuredGroups, cards]);
-
-  const parsedSpendForCompare = useMemo(() => {
-    const dining = Number(spendDining);
-    const travel = Number(spendTravel);
-    const shopping = Number(spendShopping);
-    const fuel = Number(spendFuel);
-    if (
-      [dining, travel, shopping, fuel].some(
-        (v) => !Number.isFinite(v) || v < 0
-      )
-    ) {
-      return null;
-    }
-    return { dining, travel, shopping, fuel };
-  }, [spendDining, spendTravel, spendShopping, spendFuel]);
-
-  const compareLeft = useMemo(
-    () => cards.find((c) => c.id === compareIdA) ?? null,
-    [cards, compareIdA]
-  );
-  const compareRight = useMemo(
-    () => cards.find((c) => c.id === compareIdB) ?? null,
-    [cards, compareIdB]
-  );
-
-  useEffect(() => {
-    if (!compareLeft || !compareRight) {
-      setCompareAi(null);
-      setCompareAiLoading(false);
-      setCompareAiError(null);
-      return;
-    }
-    const ac = new AbortController();
-    (async () => {
-      setCompareAiLoading(true);
-      setCompareAiError(null);
-      try {
-        const body: Record<string, string | number> = {
-          cardIdA: compareLeft.id,
-          cardIdB: compareRight.id,
-        };
-        if (parsedSpendForCompare) {
-          body.dining = parsedSpendForCompare.dining;
-          body.travel = parsedSpendForCompare.travel;
-          body.shopping = parsedSpendForCompare.shopping;
-          body.fuel = parsedSpendForCompare.fuel;
-        }
-        const res = await fetch("/api/cards/compare-ai", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-          signal: ac.signal,
-        });
-        const data: {
-          comparison?: {
-            overview: string;
-            when_left_better: string;
-            when_right_better: string;
-            caveat: string;
-          };
-          error?: string;
-        } = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error ?? "Could not load AI comparison.");
-        }
-        if (data.comparison) setCompareAi(data.comparison);
-        else setCompareAi(null);
-      } catch (e) {
-        if (e instanceof Error && e.name === "AbortError") return;
-        setCompareAi(null);
-        setCompareAiError(
-          e instanceof Error ? e.message : "Could not load AI comparison."
-        );
-      } finally {
-        if (!ac.signal.aborted) setCompareAiLoading(false);
-      }
-    })();
-    return () => ac.abort();
-  }, [
-    compareLeft?.id,
-    compareRight?.id,
-    parsedSpendForCompare?.dining,
-    parsedSpendForCompare?.travel,
-    parsedSpendForCompare?.shopping,
-    parsedSpendForCompare?.fuel,
-  ]);
-
-  const displayFeaturedCarouselItems = useMemo(() => {
-    if (featuredFromAi && featuredFromAi.length >= 3) {
-      return featuredFromAi;
-    }
-    return featuredCarouselItems;
-  }, [featuredFromAi, featuredCarouselItems]);
-
-  const featuredCarouselSlides = useMemo(() => {
-    return displayFeaturedCarouselItems.map(({ card, tag }) => {
-      const topReward = topCategoryReward(card);
-      const rewardLine = topReward
-        ? `${formatPct(topReward.value)} ${categoryLabel(topReward.category)}`
-        : (card.reward_rate ?? "—").slice(0, 80);
-      return { card, tag, rewardLine };
-    });
-  }, [displayFeaturedCarouselItems]);
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#f8f7ff_0%,#eef7ff_42%,#f8fafc_100%)] text-zinc-900 dark:from-zinc-950 dark:to-zinc-950 dark:text-zinc-100">
+    <div className="min-h-screen bg-[#FAFAFA] text-zinc-950">
       <SiteHeader />
 
-      <main className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
-        <header className="relative overflow-hidden rounded-[2rem] border border-white/80 bg-[radial-gradient(circle_at_12%_18%,#ffffff_0,#f4f1ff_24%,#e7f7ff_58%,#ffffff_100%)] p-6 shadow-2xl shadow-blue-900/[0.10] dark:border-zinc-800 dark:bg-[radial-gradient(circle_at_15%_15%,#1e1b4b_0,#0f172a_42%,#09090b_100%)] sm:p-8 lg:p-10">
-          <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl dark:bg-blue-500/10" />
-          <div className="pointer-events-none absolute bottom-10 right-1/3 h-44 w-44 rounded-full bg-violet-400/20 blur-3xl dark:bg-violet-500/10" />
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+        <div className="space-y-8 sm:space-y-10">
+          <HeroSection />
+          <TrustStrip />
+          <AIChatAdvisor />
+          <RecommendationQuiz onSpendSplitChange={handleRecommendSpendSplit} />
+          <RecommendationResults />
+          <CompareDrawer cards={cards} />
+          <BrowseSection cards={cards} loading={loading} />
 
-          <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] lg:items-center">
-            <div>
-              <p className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-white/85 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-violet-700 shadow-sm dark:border-violet-900/50 dark:bg-violet-950/40 dark:text-violet-200">
-                <span aria-hidden>✦</span>
-                AI-powered · personalized · perfect for you
-              </p>
-              <h1 className="mt-5 max-w-2xl text-4xl font-black tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-5xl lg:text-6xl">
-                Find the best credit card{" "}
-                <span className="bg-gradient-to-r from-violet-600 via-blue-600 to-cyan-500 bg-clip-text text-transparent">
-                  for you
-                </span>
-              </h1>
-              <p className="mt-4 max-w-xl text-base leading-relaxed text-zinc-700 dark:text-zinc-300 sm:text-lg">
-                Our AI advisor analyzes your spending, lifestyle and goals to recommend credit cards that fit your rewards style.
-              </p>
-              <div className="mt-6 space-y-4">
-                {[
-                  ["🧠", "AI-powered recommendations", "Smart matching based on your profile"],
-                  ["💰", "Maximize your rewards", "Get cashback, points and useful benefits"],
-                  ["🛡", "100% secure & private", "No spam — transparent calculations"],
-                ].map(([icon, title, subtitle]) => (
-                  <div
-                    key={title}
-                    className="flex items-center gap-3 rounded-2xl border border-white/70 bg-white/70 p-3 shadow-sm shadow-blue-900/[0.04] backdrop-blur dark:border-zinc-700/70 dark:bg-zinc-900/60"
-                  >
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-blue-600 text-lg text-white shadow-md shadow-blue-600/20">
-                      {icon}
-                    </span>
-                    <span>
-                      <span className="block text-sm font-bold text-zinc-900 dark:text-zinc-100">{title}</span>
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400">{subtitle}</span>
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <form
-                className="mt-8 max-w-xl"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const q = search.trim();
-                  router.push(q ? `/cards?q=${encodeURIComponent(q)}` : "/cards");
-                }}
-              >
-                <HomeSearchBar
-                  id="search"
-                  search={search}
-                  onSearchChange={setSearch}
-                />
-                <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-x-3 sm:gap-y-2">
-                  <a href="#chat-advisor" className={btnPrimary}>
-                    Find My Best Card →
-                  </a>
-                  <a href="#spend-picks" className={btnGhost}>
-                    Use spend sliders
-                  </a>
-                  <Link
-                    href="/cards"
-                    className={btnGhost}
-                  >
-                    Browse All Cards
-                  </Link>
-                </div>
-              </form>
-            </div>
-
-            <div className="relative mx-auto w-full max-w-md">
-              <div className="absolute -right-4 top-16 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-2xl text-white shadow-lg shadow-emerald-900/20">
-                ₹
-              </div>
-              <div className="absolute -right-2 bottom-28 flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-600 text-2xl text-white shadow-lg shadow-violet-900/20">
-                ✈
-              </div>
-
-              <div className="rounded-[2rem] border border-white/80 bg-white/85 p-4 shadow-2xl shadow-blue-900/[0.14] backdrop-blur dark:border-zinc-700/70 dark:bg-zinc-900/80">
-                <div className="mb-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-300">
-                      Top picks for you
-                    </p>
-                    <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                      Personalized matches
-                    </p>
-                  </div>
-                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-950/50 dark:text-blue-200">
-                    Live
-                  </span>
-                </div>
-
-                <div className="space-y-3">
-                  {[
-                    ["Infinite Cashback Card", "5%", "Cashback", "Best overall", "from-slate-950 to-blue-950"],
-                    ["Travel Rewards Card", "10X", "Points", "Best for travel", "from-blue-700 to-indigo-700"],
-                    ["Shopping Rewards Card", "8%", "Savings", "Best for shopping", "from-fuchsia-700 to-violet-700"],
-                  ].map(([name, rate, type, badge, gradient]) => (
-                    <div
-                      key={name}
-                      className={`rounded-2xl bg-gradient-to-r ${gradient} p-4 text-white shadow-md`}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="mb-3 h-6 w-9 rounded-md bg-yellow-300/90 shadow-inner" />
-                          <p className="text-sm font-bold">{name}</p>
-                          <p className="mt-2 text-[11px] tracking-[0.35em] text-white/70">
-                            **** **** **** 4567
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-black leading-none">{rate}</p>
-                          <p className="text-[11px] text-white/75">{type}</p>
-                        </div>
-                      </div>
-                      <span className="mt-3 inline-flex rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-semibold">
-                        {badge}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mx-auto mt-4 grid max-w-sm grid-cols-2 gap-3 text-center text-xs sm:grid-cols-4">
-                {[
-                  ["🛡", "Secure"],
-                  ["🏆", "Top banks"],
-                  ["⭐", "User first"],
-                ].map(([icon, item]) => (
-                  <div
-                    key={item}
-                    className="rounded-2xl border border-white/70 bg-white/75 px-3 py-2 font-semibold text-zinc-700 shadow-sm backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200"
-                  >
-                    <span className="block text-base">{icon}</span>
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div className="mt-2 flex flex-col gap-16 sm:mt-3 sm:gap-20">
-        <section
-          id="categories-legacy"
-          className={`order-2 hidden scroll-mt-28 ${sectionShell}`}
-          aria-labelledby="categories-heading"
-        >
-          <div className={sectionHeaderRowClass}>
-            <div className={sectionHeaderAccentClass} aria-hidden />
-            <div className="min-w-0 flex-1">
-              <h2 id="categories-heading" className={sectionTitleClass}>
-                Browse by category
-              </h2>
-              <p className={`${sectionLeadClass} max-w-2xl`}>
-                Every card in the catalog appears on each category page—sorted by
-                that earn rate, with missing rates shown as — and listed after
-                cards that have data. Or jump to the full list with search and
-                filters.
-              </p>
-            </div>
-          </div>
-          <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-5 sm:gap-4">
-            {SPEND_CATEGORIES.map((c) => (
-              <li key={c.slug}>
-                <Link
-                  href={`/category/${c.slug}`}
-                  className="group flex h-full flex-col items-center rounded-2xl bg-white px-4 py-5 text-center shadow-sm shadow-zinc-900/[0.04] transition hover:shadow-md hover:shadow-blue-900/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-zinc-900/40 dark:hover:shadow-blue-900/20"
-                >
-                  <span
-                    className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600/10 text-blue-700 transition group-hover:bg-blue-600/15 dark:bg-blue-500/15 dark:text-blue-300"
-                    aria-hidden
-                  >
-                    <SpendCategoryIcon slug={c.slug} className="h-6 w-6" />
-                  </span>
-                  <span className="mt-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    {c.label}
-                  </span>
-                  <span className="mt-1 text-xs leading-snug text-zinc-500 dark:text-zinc-400">
-                    {c.tileHint}
-                  </span>
-                </Link>
-              </li>
-            ))}
-            <li>
-              <Link
-                href="/cards"
-                className="group flex h-full flex-col items-center rounded-2xl bg-white px-4 py-5 text-center shadow-sm shadow-zinc-900/[0.04] transition hover:shadow-md hover:shadow-indigo-900/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-zinc-900/40 dark:hover:shadow-indigo-900/25"
-              >
-                <span
-                  className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600/10 text-indigo-700 transition group-hover:bg-indigo-600/15 dark:bg-indigo-500/15 dark:text-indigo-300"
-                  aria-hidden
-                >
-                  <svg
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                    />
-                  </svg>
-                </span>
-                <span className="mt-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                  All cards
-                </span>
-                <span className="mt-1 text-xs leading-snug text-zinc-500 dark:text-zinc-400">
-                  Search, sort &amp; filters
-                </span>
-              </Link>
-            </li>
-          </ul>
-        </section>
-
-        <div className="order-1 space-y-24 sm:space-y-28">
-          <section
-            id="featured-legacy"
-            className={`hidden scroll-mt-28 ${sectionShell}`}
-            aria-labelledby="featured-heading"
-          >
-            <div className={sectionHeaderRowClass}>
-              <div className={sectionHeaderAccentClass} aria-hidden />
-              <div className="min-w-0 flex-1">
-                <h2 id="featured-heading" className={sectionTitleClass}>
-                  Featured picks
-                </h2>
-                <p className={sectionLeadClass}>
-                  Rotating highlights from the catalog—up to five picks at a time.
-                </p>
-              </div>
-            </div>
-            <FeaturedCardsCarousel
-              items={featuredCarouselSlides}
-              loading={loading}
-            />
-          </section>
-
-          <section
-            id="chat-advisor"
-            className="scroll-mt-28 rounded-3xl bg-white p-6 shadow-sm shadow-zinc-900/[0.06] dark:bg-zinc-900/70 dark:shadow-black/35 sm:p-8 lg:p-10"
-            aria-labelledby="chat-advisor-heading"
-          >
-            <div className={sectionHeaderRowClass}>
-              <div className={sectionHeaderAccentClass} aria-hidden />
-              <div className="min-w-0 flex-1">
-                <h2 id="chat-advisor-heading" className={sectionTitleClass}>
-                  Conversational card advisor
-                </h2>
-                <p className={sectionLeadClass}>
-                  Tell us your preferences in plain language. We extract intent, ask a few
-                  follow-up questions, and rank cards with the same deterministic CredGenie scoring.
-                </p>
-              </div>
-            </div>
-
-            <CreditAdvisorChat />
-          </section>
-
-          <section
-            id="spend-picks"
-            className="scroll-mt-28 rounded-3xl bg-white p-6 pb-28 shadow-sm shadow-zinc-900/[0.06] dark:bg-zinc-900/70 dark:shadow-black/35 sm:p-8 sm:pb-10 lg:p-10"
-            aria-labelledby="spend-picks-heading"
-          >
-            <div className={sectionHeaderRowClass}>
-              <div className={sectionHeaderAccentClass} aria-hidden />
-              <div className="min-w-0 flex-1">
-                <h2 id="spend-picks-heading" className={sectionTitleClass}>
-                  Recommended cards for you
-                </h2>
-                <p className={sectionLeadClass}>
-                  Adjust your spend mix and see top cards update in real time. Ranking uses the same
-                  deterministic CredGenie score; AI only narrates the winner and runner-up.
-                </p>
-              </div>
-            </div>
-
-            <RecommendationSplitExperience onSpendSplitChange={handleRecommendSpendSplit} />
-          </section>
-
-          <section
-            id="featured"
-            className={`scroll-mt-28 ${sectionShell}`}
-            aria-labelledby="featured-heading-main"
-          >
-            <div className={sectionHeaderRowClass}>
-              <div className={sectionHeaderAccentClass} aria-hidden />
-              <div className="min-w-0 flex-1">
-                <h2 id="featured-heading-main" className={sectionTitleClass}>
-                  Featured
-                </h2>
-                <p className={sectionLeadClass}>
-                  Rotating highlights from the catalog—up to five picks at a time.
-                </p>
-              </div>
-            </div>
-            <FeaturedCardsCarousel
-              items={featuredCarouselSlides}
-              loading={loading}
-            />
-          </section>
-
-          <section
-            id="categories"
-            className={sectionShell}
-            aria-labelledby="categories-heading-main"
-          >
-            <div className={sectionHeaderRowClass}>
-              <div className={sectionHeaderAccentClass} aria-hidden />
-              <div className="min-w-0 flex-1">
-                <h2 id="categories-heading-main" className={sectionTitleClass}>
-                  Categories
-                </h2>
-                <p className={`${sectionLeadClass} max-w-2xl`}>
-                  Explore all cards by category and compare where each card earns most.
-                </p>
-              </div>
-            </div>
-            <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-5 sm:gap-4">
-              {SPEND_CATEGORIES.map((c) => (
-                <li key={c.slug}>
-                  <Link
-                    href={`/category/${c.slug}`}
-                    className="group flex h-full flex-col items-center rounded-2xl bg-white px-4 py-5 text-center shadow-sm shadow-zinc-900/[0.04] transition hover:shadow-md hover:shadow-blue-900/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-zinc-900/40 dark:hover:shadow-blue-900/20"
-                  >
-                    <span
-                      className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600/10 text-blue-700 transition group-hover:bg-blue-600/15 dark:bg-blue-500/15 dark:text-blue-300"
-                      aria-hidden
-                    >
-                      <SpendCategoryIcon slug={c.slug} className="h-6 w-6" />
-                    </span>
-                    <span className="mt-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                      {c.label}
-                    </span>
-                    <span className="mt-1 text-xs leading-snug text-zinc-500 dark:text-zinc-400">
-                      {c.tileHint}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-              <li>
-                <Link
-                  href="/cards"
-                  className="group flex h-full flex-col items-center rounded-2xl bg-white px-4 py-5 text-center shadow-sm shadow-zinc-900/[0.04] transition hover:shadow-md hover:shadow-indigo-900/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-zinc-900/40 dark:hover:shadow-indigo-900/25"
-                >
-                  <span
-                    className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600/10 text-indigo-700 transition group-hover:bg-indigo-600/15 dark:bg-indigo-500/15 dark:text-indigo-300"
-                    aria-hidden
-                  >
-                    <svg
-                      className="h-6 w-6"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                      />
-                    </svg>
-                  </span>
-                  <span className="mt-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    All cards
-                  </span>
-                  <span className="mt-1 text-xs leading-snug text-zinc-500 dark:text-zinc-400">
-                    Search, sort &amp; filters
-                  </span>
-                </Link>
-              </li>
-            </ul>
-          </section>
-
-          <section id="compare" className={`scroll-mt-28 ${sectionShell}`}>
-            <div className={sectionHeaderRowClass}>
-              <div className={sectionHeaderAccentClass} aria-hidden />
-              <div className="min-w-0 flex-1">
-                <h2 className={sectionTitleClass}>Compare two cards</h2>
-                <p className={sectionLeadClass}>
-                  Side-by-side fees, reward terms, and category earn rates (same
-                  fields as each card’s detail page). When AI is available, a short
-                  narrative summary can appear above; if you’ve entered spend in{" "}
-                  <a href="#spend-picks" className="font-medium underline">
-                    Find cards by your top spends
-                  </a>
-                  , the AI uses it for context.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-8 grid grid-cols-1 items-end gap-6 md:grid-cols-[1fr_auto_1fr]">
-              <label className="block min-w-0">
-                <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                  First card
-                </span>
-                <select
-                  value={compareIdA}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setCompareIdA(v);
-                    if (v && v === compareIdB) setCompareIdB("");
-                  }}
-                  className={inputClass}
-                >
-                  <option value="">Choose…</option>
-                  {cardsSortedByName.map((c) => (
-                    <option
-                      key={c.id}
-                      value={c.id}
-                      disabled={c.id === compareIdB}
-                    >
-                      {c.card_name} — {c.bank}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <div
-                className="hidden items-center justify-center pb-2 text-xs font-bold uppercase tracking-wider text-zinc-400 md:flex"
-                aria-hidden
-              >
-                vs
-              </div>
-              <label className="block min-w-0">
-                <span className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                  Second card
-                </span>
-                <select
-                  value={compareIdB}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setCompareIdB(v);
-                    if (v && v === compareIdA) setCompareIdA("");
-                  }}
-                  className={inputClass}
-                >
-                  <option value="">Choose…</option>
-                  {cardsSortedByName.map((c) => (
-                    <option
-                      key={c.id}
-                      value={c.id}
-                      disabled={c.id === compareIdA}
-                    >
-                      {c.card_name} — {c.bank}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            {compareLeft && compareRight ? (
-              <div className="mt-6 rounded-xl bg-indigo-50/50 p-5 shadow-sm shadow-indigo-900/[0.06] dark:bg-indigo-950/25 dark:shadow-black/30">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    AI comparison
-                  </h3>
-                  {compareAiLoading ? (
-                    <Spinner className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                  ) : null}
-                </div>
-                {compareAiError ? (
-                  <p className="mt-2 text-sm text-amber-800 dark:text-amber-200/90">
-                    {compareAiError}
-                  </p>
-                ) : null}
-                {compareAi ? (
-                  <div className="mt-3 space-y-3 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-                    <p>{compareAi.overview}</p>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-lg bg-white/70 p-3 dark:bg-zinc-900/40">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                          When {compareLeft.card_name} fits better
-                        </p>
-                        <p className="mt-1">{compareAi.when_left_better}</p>
-                      </div>
-                      <div className="rounded-lg bg-white/70 p-3 dark:bg-zinc-900/40">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                          When {compareRight.card_name} fits better
-                        </p>
-                        <p className="mt-1">{compareAi.when_right_better}</p>
-                      </div>
-                    </div>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                      {compareAi.caveat}
-                    </p>
-                  </div>
-                ) : !compareAiLoading && !compareAiError ? (
-                  <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-                    AI summary isn’t available in this environment. Use the
-                    comparison table below for fees, rewards, and category rates.
-                  </p>
-                ) : null}
-              </div>
-            ) : null}
-
-            {compareLeft && compareRight ? (
-              <div className="mt-6 overflow-hidden rounded-xl bg-white shadow-sm shadow-zinc-900/[0.05] dark:bg-zinc-900/40 dark:shadow-black/30">
-                <table className="w-full min-w-[520px] text-left text-sm">
-                <thead>
-                  <tr className="border-b border-zinc-200/60 bg-zinc-50/90 dark:border-zinc-700/50 dark:bg-zinc-900/80">
-                    <th className="w-[28%] px-4 py-3 font-semibold text-zinc-700 dark:text-zinc-200">
-                      Details
-                    </th>
-                    <th className="px-4 py-3 font-semibold text-zinc-700 dark:text-zinc-200">
-                      <Link
-                        href={`/card/${compareLeft.id}`}
-                        className="text-blue-600 hover:underline dark:text-blue-400"
-                      >
-                        {compareLeft.card_name}
-                      </Link>
-                      <span className="mt-0.5 block text-xs font-normal text-zinc-500">
-                        {compareLeft.bank}
-                      </span>
-                      {isAxisBankCard(compareLeft.bank) ? (
-                        <AxisApplyLink fullWidth className="mt-2" />
-                      ) : null}
-                      {isAmexPlatinumReserveCard(
-                        compareLeft.card_name,
-                        compareLeft.bank
-                      ) ? (
-                        <AmexPlatinumReserveApplyLink
-                          fullWidth
-                          className="mt-2"
-                        />
-                      ) : null}
-                      {isAmexCardUsingGenericApply(
-                        compareLeft.card_name,
-                        compareLeft.bank
-                      ) ? (
-                        <AmexGenericApplyLink fullWidth className="mt-2" />
-                      ) : null}
-                      {isSbiCard(compareLeft.bank) ? (
-                        <SbiApplyLink fullWidth className="mt-2" />
-                      ) : null}
-                      {hdfcCardShowsApply(
-                        compareLeft.bank,
-                        compareLeft.metadata
-                      ) ? (
-                        <HdfcApplyLink
-                          metadata={compareLeft.metadata}
-                          fullWidth
-                          className="mt-2"
-                        />
-                      ) : null}
-                      {indusindCardShowsApply(
-                        compareLeft.bank,
-                        compareLeft.metadata
-                      ) ? (
-                        <IndusIndApplyLink
-                          metadata={compareLeft.metadata}
-                          fullWidth
-                          className="mt-2"
-                        />
-                      ) : null}
-                    </th>
-                    <th className="px-4 py-3 font-semibold text-zinc-700 dark:text-zinc-200">
-                      <Link
-                        href={`/card/${compareRight.id}`}
-                        className="text-blue-600 hover:underline dark:text-blue-400"
-                      >
-                        {compareRight.card_name}
-                      </Link>
-                      <span className="mt-0.5 block text-xs font-normal text-zinc-500">
-                        {compareRight.bank}
-                      </span>
-                      {isAxisBankCard(compareRight.bank) ? (
-                        <AxisApplyLink fullWidth className="mt-2" />
-                      ) : null}
-                      {isAmexPlatinumReserveCard(
-                        compareRight.card_name,
-                        compareRight.bank
-                      ) ? (
-                        <AmexPlatinumReserveApplyLink
-                          fullWidth
-                          className="mt-2"
-                        />
-                      ) : null}
-                      {isAmexCardUsingGenericApply(
-                        compareRight.card_name,
-                        compareRight.bank
-                      ) ? (
-                        <AmexGenericApplyLink fullWidth className="mt-2" />
-                      ) : null}
-                      {isSbiCard(compareRight.bank) ? (
-                        <SbiApplyLink fullWidth className="mt-2" />
-                      ) : null}
-                      {hdfcCardShowsApply(
-                        compareRight.bank,
-                        compareRight.metadata
-                      ) ? (
-                        <HdfcApplyLink
-                          metadata={compareRight.metadata}
-                          fullWidth
-                          className="mt-2"
-                        />
-                      ) : null}
-                      {indusindCardShowsApply(
-                        compareRight.bank,
-                        compareRight.metadata
-                      ) ? (
-                        <IndusIndApplyLink
-                          metadata={compareRight.metadata}
-                          fullWidth
-                          className="mt-2"
-                        />
-                      ) : null}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="text-zinc-700 dark:text-zinc-300">
-                  <tr className="border-b border-zinc-100 bg-zinc-50/80 dark:border-zinc-800 dark:bg-zinc-900/50">
-                    <td
-                      colSpan={3}
-                      className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-zinc-500"
-                    >
-                      Fees &amp; rewards
-                    </td>
-                  </tr>
-                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
-                    <td className="px-4 py-2.5 font-medium text-zinc-600 dark:text-zinc-400">
-                      Network
-                    </td>
-                    <td className="px-4 py-2.5">{compareLeft.network}</td>
-                    <td className="px-4 py-2.5">{compareRight.network}</td>
-                  </tr>
-                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
-                    <td className="px-4 py-2.5 font-medium text-zinc-600 dark:text-zinc-400">
-                      Joining fee
-                    </td>
-                    <td className="px-4 py-2.5 tabular-nums">
-                      {formatInr(compareLeft.joining_fee)}
-                    </td>
-                    <td className="px-4 py-2.5 tabular-nums">
-                      {formatInr(compareRight.joining_fee)}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
-                    <td className="px-4 py-2.5 font-medium text-zinc-600 dark:text-zinc-400">
-                      Annual fee
-                    </td>
-                    <td className="px-4 py-2.5 tabular-nums">
-                      {formatInr(compareLeft.annual_fee)}
-                    </td>
-                    <td className="px-4 py-2.5 tabular-nums">
-                      {formatInr(compareRight.annual_fee)}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
-                    <td className="px-4 py-2.5 font-medium text-zinc-600 dark:text-zinc-400">
-                      Reward type
-                    </td>
-                    <td className="px-4 py-2.5 capitalize">
-                      {compareLeft.reward_type}
-                    </td>
-                    <td className="px-4 py-2.5 capitalize">
-                      {compareRight.reward_type}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
-                    <td className="px-4 py-2.5 align-top font-medium text-zinc-600 dark:text-zinc-400">
-                      Reward rate
-                    </td>
-                    <td className="px-4 py-2.5 align-top text-sm leading-relaxed">
-                      {compareLeft.reward_rate ?? "—"}
-                    </td>
-                    <td className="px-4 py-2.5 align-top text-sm leading-relaxed">
-                      {compareRight.reward_rate ?? "—"}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
-                    <td className="px-4 py-2.5 align-top font-medium text-zinc-600 dark:text-zinc-400">
-                      Lounge access
-                    </td>
-                    <td className="px-4 py-2.5 align-top text-sm leading-relaxed">
-                      {compareLeft.lounge_access ?? "—"}
-                    </td>
-                    <td className="px-4 py-2.5 align-top text-sm leading-relaxed">
-                      {compareRight.lounge_access ?? "—"}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
-                    <td className="px-4 py-2.5 align-top font-medium text-zinc-600 dark:text-zinc-400">
-                      Best for
-                    </td>
-                    <td className="px-4 py-2.5 align-top text-sm leading-relaxed">
-                      {compareLeft.best_for ?? "—"}
-                    </td>
-                    <td className="px-4 py-2.5 align-top text-sm leading-relaxed">
-                      {compareRight.best_for ?? "—"}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-zinc-100 bg-zinc-50/80 dark:border-zinc-800 dark:bg-zinc-900/50">
-                    <td
-                      colSpan={3}
-                      className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-zinc-500"
-                    >
-                      Category earn rates
-                      <span className="mt-0.5 block font-normal normal-case text-[11px] leading-snug text-zinc-500 dark:text-zinc-400">
-                        Approximate % of spend per category (where available).
-                      </span>
-                    </td>
-                  </tr>
-                  {CATEGORY_LABELS.map(({ key, label }) => (
-                    <tr
-                      key={key}
-                      className="border-b border-zinc-100 dark:border-zinc-800"
-                    >
-                      <td className="px-4 py-2 pl-6 text-zinc-600 dark:text-zinc-400">
-                        {label}
-                      </td>
-                      <td className="px-4 py-2 tabular-nums">
-                        {categoryEarnDisplay(compareLeft, key)}
-                      </td>
-                      <td className="px-4 py-2 tabular-nums">
-                        {categoryEarnDisplay(compareRight, key)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : compareIdA || compareIdB ? (
-            <p className="mt-4 text-sm text-zinc-500">
-              Select both cards to see the comparison.
+          {error ? (
+            <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+              Card catalog could not load right now, so some sections are using
+              preview cards. {error}
             </p>
           ) : null}
-        </section>
-
-        </div>
-
-        <footer className="mt-16 border-t border-zinc-200 pt-6 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400" />
         </div>
       </main>
+
+      <a
+        href="#chat-advisor"
+        className="fixed bottom-5 right-5 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-blue-600 text-xl text-white shadow-2xl shadow-blue-900/25 transition hover:-translate-y-1"
+        aria-label="Open AI chat advisor"
+        title={`Open ${SITE_NAME} AI advisor`}
+      >
+        ✦
+      </a>
+
+      <footer className="mx-auto max-w-6xl px-4 pb-8 text-center text-xs text-zinc-500 sm:px-6">
+        Live spend context: ₹{monthlyTotal.toLocaleString("en-IN")} monthly
+        profile. Recommendations remain deterministic; AI explains and extracts
+        intent.
+      </footer>
     </div>
   );
 }
