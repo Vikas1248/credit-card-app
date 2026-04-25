@@ -11,6 +11,13 @@ type ChatMessage = {
   text: string;
 };
 
+const SAMPLE_PROMPTS = [
+  "I use Swiggy a lot and want cashback with low fees.",
+  "I shop mostly on Amazon and Flipkart every month.",
+  "I travel a few times a year and want airport lounge benefits.",
+  "I want a simple card for fuel and daily spends with no annual fee.",
+] as const;
+
 function formatInr(value: number): string {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -55,8 +62,8 @@ export function CreditAdvisorChat() {
     return out;
   }, [profile]);
 
-  const sendMessage = async () => {
-    const text = input.trim();
+  const sendMessage = async (sampleText?: string) => {
+    const text = (sampleText ?? input).trim();
     if (!text || loading) return;
 
     const userMessage: ChatMessage = {
@@ -118,6 +125,27 @@ export function CreditAdvisorChat() {
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           Share your spending habits. I’ll ask only a couple of quick follow-ups before showing picks.
         </p>
+
+        {messages.length === 1 ? (
+          <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50/80 p-3 dark:border-zinc-700 dark:bg-zinc-950/40">
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              Try one
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {SAMPLE_PROMPTS.map((sample) => (
+                <button
+                  key={sample}
+                  type="button"
+                  disabled={loading}
+                  onClick={() => void sendMessage(sample)}
+                  className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-left text-xs font-medium text-zinc-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-blue-800 dark:hover:bg-blue-950/30 dark:hover:text-blue-200"
+                >
+                  {sample}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         {profilePills.length > 0 ? (
           <div className="mt-3 flex flex-wrap gap-2">
