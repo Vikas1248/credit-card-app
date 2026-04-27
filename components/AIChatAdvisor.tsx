@@ -19,11 +19,10 @@ export function AIChatAdvisor() {
             id="chat-advisor-heading"
             className="text-3xl font-black tracking-tight text-zinc-950 sm:text-4xl"
           >
-            Ask in plain English. Get card matches instantly.
+            Find Your Best Card with AI
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-600 sm:text-base">
-            Chat is where CredGenie feels alive: quick prompts, short follow-ups,
-            and deterministic recommendations once we understand your spend.
+            Personalized recommendations in seconds.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

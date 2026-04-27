@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -75,6 +76,7 @@ export function BrowseSection({
   cards: BrowseCreditCard[];
   loading: boolean;
 }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const sourceCards = cards.length > 0 ? cards : mockCards;
@@ -89,6 +91,11 @@ export function BrowseSection({
       return matchesQuery && matchesActiveFilter;
     });
   }, [activeFilter, query, sourceCards]);
+
+  const submitSearch = () => {
+    const q = query.trim();
+    router.push(q ? `/cards?q=${encodeURIComponent(q)}` : "/cards");
+  };
 
   return (
     <section
@@ -121,18 +128,36 @@ export function BrowseSection({
 
       <Card className="mt-7 bg-zinc-50 shadow-none">
         <CardContent className="p-4">
-          <div className="relative">
-            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
-              ⌕
-            </span>
-            <Input
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search cards, banks, rewards..."
-              className="pl-10"
-            />
-          </div>
+          <form
+            className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
+            onSubmit={(event) => {
+              event.preventDefault();
+              submitSearch();
+            }}
+          >
+            <div className="relative">
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
+                ⌕
+              </span>
+              <Input
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search cards, banks, rewards..."
+                className="pl-10"
+              />
+            </div>
+            <button
+              type="submit"
+              className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-zinc-950 px-5 text-sm font-bold text-white transition hover:bg-zinc-800"
+            >
+              Search full catalog
+            </button>
+          </form>
+          <p className="mt-2 text-xs text-zinc-500">
+            This section previews a few cards. Press Enter or search to see all
+            matching cards in Browse Cards.
+          </p>
           <div className="mt-4 flex flex-wrap gap-2">
             {filters.map((filter) => (
               <button

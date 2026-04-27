@@ -8,7 +8,6 @@ import { BrowseSection, type BrowseCreditCard } from "@/components/BrowseSection
 import { CompareDrawer } from "@/components/CompareDrawer";
 import { HeroSection } from "@/components/HeroSection";
 import { RecommendationQuiz } from "@/components/RecommendationQuiz";
-import { RecommendationResults } from "@/components/RecommendationResults";
 import { TrustStrip } from "@/components/TrustStrip";
 import { SITE_NAME } from "@/lib/site";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
@@ -146,7 +145,6 @@ export default function Home() {
           <TrustStrip />
           <AIChatAdvisor />
           <RecommendationQuiz onSpendSplitChange={handleRecommendSpendSplit} />
-          <RecommendationResults />
           <CompareDrawer cards={cards} />
           <BrowseSection cards={cards} loading={loading} />
 

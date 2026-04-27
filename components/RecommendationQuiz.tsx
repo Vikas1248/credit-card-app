@@ -17,17 +17,16 @@ export function RecommendationQuiz({
       <div className="flex flex-col gap-4 border-b border-zinc-100 pb-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <span className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
-            Recommendation quiz
+            Recommend me
           </span>
           <h2
             id="recommendation-quiz-heading"
             className="mt-2 text-3xl font-black tracking-tight text-zinc-950"
           >
-            Clean spend inputs, live results.
+            Answer a few quick questions to unlock your best credit card matches.
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-600">
-            Use the structured path when you want precise control. The scoring
-            stays deterministic and updates as your spend mix changes.
+            Tailored to your spending, rewards goals, and annual fee preferences.
           </p>
         </div>
         <div className="min-w-[180px]">
