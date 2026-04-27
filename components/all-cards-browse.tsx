@@ -20,6 +20,7 @@ import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
 import {
   primarySpendCategorySlug,
+  SPEND_CATEGORIES,
 } from "@/lib/spendCategories";
 import { isSbiCard } from "@/lib/cards/sbiApply";
 import {
@@ -76,12 +77,9 @@ function normalizeDisplayText(value: string | null | undefined, fallback: string
 type AnnualFeeBand =
   | "any"
   | "free"
-  | "r1_500"
-  | "r501_1000"
-  | "r1001_2500"
-  | "r2501_5000"
-  | "r5001_10000"
-  | "r10001_plus";
+  | "r1_1000"
+  | "r1001_5000"
+  | "r5001_plus";
 
 type SpendFocus = "all" | "dining" | "travel" | "shopping" | "fuel";
 
@@ -91,18 +89,12 @@ function annualFeeMatchesBand(fee: number, band: AnnualFeeBand): boolean {
       return true;
     case "free":
       return fee === 0;
-    case "r1_500":
-      return fee >= 1 && fee <= 500;
-    case "r501_1000":
-      return fee >= 501 && fee <= 1000;
-    case "r1001_2500":
-      return fee >= 1001 && fee <= 2500;
-    case "r2501_5000":
-      return fee >= 2501 && fee <= 5000;
-    case "r5001_10000":
-      return fee >= 5001 && fee <= 10000;
-    case "r10001_plus":
-      return fee >= 10001;
+    case "r1_1000":
+      return fee >= 1 && fee <= 1000;
+    case "r1001_5000":
+      return fee >= 1001 && fee <= 5000;
+    case "r5001_plus":
+      return fee >= 5001;
     default:
       return true;
   }
@@ -696,6 +688,14 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
     });
   }
 
+  function resetBrowseFilters() {
+    setFilterAnnualBand("any");
+    setFilterBanks([]);
+    setFilterSpendFocus("all");
+    setFilterRewardType("all");
+    setFilterNetwork("all");
+  }
+
   const browseSortNonDefault = browseSort !== "name";
 
   const loadCards = async () => {
@@ -901,6 +901,61 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
 
   const sidebarChipClass = browseSidebarChipBase;
 
+  const activeFilterChips = useMemo(() => {
+    const chips: { key: string; label: string; onRemove: () => void }[] = [];
+    for (const bank of filterBanks) {
+      chips.push({
+        key: `bank-${bank}`,
+        label: shortBankLabel(bank),
+        onRemove: () =>
+          setFilterBanks((prev) => prev.filter((item) => item !== bank)),
+      });
+    }
+    if (filterSpendFocus !== "all") {
+      chips.push({
+        key: "spend-focus",
+        label: `Best for ${filterSpendFocus}`,
+        onRemove: () => setFilterSpendFocus("all"),
+      });
+    }
+    if (filterRewardType !== "all") {
+      chips.push({
+        key: "reward-type",
+        label: filterRewardType,
+        onRemove: () => setFilterRewardType("all"),
+      });
+    }
+    if (filterAnnualBand !== "any") {
+      const labelByBand: Record<AnnualFeeBand, string> = {
+        any: "Any fee",
+        free: "Lifetime free",
+        r1_1000: "₹1-₹1,000 fee",
+        r1001_5000: "₹1,001-₹5,000 fee",
+        r5001_plus: "₹5,001+ fee",
+      };
+      chips.push({
+        key: "annual-fee",
+        label: labelByBand[filterAnnualBand],
+        onRemove: () => setFilterAnnualBand("any"),
+      });
+    }
+    if (!catalogNetworkLock && filterNetwork !== "all") {
+      chips.push({
+        key: "network",
+        label: filterNetwork,
+        onRemove: () => setFilterNetwork("all"),
+      });
+    }
+    return chips;
+  }, [
+    catalogNetworkLock,
+    filterAnnualBand,
+    filterBanks,
+    filterNetwork,
+    filterRewardType,
+    filterSpendFocus,
+  ]);
+
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
       <section className={sectionShell}>
@@ -972,36 +1027,72 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
           </div>
         </div>
 
+        {activeFilterChips.length > 0 ? (
+          <div className="mt-6 rounded-3xl border border-blue-100 bg-blue-50/50 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-700">
+                  Active filters
+                </p>
+                <p className="mt-1 text-xs text-zinc-500">
+                  Tap a chip to remove it, or reset everything.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={resetBrowseFilters}
+                className="inline-flex min-h-9 shrink-0 items-center justify-center rounded-full border border-blue-200 bg-white px-3 text-xs font-black text-blue-700 shadow-sm transition hover:bg-blue-50"
+              >
+                Reset all
+              </button>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {activeFilterChips.map((chip) => (
+                <button
+                  key={chip.key}
+                  type="button"
+                  onClick={chip.onRemove}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-zinc-700 shadow-sm ring-1 ring-blue-100 transition hover:text-blue-700 hover:ring-blue-200"
+                >
+                  {chip.label}
+                  <span className="text-zinc-400" aria-hidden>
+                    ×
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         <div
           className={
             showFacetSidebar
-              ? "mt-6 flex flex-col-reverse gap-5 lg:grid lg:grid-cols-[minmax(196px,232px)_minmax(0,1fr)] lg:gap-6 lg:items-start"
+              ? "mt-6 flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(220px,260px)_minmax(0,1fr)] lg:gap-6 lg:items-start"
               : "mt-6"
           }
         >
           {showFacetSidebar ? (
             <aside
               id="browse-filter-panel"
-              className="mb-6 shrink-0 rounded-3xl border border-zinc-200 bg-zinc-50 p-4 shadow-sm sm:p-4 lg:sticky lg:top-24 lg:mb-0 lg:max-h-[min(100vh-6rem,42rem)] lg:overflow-y-auto lg:overflow-x-hidden lg:pr-1"
+              className="shrink-0 rounded-3xl border border-zinc-200 bg-white p-4 shadow-md shadow-zinc-900/[0.04] sm:p-4 lg:sticky lg:top-24 lg:max-h-[min(100vh-6rem,42rem)] lg:overflow-y-auto lg:overflow-x-hidden lg:pr-1"
               aria-label="Catalog filters"
             >
-            <div className="flex flex-col divide-y divide-zinc-200/80 dark:divide-zinc-600/50">
+            <div className="flex flex-col divide-y divide-zinc-100">
             <div className="flex items-start justify-between gap-2 pb-3">
-              <h2 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                <IconSlidersHorizontal className="h-3.5 w-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" />
+              <div>
+              <h2 className="flex items-center gap-1.5 text-xs font-black uppercase tracking-[0.18em] text-zinc-600">
+                <IconSlidersHorizontal className="h-3.5 w-3.5 shrink-0 text-blue-600" />
                 Filters
               </h2>
+              <p className="mt-1 text-xs text-zinc-500">
+                Narrow cards by bank, rewards, fees, and network.
+              </p>
+              </div>
               {browseFiltersActive ? (
                 <button
                   type="button"
-                  onClick={() => {
-                    setFilterAnnualBand("any");
-                    setFilterBanks([]);
-                    setFilterSpendFocus("all");
-                    setFilterRewardType("all");
-                    setFilterNetwork("all");
-                  }}
-                  className="inline-flex shrink-0 items-center gap-1 rounded-md border border-zinc-200 bg-white px-2 py-1 text-[10px] font-semibold text-zinc-700 shadow-sm hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-zinc-500 dark:hover:bg-zinc-800"
+                  onClick={resetBrowseFilters}
+                  className="inline-flex shrink-0 items-center gap-1 rounded-full border border-zinc-200 bg-white px-2.5 py-1.5 text-[10px] font-black text-zinc-700 shadow-sm hover:border-zinc-300 hover:bg-zinc-50"
                 >
                   <IconArrowUturnLeft className="h-3 w-3 opacity-80" />
                   Reset
@@ -1182,33 +1273,18 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                     },
                     {
                       id: "free" as const,
-                      label: "Free (₹0)",
+                      label: "Free",
                       Icon: IconGift,
                     },
-                    { id: "r1_500" as const, label: "₹1 – ₹500", Icon: IconIndianRupee },
+                    { id: "r1_1000" as const, label: "₹1 – ₹1,000", Icon: IconIndianRupee },
                     {
-                      id: "r501_1000" as const,
-                      label: "₹501 – ₹1,000",
+                      id: "r1001_5000" as const,
+                      label: "₹1,001 – ₹5,000",
                       Icon: IconIndianRupee,
                     },
                     {
-                      id: "r1001_2500" as const,
-                      label: "₹1,001 – ₹2,500",
-                      Icon: IconIndianRupee,
-                    },
-                    {
-                      id: "r2501_5000" as const,
-                      label: "₹2,501 – ₹5,000",
-                      Icon: IconIndianRupee,
-                    },
-                    {
-                      id: "r5001_10000" as const,
-                      label: "₹5,001 – ₹10,000",
-                      Icon: IconIndianRupee,
-                    },
-                    {
-                      id: "r10001_plus" as const,
-                      label: "₹10,001+",
+                      id: "r5001_plus" as const,
+                      label: "₹5,001 & above",
                       Icon: IconTrendingUp,
                     },
                   ] as const
@@ -1324,14 +1400,20 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 </span>
               ) : null}
             </div>
-            <p className="mt-2 text-center text-xs text-zinc-500 dark:text-zinc-400 sm:text-left">
-              <Link
-                href="/#categories"
-                className="font-medium text-blue-600 hover:underline dark:text-blue-400"
-              >
-                Browse by category (all cards on each list)
-              </Link>
-            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wide text-zinc-400">
+                Quick categories
+              </span>
+              {SPEND_CATEGORIES.map((category) => (
+                <Link
+                  key={category.slug}
+                  href={`/category/${category.slug}`}
+                  className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-bold text-zinc-600 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                >
+                  {category.label}
+                </Link>
+              ))}
+            </div>
 
         {!loading && !error && cards.length > 0 && browseSortOpen ? (
           <div
