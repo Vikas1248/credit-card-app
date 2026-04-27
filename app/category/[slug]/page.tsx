@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SITE_NAME } from "@/lib/site";
 import { CredGenieLogo } from "@/components/brand/credgenie-logo";
-import { SpendCategoryIcon } from "@/components/spend-category-icons";
 import { CategoryBrowseClient } from "@/components/category-browse-client";
 import {
   isSpendCategorySlug,
@@ -15,6 +14,17 @@ import {
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
+
+const headerNavItems = [
+  ["/", "Home"],
+  ["/#chat-advisor", "AI Advisor"],
+  ["/#recommendation-quiz", "Recommend Me"],
+  ["/#compare", "Compare Cards"],
+  ["/cards", "Browse Cards"],
+] as const;
+
+const navLinkClass =
+  "inline-flex items-center rounded-full border border-transparent px-3 py-1.5 font-bold text-zinc-600 transition hover:bg-white hover:text-zinc-950 hover:shadow-sm";
 
 export async function generateMetadata({
   params,
@@ -54,20 +64,13 @@ export default async function CategoryPage({ params }: PageProps) {
             className="flex gap-1 overflow-x-auto rounded-full border border-zinc-200 bg-zinc-50 p-1 text-sm [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             aria-label="Catalog"
           >
-            <Link
-              href="/cards"
-              className="inline-flex items-center rounded-full border border-transparent px-3 py-1.5 font-bold text-zinc-600 transition hover:bg-white hover:text-zinc-950 hover:shadow-sm"
-            >
-              All cards
-            </Link>
-            {SPEND_CATEGORIES.filter((c) => c.slug !== raw).map((c) => (
+            {headerNavItems.map(([href, label]) => (
               <Link
-                key={c.slug}
-                href={`/category/${c.slug}`}
-                className="inline-flex items-center gap-1.5 rounded-full border border-transparent px-3 py-1.5 font-bold text-zinc-600 transition hover:bg-white hover:text-zinc-950 hover:shadow-sm"
+                key={href}
+                href={href}
+                className={navLinkClass}
               >
-                <SpendCategoryIcon slug={c.slug} className="h-4 w-4" />
-                {c.label}
+                {label}
               </Link>
             ))}
           </nav>

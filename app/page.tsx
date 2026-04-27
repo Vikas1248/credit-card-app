@@ -28,11 +28,11 @@ type CreditCard = BrowseCreditCard & {
 };
 
 const navItems = [
-  ["#chat-advisor", "AI advisor"],
-  ["#recommendation-quiz", "Quiz"],
-  ["#results", "Results"],
-  ["#compare", "Compare"],
-  ["#browse", "Browse"],
+  ["/", "Home"],
+  ["#chat-advisor", "AI Advisor"],
+  ["#recommendation-quiz", "Recommend Me"],
+  ["#compare", "Compare Cards"],
+  ["/cards", "Browse Cards"],
 ] as const;
 
 function SiteHeader() {
@@ -47,23 +47,26 @@ function SiteHeader() {
           className="flex gap-1 overflow-x-auto rounded-full border border-zinc-200 bg-zinc-50 p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           aria-label="Homepage sections"
         >
-          {navItems.map(([href, label]) => (
-            <a
-              key={href}
-              href={href}
-              className="shrink-0 rounded-full px-3 py-1.5 text-sm font-bold text-zinc-600 transition hover:bg-white hover:text-zinc-950 hover:shadow-sm"
-            >
-              {label}
-            </a>
-          ))}
+          {navItems.map(([href, label]) =>
+            href.startsWith("/") ? (
+              <Link
+                key={href}
+                href={href}
+                className="shrink-0 rounded-full px-3 py-1.5 text-sm font-bold text-zinc-600 transition hover:bg-white hover:text-zinc-950 hover:shadow-sm"
+              >
+                {label}
+              </Link>
+            ) : (
+              <a
+                key={href}
+                href={href}
+                className="shrink-0 rounded-full px-3 py-1.5 text-sm font-bold text-zinc-600 transition hover:bg-white hover:text-zinc-950 hover:shadow-sm"
+              >
+                {label}
+              </a>
+            )
+          )}
         </nav>
-
-        <a
-          href="#recommendation-quiz"
-          className="hidden rounded-full bg-gradient-to-r from-violet-600 to-blue-600 px-4 py-2 text-sm font-black text-white shadow-md shadow-blue-600/20 transition hover:-translate-y-0.5 lg:inline-flex"
-        >
-          Get started
-        </a>
       </div>
     </header>
   );
