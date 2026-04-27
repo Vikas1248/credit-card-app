@@ -11,7 +11,7 @@ type Insight = {
 function AiBadge() {
   return (
     <span
-      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm dark:bg-indigo-500"
+      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-blue-600 text-white shadow-md shadow-blue-600/20"
       aria-hidden
     >
       <svg
@@ -82,22 +82,30 @@ export function CardAiInsight({
   }, [cardId]);
 
   const wrap = (extra: string) =>
-    `${extra} rounded-2xl border p-6 ${className ?? "mt-10"}`;
+    `${extra} relative overflow-hidden rounded-3xl border p-5 shadow-lg shadow-blue-900/[0.06] sm:p-6 ${className ?? "mt-10"}`;
+
+  const glow = (
+    <>
+      <div className="pointer-events-none absolute -right-12 -top-14 h-32 w-32 rounded-full bg-blue-300/25 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-16 left-8 h-32 w-32 rounded-full bg-violet-300/25 blur-3xl" />
+    </>
+  );
 
   if (loading) {
     return (
       <section
         className={wrap(
-          "border-indigo-200/70 bg-indigo-50/40 dark:border-indigo-900/40 dark:bg-indigo-950/25"
+          "border-blue-100 bg-gradient-to-br from-blue-50/80 via-white to-violet-50/70"
         )}
       >
-        <div className="flex items-start gap-3">
+        {glow}
+        <div className="relative flex items-start gap-3">
           <AiBadge />
           <div className="min-w-0 flex-1">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-sm font-black text-zinc-950">
               AI snapshot
             </h2>
-            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="mt-2 text-sm font-medium text-zinc-600">
               Loading…
             </p>
           </div>
@@ -110,16 +118,17 @@ export function CardAiInsight({
     return (
       <section
         className={wrap(
-          "border-amber-200/80 bg-amber-50/50 dark:border-amber-900/40 dark:bg-amber-950/20"
+          "border-amber-200/80 bg-amber-50"
         )}
       >
-        <div className="flex items-start gap-3">
+        {glow}
+        <div className="relative flex items-start gap-3">
           <AiBadge />
           <div className="min-w-0 flex-1">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-sm font-black text-zinc-950">
               AI snapshot
             </h2>
-            <p className="mt-2 text-sm text-amber-900 dark:text-amber-200/90">
+            <p className="mt-2 text-sm font-medium text-amber-900">
               {error}
             </p>
           </div>
@@ -131,15 +140,18 @@ export function CardAiInsight({
   if (!insight) {
     return (
       <section
-        className={wrap("border-zinc-200 bg-zinc-50/50 dark:border-zinc-700 dark:bg-zinc-900/30")}
+        className={wrap(
+          "border-blue-100 bg-gradient-to-br from-blue-50/80 via-white to-violet-50/70"
+        )}
       >
-        <div className="flex items-start gap-3">
+        {glow}
+        <div className="relative flex items-start gap-3">
           <AiBadge />
           <div className="min-w-0 flex-1">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-sm font-black text-zinc-950">
               AI snapshot
             </h2>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-2 text-sm font-medium leading-relaxed text-zinc-700">
               When AI is enabled for this deployment, a short summary for this
               card appears here.
             </p>
@@ -152,35 +164,36 @@ export function CardAiInsight({
   return (
     <section
       className={wrap(
-        "border-indigo-200/70 bg-indigo-50/40 dark:border-indigo-900/40 dark:bg-indigo-950/25"
+        "border-blue-100 bg-gradient-to-br from-blue-50/80 via-white to-violet-50/70"
       )}
     >
-      <div className="flex items-start gap-3">
+      {glow}
+      <div className="relative flex items-start gap-3">
         <AiBadge />
         <div className="min-w-0 flex-1">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-sm font-black text-zinc-950">
             AI snapshot
           </h2>
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-xs font-medium text-zinc-500">
             Generated from on-page fields only; not financial advice.
           </p>
-          <p className="mt-4 text-sm leading-relaxed text-zinc-800 dark:text-zinc-200">
+          <p className="mt-4 rounded-2xl border border-blue-100 bg-white/90 p-4 text-sm font-medium leading-relaxed text-zinc-800 shadow-sm">
             {insight.summary}
           </p>
-          <dl className="mt-4 space-y-3 text-sm">
-            <div>
-              <dt className="font-medium text-zinc-600 dark:text-zinc-400">
+          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+            <div className="rounded-2xl border border-violet-100 bg-white/90 p-4 shadow-sm">
+              <dt className="font-bold text-violet-700">
                 Often fits
               </dt>
-              <dd className="mt-1 text-zinc-800 dark:text-zinc-200">
+              <dd className="mt-1.5 leading-relaxed text-zinc-800">
                 {insight.ideal_for}
               </dd>
             </div>
-            <div>
-              <dt className="font-medium text-zinc-600 dark:text-zinc-400">
+            <div className="rounded-2xl border border-amber-100 bg-white/90 p-4 shadow-sm">
+              <dt className="font-bold text-amber-700">
                 Double-check
               </dt>
-              <dd className="mt-1 text-zinc-800 dark:text-zinc-200">
+              <dd className="mt-1.5 leading-relaxed text-zinc-800">
                 {insight.watch_outs}
               </dd>
             </div>
