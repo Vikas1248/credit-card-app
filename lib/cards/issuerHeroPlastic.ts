@@ -1,5 +1,15 @@
 import type { CardNetwork } from "@/lib/types/card";
-import { detectIssuerBrand } from "@/lib/cards/issuerBrandTile";
+
+type IssuerBrandKind = "axis" | "amex" | "sbi" | "other";
+
+/** Map `bank` field from catalog to issuer (UI styling only, not official marks). */
+function detectIssuerBrand(bank: string): IssuerBrandKind {
+  const b = bank.toLowerCase().trim();
+  if (b.includes("axis")) return "axis";
+  if (b.includes("american express") || b === "amex") return "amex";
+  if (b.includes("sbi")) return "sbi";
+  return "other";
+}
 
 /**
  * Dark “plastic” surface for hero carousel card mock (readable on navy backdrop).
