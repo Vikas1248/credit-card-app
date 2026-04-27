@@ -1,15 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192" fill="none">
-  <rect width="192" height="192" rx="42" fill="url(#bg)" />
-  <rect x="34" y="54" width="124" height="84" rx="20" fill="white" fill-opacity="0.96" />
-  <path d="M48 80H144" stroke="#C7D2FE" stroke-width="10" stroke-linecap="round" />
-  <path d="M88 117C82.5 122 76 124.5 68.5 124.5C53.8 124.5 43 113.8 43 99C43 84.2 53.8 73.5 68.5 73.5C76.2 73.5 82.6 76.1 88 81.3" stroke="#4F46E5" stroke-width="10" stroke-linecap="round" />
-  <path d="M131 82.5C126.3 76.9 120.1 74 112.4 74C97.8 74 87 84.5 87 99C87 113.5 97.8 124 112.4 124C119.3 124 125.7 121.6 131 117V103H113" stroke="#7C3AED" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
-  <circle cx="136" cy="48" r="8" fill="white" />
-  <circle cx="158" cy="37" r="6" fill="white" fill-opacity="0.9" />
-  <circle cx="164" cy="62" r="5.5" fill="white" fill-opacity="0.85" />
-  <path d="M144 45L152 41M144 52L158 59" stroke="white" stroke-opacity="0.78" stroke-width="5" stroke-linecap="round" />
+  <rect width="192" height="192" rx="42" fill="#F8FAFC" />
+  <rect x="24" y="56" width="92" height="58" rx="12" fill="url(#card)" />
+  <rect x="40" y="72" width="28" height="16" rx="4" fill="white" fill-opacity="0.95" />
+  <path d="M40 100H94" stroke="white" stroke-width="7" stroke-linecap="round" />
+  <path d="M126 86L140 74L156 96L174 70" stroke="url(#node)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="126" cy="86" r="9" fill="url(#node)" />
+  <circle cx="140" cy="74" r="9" fill="url(#node)" />
+  <circle cx="156" cy="96" r="9" fill="url(#node)" />
+  <circle cx="174" cy="70" r="6" fill="url(#node)" />
+  <path d="M150 96L178 126L154 128C142 129 132 134 124 144C116 154 103 153 96 146" stroke="url(#node)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M122 144C114 150 108 158 105 166" stroke="url(#node)" stroke-width="7" stroke-linecap="round" />
+  <path d="M158 42L163 52L173 57L163 62L158 72L153 62L143 57L153 52L158 42Z" fill="#7C3AED" />
   <defs>
-    <linearGradient id="bg" x1="20" y1="18" x2="176" y2="178" gradientUnits="userSpaceOnUse">
+    <linearGradient id="card" x1="24" y1="56" x2="115" y2="114" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366F1" />
+      <stop offset="1" stop-color="#A855F7" />
+    </linearGradient>
+    <linearGradient id="node" x1="126" y1="70" x2="174" y2="96" gradientUnits="userSpaceOnUse">
       <stop stop-color="#6366F1" />
       <stop offset="1" stop-color="#A855F7" />
     </linearGradient>

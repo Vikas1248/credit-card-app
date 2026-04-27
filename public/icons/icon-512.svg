@@ -1,15 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
-  <rect width="512" height="512" rx="112" fill="url(#bg)" />
-  <rect x="90" y="144" width="332" height="224" rx="52" fill="white" fill-opacity="0.96" />
-  <path d="M128 214H384" stroke="#C7D2FE" stroke-width="26" stroke-linecap="round" />
-  <path d="M236 312C221 326 203 333 183 333C143 333 114 304 114 264C114 224 143 195 183 195C204 195 222 202 236 216" stroke="#4F46E5" stroke-width="27" stroke-linecap="round" />
-  <path d="M350 219C337 203 320 195 299 195C259 195 230 224 230 264C230 304 259 333 299 333C318 333 335 327 350 314V276H301" stroke="#7C3AED" stroke-width="27" stroke-linecap="round" stroke-linejoin="round" />
-  <circle cx="362" cy="128" r="22" fill="white" />
-  <circle cx="421" cy="98" r="16" fill="white" fill-opacity="0.9" />
-  <circle cx="437" cy="166" r="15" fill="white" fill-opacity="0.85" />
-  <path d="M384 120L406 109M384 139L421 158" stroke="white" stroke-opacity="0.78" stroke-width="13" stroke-linecap="round" />
+  <rect width="512" height="512" rx="112" fill="#F8FAFC" />
+  <rect x="72" y="178" width="240" height="140" rx="28" fill="url(#card)" />
+  <rect x="112" y="220" width="60" height="38" rx="9" fill="white" fill-opacity="0.95" />
+  <path d="M112 290H266" stroke="white" stroke-width="17" stroke-linecap="round" />
+  <path d="M284 150H352M352 150L382 118M284 178H334M334 178L368 210H430" stroke="url(#circuit)" stroke-width="17" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M284 206H350M350 206L386 174M284 242H344M344 242L378 274" stroke="white" stroke-width="17" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="284" cy="150" r="16" fill="url(#circuit)" />
+  <circle cx="382" cy="118" r="16" fill="url(#circuit)" />
+  <circle cx="430" cy="210" r="16" fill="url(#circuit)" />
+  <circle cx="284" cy="242" r="16" fill="white" />
+  <circle cx="378" cy="274" r="16" fill="white" />
+  <path d="M380 195L454 272L392 276C366 278 344 290 326 312C306 337 274 334 258 318" stroke="url(#circuit)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M322 312C303 326 288 344 280 366" stroke="url(#circuit)" stroke-width="18" stroke-linecap="round" />
+  <path d="M430 82L442 106L466 118L442 130L430 154L418 130L394 118L418 106L430 82Z" fill="#7C3AED" />
   <defs>
-    <linearGradient id="bg" x1="54" y1="48" x2="470" y2="474" gradientUnits="userSpaceOnUse">
+    <linearGradient id="card" x1="72" y1="178" x2="306" y2="318" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366F1" />
+      <stop offset="1" stop-color="#A855F7" />
+    </linearGradient>
+    <linearGradient id="circuit" x1="258" y1="82" x2="466" y2="366" gradientUnits="userSpaceOnUse">
       <stop stop-color="#6366F1" />
       <stop offset="1" stop-color="#A855F7" />
     </linearGradient>
