@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 type SendRecommendationEmailButtonProps = {
   cardName: string;
@@ -67,38 +68,43 @@ export function SendRecommendationEmailButton({
           setError(null);
           setMessage(null);
         }}
-        className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-4 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-100 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-200 dark:hover:bg-blue-950"
+        className={cn(
+          "inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border px-4 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5",
+          open
+            ? "border-blue-600 bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-blue-600/20"
+            : "border-blue-200 bg-white text-blue-700 hover:border-blue-300 hover:bg-blue-50"
+        )}
       >
         Send to Email
       </button>
 
       {open ? (
-        <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-900/50">
-          <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300">
+        <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-3 shadow-sm">
+          <label className="block text-xs font-medium text-zinc-700">
             Email address
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+              className="mt-1 w-full rounded-lg border border-blue-100 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
             />
           </label>
           <button
             type="button"
             disabled={sending}
             onClick={() => void sendEmail()}
-            className="mt-2 inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-blue-600 px-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-blue-500"
+            className="mt-2 inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-blue-600 px-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {sending ? "Sending..." : "Send recommendation"}
           </button>
           {message ? (
-            <p className="mt-2 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+            <p className="mt-2 text-xs font-medium text-emerald-700">
               {message}
             </p>
           ) : null}
           {error ? (
-            <p className="mt-2 text-xs font-medium text-red-700 dark:text-red-300">
+            <p className="mt-2 text-xs font-medium text-red-700">
               {error}
             </p>
           ) : null}

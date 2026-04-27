@@ -8,7 +8,6 @@ import { BrowseSection, type BrowseCreditCard } from "@/components/BrowseSection
 import { CompareDrawer } from "@/components/CompareDrawer";
 import { HeroSection } from "@/components/HeroSection";
 import { RecommendationQuiz } from "@/components/RecommendationQuiz";
-import { TrustStrip } from "@/components/TrustStrip";
 import { SITE_NAME } from "@/lib/site";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import type { CardNetwork } from "@/lib/types/card";
@@ -123,7 +122,6 @@ export default function Home() {
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
         <div className="space-y-8 sm:space-y-10">
           <HeroSection />
-          <TrustStrip />
           <AIChatAdvisor />
           <RecommendationQuiz />
           <CompareDrawer cards={cards} />
