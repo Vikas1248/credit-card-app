@@ -2,10 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { CatalogBrowseCardTile } from "@/components/catalog-browse-card-tile";
+import {
+  CatalogFullBrowseCard,
+  type CatalogFullBrowseCardData,
+} from "@/components/catalog-full-browse-card";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import type { CardNetwork } from "@/lib/types/card";
 
 export type BrowseCreditCard = {
   id: string;
@@ -18,7 +22,42 @@ export type BrowseCreditCard = {
   key_benefits: string | null;
 };
 
-const mockCards: BrowseCreditCard[] = [
+/** Optional API fields used by the full catalog browse card layout. */
+export type BrowseSectionCard = BrowseCreditCard & {
+  network?: CardNetwork;
+  joining_fee?: number;
+  lounge_access?: string | null;
+  last_updated?: string;
+  dining_reward?: number | null;
+  travel_reward?: number | null;
+  shopping_reward?: number | null;
+  fuel_reward?: number | null;
+  metadata?: Record<string, unknown> | null;
+};
+
+function toCatalogFullBrowseCard(card: BrowseSectionCard): CatalogFullBrowseCardData {
+  return {
+    id: card.id,
+    card_name: card.card_name,
+    bank: card.bank,
+    network: card.network ?? "Visa",
+    joining_fee: card.joining_fee ?? 0,
+    annual_fee: card.annual_fee,
+    reward_type: card.reward_type,
+    reward_rate: card.reward_rate,
+    lounge_access: card.lounge_access ?? null,
+    best_for: card.best_for,
+    key_benefits: card.key_benefits,
+    last_updated: card.last_updated ?? "",
+    dining_reward: card.dining_reward ?? null,
+    travel_reward: card.travel_reward ?? null,
+    shopping_reward: card.shopping_reward ?? null,
+    fuel_reward: card.fuel_reward ?? null,
+    metadata: card.metadata ?? null,
+  };
+}
+
+const mockCards: BrowseSectionCard[] = [
   {
     id: "mock-travel",
     card_name: "Travel Elite Card",
@@ -28,6 +67,14 @@ const mockCards: BrowseCreditCard[] = [
     reward_rate: "10X points on travel",
     best_for: "Travel",
     key_benefits: "Airport lounge access and accelerated miles.",
+    network: "Visa",
+    joining_fee: 0,
+    lounge_access: null,
+    last_updated: "",
+    dining_reward: null,
+    travel_reward: null,
+    shopping_reward: null,
+    fuel_reward: null,
   },
   {
     id: "mock-cashback",
@@ -38,6 +85,14 @@ const mockCards: BrowseCreditCard[] = [
     reward_rate: "Up to 5% cashback",
     best_for: "Cashback",
     key_benefits: "Strong online cashback across popular merchants.",
+    network: "Visa",
+    joining_fee: 0,
+    lounge_access: null,
+    last_updated: "",
+    dining_reward: null,
+    travel_reward: null,
+    shopping_reward: null,
+    fuel_reward: null,
   },
   {
     id: "mock-fuel",
@@ -48,6 +103,14 @@ const mockCards: BrowseCreditCard[] = [
     reward_rate: "Fuel surcharge waiver",
     best_for: "Fuel",
     key_benefits: "Useful for fuel and daily spends.",
+    network: "Visa",
+    joining_fee: 0,
+    lounge_access: null,
+    last_updated: "",
+    dining_reward: null,
+    travel_reward: null,
+    shopping_reward: null,
+    fuel_reward: null,
   },
 ];
 
@@ -55,7 +118,7 @@ export function BrowseSection({
   cards,
   loading,
 }: {
-  cards: BrowseCreditCard[];
+  cards: BrowseSectionCard[];
   loading: boolean;
 }) {
   const router = useRouter();
@@ -133,12 +196,12 @@ export function BrowseSection({
         </CardContent>
       </Card>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:items-stretch">
+      <div className="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-3 lg:items-stretch">
         {(loading ? mockCards : visibleCards).slice(0, 6).map((card) => (
-          <CatalogBrowseCardTile
+          <CatalogFullBrowseCard
             key={card.id}
-            card={card}
-            detailsHref={
+            card={toCatalogFullBrowseCard(card)}
+            learnMoreHref={
               card.id.startsWith("mock") ? "/cards" : `/card/${card.id}`
             }
           />

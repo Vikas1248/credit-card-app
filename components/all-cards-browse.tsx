@@ -2,21 +2,9 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AmexGenericApplyLink } from "@/components/amex-generic-apply-link";
-import { AmexPlatinumReserveApplyLink } from "@/components/amex-platinum-reserve-apply-link";
-import { AxisApplyLink } from "@/components/axis-apply-link";
-import { CatalogBrowseCardTile } from "@/components/catalog-browse-card-tile";
-import { HdfcApplyLink } from "@/components/hdfc-apply-link";
-import { IndusIndApplyLink } from "@/components/indusind-apply-link";
-import { SbiApplyLink } from "@/components/sbi-apply-link";
-import { isAmexCardUsingGenericApply } from "@/lib/cards/amexGenericApply";
-import { isAmexPlatinumReserveCard } from "@/lib/cards/amexPlatinumReserveApply";
-import { isAxisBankCard } from "@/lib/cards/axisApply";
-import { hdfcCardShowsApply } from "@/lib/cards/hdfcApply";
-import { indusindCardShowsApply } from "@/lib/cards/indusindApply";
+import { CatalogFullBrowseCard } from "@/components/catalog-full-browse-card";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { primarySpendCategorySlug } from "@/lib/spendCategories";
-import { isSbiCard } from "@/lib/cards/sbiApply";
 import {
   buildCatalogSearchHaystack,
   matchesCatalogSearchQuery,
@@ -59,13 +47,6 @@ const BROWSE_SORT_OPTIONS: { value: BrowseSortMode; label: string }[] = [
   { value: "joining_desc", label: "Joining fee (high to low)" },
   { value: "ai", label: "AI curated browse" },
 ];
-
-function normalizeDisplayText(value: string | null | undefined, fallback: string): string {
-  const cleaned = String(value ?? "")
-    .replace(/\s+/g, " ")
-    .trim();
-  return cleaned || fallback;
-}
 
 type AnnualFeeBand =
   | "any"
@@ -1589,56 +1570,10 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
             )}
           </div>
         ) : (
-          <ul className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 lg:items-stretch">
+          <ul className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
             {displayBrowseCards.map((card) => (
               <li key={card.id} className="min-h-0">
-                <CatalogBrowseCardTile
-                  card={{
-                    id: card.id,
-                    card_name: normalizeDisplayText(
-                      card.card_name,
-                      "Unnamed card"
-                    ),
-                    bank: normalizeDisplayText(card.bank, "Unknown bank"),
-                    annual_fee: card.annual_fee,
-                    reward_type: card.reward_type,
-                    reward_rate: card.reward_rate,
-                    best_for: card.best_for,
-                    key_benefits: card.key_benefits,
-                  }}
-                  detailsHref={`/card/${card.id}`}
-                  footerExtra={
-                    <>
-                      {isAxisBankCard(card.bank) ? (
-                        <AxisApplyLink className="w-full" />
-                      ) : null}
-                      {isAmexPlatinumReserveCard(card.card_name, card.bank) ? (
-                        <AmexPlatinumReserveApplyLink className="w-full" />
-                      ) : null}
-                      {isAmexCardUsingGenericApply(
-                        card.card_name,
-                        card.bank
-                      ) ? (
-                        <AmexGenericApplyLink className="w-full" />
-                      ) : null}
-                      {isSbiCard(card.bank) ? (
-                        <SbiApplyLink className="w-full" />
-                      ) : null}
-                      {hdfcCardShowsApply(card.bank, card.metadata) ? (
-                        <HdfcApplyLink
-                          metadata={card.metadata}
-                          className="w-full"
-                        />
-                      ) : null}
-                      {indusindCardShowsApply(card.bank, card.metadata) ? (
-                        <IndusIndApplyLink
-                          metadata={card.metadata}
-                          className="w-full"
-                        />
-                      ) : null}
-                    </>
-                  }
-                />
+                <CatalogFullBrowseCard card={card} />
               </li>
             ))}
           </ul>
