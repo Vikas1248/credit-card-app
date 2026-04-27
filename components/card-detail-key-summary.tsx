@@ -182,11 +182,11 @@ export function CardDetailKeySummary({ card }: { card: CardKeySummary }) {
     <section className="mt-0" aria-labelledby="card-key-details-heading">
       <h2
         id="card-key-details-heading"
-        className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
+        className="text-sm font-semibold text-zinc-950"
       >
         Key details
       </h2>
-      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+      <p className="mt-1 text-xs text-zinc-500">
         Quick facts at a glance. Further down, &ldquo;How this card
         works&rdquo; spells out rewards, lounges, and fit in more detail.
       </p>
@@ -195,22 +195,22 @@ export function CardDetailKeySummary({ card }: { card: CardKeySummary }) {
         className={`mt-4 grid gap-3 sm:grid-cols-2 ${mrInrPerPoint != null ? "lg:grid-cols-5" : "lg:grid-cols-4"}`}
       >
         <DetailFactTile icon={<WalletIcon />} label="Joining fee">
-          <span className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
+          <span className="font-semibold tabular-nums text-zinc-900">
             {formatInr(card.joining_fee)}
           </span>
         </DetailFactTile>
         <DetailFactTile icon={<CalendarFeeIcon />} label="Annual fee">
-          <span className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
+          <span className="font-semibold tabular-nums text-zinc-900">
             {formatInr(card.annual_fee)}
           </span>
         </DetailFactTile>
         <DetailFactTile icon={<RewardTypeIcon />} label="Reward type">
-          <span className="font-semibold capitalize text-zinc-900 dark:text-zinc-50">
+          <span className="font-semibold capitalize text-zinc-900">
             {card.reward_type === "cashback" ? "Cashback" : "Reward points"}
           </span>
         </DetailFactTile>
         <DetailFactTile icon={<NetworkCardIcon />} label="Network">
-          <span className="font-semibold text-zinc-900 dark:text-zinc-50">
+          <span className="font-semibold text-zinc-900">
             {card.network}
           </span>
         </DetailFactTile>
@@ -218,11 +218,11 @@ export function CardDetailKeySummary({ card }: { card: CardKeySummary }) {
           <DetailFactTile
             icon={<PointValueIcon />}
             label="Est. point value"
-            ringClassName="bg-sky-600/10 text-sky-800 dark:bg-sky-500/15 dark:text-sky-200"
+            ringClassName="bg-sky-600/10 text-sky-800"
           >
-            <span className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
+            <span className="font-semibold tabular-nums text-zinc-900">
               {formatInrPerPoint(mrInrPerPoint)}
-              <span className="block text-[10px] font-normal normal-case leading-snug text-zinc-500 dark:text-zinc-400">
+              <span className="block text-[10px] font-normal normal-case leading-snug text-zinc-500">
                 per Membership Rewards point (used for category % below)
               </span>
             </span>
@@ -230,10 +230,10 @@ export function CardDetailKeySummary({ card }: { card: CardKeySummary }) {
         ) : null}
       </div>
 
-      <h3 className="mt-8 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+      <h3 className="mt-8 text-xs font-semibold uppercase tracking-wide text-zinc-500">
         Category earn rates
       </h3>
-      <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
+      <p className="mt-1 text-[11px] text-zinc-500">
         Approximate % of spend.
         {sbiAxisDerived ? (
           <>
@@ -266,7 +266,7 @@ export function CardDetailKeySummary({ card }: { card: CardKeySummary }) {
             }
             label={label}
           >
-            <span className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
+            <span className="font-semibold tabular-nums text-zinc-900">
               {formatCategoryRewardPctRange(rangeFor(slug))}
             </span>
           </DetailFactTile>
@@ -274,7 +274,7 @@ export function CardDetailKeySummary({ card }: { card: CardKeySummary }) {
       </div>
 
       {updatedLabel ? (
-        <p className="mt-6 text-[11px] text-zinc-400 dark:text-zinc-500">
+        <p className="mt-6 text-[11px] text-zinc-400">
           Last updated{" "}
           <time dateTime={card.last_updated}>{updatedLabel}</time>
         </p>

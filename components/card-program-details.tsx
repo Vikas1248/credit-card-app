@@ -59,16 +59,16 @@ function BestForProgramIcon({ className }: { className?: string }) {
 export function CardProgramDetails({ card }: { card: Props }) {
   return (
     <section
-      className="mt-12 border-t border-zinc-100 pt-10 dark:border-zinc-800"
+      className="mt-12 border-t border-zinc-100 pt-10"
       aria-labelledby="card-how-it-works-heading"
     >
       <h2
         id="card-how-it-works-heading"
-        className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
+        className="text-sm font-semibold text-zinc-950"
       >
         How this card works
       </h2>
-      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+      <p className="mt-1 text-xs text-zinc-500">
         Reward rules, lounge access, and who it fits best—summarized from the
         card information we show elsewhere on this page. Double-check anything
         important with your bank.
@@ -78,34 +78,34 @@ export function CardProgramDetails({ card }: { card: Props }) {
         <DetailFactTile
           icon={<RewardRateProgramIcon />}
           label="Reward rate"
-          ringClassName="bg-emerald-600/10 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+          ringClassName="bg-emerald-600/10 text-emerald-700"
         >
           {card.reward_rate?.trim() ? (
             <span className="whitespace-pre-wrap">{card.reward_rate}</span>
           ) : (
-            <span className="text-zinc-500 dark:text-zinc-400">—</span>
+            <span className="text-zinc-500">—</span>
           )}
         </DetailFactTile>
         <DetailFactTile
           icon={<LoungeProgramIcon />}
           label="Lounge access"
-          ringClassName="bg-violet-600/10 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
+          ringClassName="bg-violet-600/10 text-violet-700"
         >
           {card.lounge_access?.trim() ? (
             <span className="whitespace-pre-wrap">{card.lounge_access}</span>
           ) : (
-            <span className="text-zinc-500 dark:text-zinc-400">—</span>
+            <span className="text-zinc-500">—</span>
           )}
         </DetailFactTile>
         <DetailFactTile
           icon={<BestForProgramIcon />}
           label="Best for"
-          ringClassName="bg-amber-600/10 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200"
+          ringClassName="bg-amber-600/10 text-amber-800"
         >
           {card.best_for?.trim() ? (
             <span className="whitespace-pre-wrap">{card.best_for}</span>
           ) : (
-            <span className="text-zinc-500 dark:text-zinc-400">—</span>
+            <span className="text-zinc-500">—</span>
           )}
         </DetailFactTile>
       </div>
