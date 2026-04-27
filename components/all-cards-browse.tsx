@@ -157,6 +157,9 @@ function issuerChipSurfaceClass(bank: string): string {
 const browseSidebarChipBase =
   "inline-flex w-full min-h-[2.25rem] items-center justify-start gap-1.5 rounded-xl border px-2.5 py-1.5 text-left text-xs font-bold leading-snug shadow-sm transition active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600";
 
+const browseSelectedChipClass =
+  "border-transparent bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-md shadow-blue-600/20 ring-1 ring-blue-200";
+
 const browseFilterSectionLabelClass =
   "flex w-full items-center justify-between gap-2 rounded-2xl border border-blue-100 bg-white px-3 py-2 text-left text-[10px] font-black uppercase tracking-wider text-blue-700 shadow-sm transition hover:bg-blue-50";
 
@@ -1004,6 +1007,47 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
               </button>
             ) : null}
           </form>
+          {!loading && !error && cards.length > 0 && browseSortOpen ? (
+            <div
+              id="browse-sort-panel"
+              className="mt-3 rounded-2xl border border-blue-100 bg-white/85 p-3 shadow-sm"
+            >
+              <label className="block sm:flex sm:items-end sm:gap-3">
+                <div className="min-w-0 flex-1">
+                  <span className="mb-1.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-blue-700">
+                    <SortIcon className="h-3.5 w-3.5 shrink-0 text-blue-600" />
+                    Sort cards by
+                  </span>
+                  <select
+                    value={browseSort}
+                    onChange={(e) =>
+                      setBrowseSort(e.target.value as BrowseSortMode)
+                    }
+                    className={`${inputClass} py-2 text-sm`}
+                  >
+                    <option value="name">Name (A-Z)</option>
+                    <option value="annual_asc">Annual fee (low to high)</option>
+                    <option value="annual_desc">Annual fee (high to low)</option>
+                    <option value="joining_asc">Joining fee (low to high)</option>
+                    <option value="joining_desc">Joining fee (high to low)</option>
+                    <option value="ai">AI curated browse</option>
+                  </select>
+                </div>
+                {browseSort === "ai" ? (
+                  <span className="mt-2 flex items-center gap-2 text-xs text-zinc-500 sm:mt-0 sm:pb-2.5">
+                    {browseAiLoading ? (
+                      <>
+                        <Spinner className="h-4 w-4 text-blue-600" />
+                        Loading order...
+                      </>
+                    ) : !browseAiOrder ? (
+                      <>AI order unavailable - using A-Z</>
+                    ) : null}
+                  </span>
+                ) : null}
+              </label>
+            </div>
+          ) : null}
           <p className="mt-2 text-xs text-zinc-500">
             {textFilteredCards.length === cards.length && !search.trim() ? (
               <>
@@ -1045,7 +1089,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 aria-pressed={filterSpendFocus === id}
                 className={`rounded-full border px-3 py-1.5 text-xs font-bold shadow-sm transition ${
                   filterSpendFocus === id
-                    ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
+                    ? browseSelectedChipClass
                     : "border-zinc-200 bg-white text-zinc-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                 }`}
               >
@@ -1163,7 +1207,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                           aria-pressed={on}
                           className={`${sidebarChipClass} ${
                             on
-                              ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
+                              ? browseSelectedChipClass
                               : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                           }`}
                         >
@@ -1247,7 +1291,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                           aria-pressed={on}
                           className={`${sidebarChipClass} ${
                             on
-                              ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
+                              ? browseSelectedChipClass
                               : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                           }`}
                         >
@@ -1313,7 +1357,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                         aria-pressed={on}
                         className={`${sidebarChipClass} ${
                           on
-                            ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
+                            ? browseSelectedChipClass
                             : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                         }`}
                       >
@@ -1384,7 +1428,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                         aria-pressed={on}
                         className={`${sidebarChipClass} ${
                           on
-                            ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
+                            ? browseSelectedChipClass
                             : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                         }`}
                       >
@@ -1453,7 +1497,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                             netLocked ? "cursor-not-allowed opacity-90" : ""
                           } ${
                             on
-                              ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
+                              ? browseSelectedChipClass
                               : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                           }`}
                         >
@@ -1480,51 +1524,6 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
           ) : null}
 
           <div className="min-w-0">
-        {!loading && !error && cards.length > 0 && browseSortOpen ? (
-          <div
-            id="browse-sort-panel"
-            className="mt-3 rounded-3xl border border-blue-100 bg-blue-50/50 p-4"
-          >
-            <h2 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-blue-700">
-              <SortIcon className="h-3.5 w-3.5 shrink-0 text-blue-600" />
-              Sort
-            </h2>
-            <label className="mt-2 block sm:flex sm:items-end sm:gap-3">
-              <div className="min-w-0 flex-1">
-                <span className="mb-1 block text-[11px] font-medium text-zinc-600">
-                  Order by
-                </span>
-                <select
-                  value={browseSort}
-                  onChange={(e) =>
-                    setBrowseSort(e.target.value as BrowseSortMode)
-                  }
-                  className={`${inputClass} py-2 text-sm`}
-                >
-                  <option value="name">Name (A–Z)</option>
-                  <option value="annual_asc">Annual fee (low → high)</option>
-                  <option value="annual_desc">Annual fee (high → low)</option>
-                  <option value="joining_asc">Joining fee (low → high)</option>
-                  <option value="joining_desc">Joining fee (high → low)</option>
-                  <option value="ai">AI curated browse</option>
-                </select>
-              </div>
-              {browseSort === "ai" ? (
-                <span className="mt-2 flex items-center gap-2 text-xs text-zinc-500 sm:mt-0 sm:pb-2.5">
-                  {browseAiLoading ? (
-                    <>
-                      <Spinner className="h-4 w-4 text-blue-600" />
-                      Loading order…
-                    </>
-                  ) : !browseAiOrder ? (
-                    <>AI order unavailable — using A–Z</>
-                  ) : null}
-                </span>
-              ) : null}
-            </label>
-          </div>
-        ) : null}
-
         {loading ? (
           <div className="mt-8 space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
