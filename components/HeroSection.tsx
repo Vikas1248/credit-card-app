@@ -4,7 +4,7 @@ const heroCards = [
   {
     name: "Cashback Plus",
     label: "Best for daily spend",
-    gradient: "from-slate-950 via-blue-950 to-indigo-900",
+    gradient: "from-blue-500 via-indigo-500 to-violet-600",
     offset: "rotate-[-8deg] translate-y-6",
   },
   {

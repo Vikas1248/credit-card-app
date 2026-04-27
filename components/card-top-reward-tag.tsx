@@ -90,15 +90,15 @@ function categoryToneClass(
 
   switch (slug) {
     case "dining":
-      return "border-emerald-200/80 bg-emerald-50/90 text-emerald-900 dark:border-emerald-500/40 dark:bg-emerald-950/40 dark:text-emerald-100";
+      return "border-emerald-200/80 bg-emerald-50/90 text-emerald-900";
     case "travel":
-      return "border-blue-200/80 bg-blue-50/90 text-blue-900 dark:border-blue-500/40 dark:bg-blue-950/40 dark:text-blue-100";
+      return "border-blue-200/80 bg-blue-50/90 text-blue-900";
     case "shopping":
-      return "border-violet-200/80 bg-violet-50/90 text-violet-900 dark:border-violet-500/40 dark:bg-violet-950/40 dark:text-violet-100";
+      return "border-violet-200/80 bg-violet-50/90 text-violet-900";
     case "fuel":
-      return "border-amber-200/80 bg-amber-50/90 text-amber-900 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-100";
+      return "border-amber-200/80 bg-amber-50/90 text-amber-900";
     default:
-      return "border-blue-200/80 bg-blue-50/90 text-blue-900 dark:border-blue-500/40 dark:bg-blue-950/40 dark:text-blue-100";
+      return "border-blue-200/80 bg-blue-50/90 text-blue-900";
   }
 }
 

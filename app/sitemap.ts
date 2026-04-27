@@ -6,7 +6,6 @@
  * one canonical origin everywhere.
  */
 import type { MetadataRoute } from "next";
-import { SPEND_CATEGORY_SLUGS } from "@/lib/spendCategories";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { resolvePublicOrigin } from "@/lib/siteCanonical";
 
@@ -36,12 +35,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.5,
     },
-    ...SPEND_CATEGORY_SLUGS.map((slug) => ({
-      url: `${base}/category/${slug}`,
-      lastModified: now,
-      changeFrequency: "weekly" as const,
-      priority: 0.8,
-    })),
   ];
 
   try {

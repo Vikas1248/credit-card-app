@@ -113,9 +113,9 @@ export function CardKeyBenefits({ card }: { card: CardKeyBenefitsInput }) {
       {items.map((item) => (
         <li
           key={item}
-          className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300"
+          className="flex items-start gap-2 text-sm text-zinc-700"
         >
-          <span className="mt-0.5 text-blue-600 dark:text-blue-400" aria-hidden>
+          <span className="mt-0.5 text-blue-600" aria-hidden>
             <BenefitIcon text={item} />
           </span>
           <span className="line-clamp-1">{item}</span>

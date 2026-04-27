@@ -61,7 +61,7 @@ npm run lint    # ESLint
 
 | Path | Role |
 |------|------|
-| `app/` | Routes: home, `/cards`, `/card/[id]`, `/category/[slug]`, `/about`, API routes under `app/api/` |
+| `app/` | Routes: home, `/cards`, `/card/[id]`, `/about`, API routes under `app/api/` |
 | `components/` | Client UI (browse, compare, recommendations, apply links, etc.) |
 | `components/chat/` | Chat advisor UI (`CreditAdvisorChat`) |
 | `lib/spendCategories.ts` | Category earn ranges, **primary category** slug for browse chips |
@@ -128,7 +128,6 @@ If Langflow, OpenAI, or external APIs are unavailable, each feature **degrades g
 | Feature | API / library entry |
 |---------|----------------------|
 | Home featured carousel | `/api/cards/featured-ai` · `lib/featured/aiFeaturedCarousel.ts` |
-| Category page copy / ordering | `/api/cards/category-insight` · `lib/category/aiCategoryInsight.ts` · `/api/cards/category-order-ai` · `lib/category/aiCategoryOrder.ts` |
 | Search & catalog browse order | `/api/cards/search-ai` · `lib/search/aiSearchRank.ts` · `/api/cards/browse-order-ai` · `lib/search/aiBrowseOrder.ts` |
 | Card detail blurb | `/api/cards/detail-ai-insight` · `lib/card/aiCardDetailInsight.ts` |
 | Compare two cards | `/api/cards/compare-ai` · `lib/compare/aiTwoCards.ts` |

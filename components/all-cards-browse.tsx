@@ -18,10 +18,7 @@ import { hdfcCardShowsApply } from "@/lib/cards/hdfcApply";
 import { indusindCardShowsApply } from "@/lib/cards/indusindApply";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
 import { issuerBrandTileClass } from "@/lib/cards/issuerBrandTile";
-import {
-  primarySpendCategorySlug,
-  SPEND_CATEGORIES,
-} from "@/lib/spendCategories";
+import { primarySpendCategorySlug } from "@/lib/spendCategories";
 import { isSbiCard } from "@/lib/cards/sbiApply";
 import {
   buildCatalogSearchHaystack,
@@ -1402,16 +1399,29 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-wide text-zinc-400">
-                Quick categories
+                Quick filters
               </span>
-              {SPEND_CATEGORIES.map((category) => (
-                <Link
-                  key={category.slug}
-                  href={`/category/${category.slug}`}
-                  className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-bold text-zinc-600 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+              {(
+                [
+                  ["dining", "Dining"],
+                  ["travel", "Travel"],
+                  ["shopping", "Shopping"],
+                  ["fuel", "Fuel"],
+                ] as const
+              ).map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setFilterSpendFocus(id)}
+                  aria-pressed={filterSpendFocus === id}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-bold shadow-sm transition ${
+                    filterSpendFocus === id
+                      ? "border-blue-200 bg-blue-50 text-blue-700"
+                      : "border-zinc-200 bg-white text-zinc-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                  }`}
                 >
-                  {category.label}
-                </Link>
+                  {label}
+                </button>
               ))}
             </div>
 
@@ -1524,20 +1534,20 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 className={`group flex h-full min-h-[26rem] flex-col rounded-3xl border p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg sm:p-6 ${issuerBrandTileClass(card.bank, card.network)}`}
               >
                 <div className="mb-3 flex flex-wrap items-center gap-2">
-                  <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-700 shadow-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200">
+                  <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-700 shadow-sm">
                     {normalizeDisplayText(card.network, "Network")}
                   </span>
-                  <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold tracking-wide text-zinc-700 shadow-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200">
+                  <span className="inline-flex h-8 items-center rounded-lg border border-zinc-200 bg-white/90 px-2.5 text-[11px] font-semibold tracking-wide text-zinc-700 shadow-sm">
                     {normalizeDisplayText(card.bank, "Unknown bank")}
                   </span>
                 </div>
 
                 <div className="flex min-w-0 flex-1 flex-col">
                   <div className="flex flex-wrap items-start gap-2">
-                    <h2 className="min-h-[2.75rem] text-base font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
+                    <h2 className="min-h-[2.75rem] text-base font-semibold leading-snug text-zinc-900">
                       <Link
                         href={`/card/${card.id}`}
-                        className="line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400"
+                        className="line-clamp-2 hover:text-blue-600"
                       >
                         {normalizeDisplayText(card.card_name, "Unnamed card")}
                       </Link>
@@ -1549,22 +1559,22 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                     <CardKeyBenefits card={card} />
                   </div>
 
-                  <dl className="mt-3 grid grid-cols-2 gap-2 text-sm text-zinc-600 dark:text-zinc-300">
-                    <div className="rounded-xl border border-zinc-200/70 bg-white/80 px-3 py-2 dark:border-zinc-700/70 dark:bg-zinc-900/60">
+                  <dl className="mt-3 grid grid-cols-2 gap-2 text-sm text-zinc-600">
+                    <div className="rounded-xl border border-zinc-200/70 bg-white/80 px-3 py-2">
                       <dt className="text-[11px] text-zinc-500">Annual fee</dt>
-                      <dd className="text-sm font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                      <dd className="text-sm font-bold tabular-nums text-zinc-900">
                         {formatInr(card.annual_fee)}
                       </dd>
                     </div>
-                    <div className="rounded-xl border border-zinc-200/70 bg-white/80 px-3 py-2 dark:border-zinc-700/70 dark:bg-zinc-900/60">
+                    <div className="rounded-xl border border-zinc-200/70 bg-white/80 px-3 py-2">
                       <dt className="text-[11px] text-zinc-500">Joining fee</dt>
-                      <dd className="text-sm font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                      <dd className="text-sm font-bold tabular-nums text-zinc-900">
                         {formatInr(card.joining_fee)}
                       </dd>
                     </div>
                   </dl>
 
-                  <p className="mt-3 text-xs font-medium capitalize text-zinc-500 dark:text-zinc-400">
+                  <p className="mt-3 text-xs font-medium capitalize text-zinc-500">
                     Reward type: {card.reward_type}
                   </p>
 
