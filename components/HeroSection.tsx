@@ -43,10 +43,10 @@ export function HeroSection() {
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a
-              href="#recommendation-quiz"
+              href="#chat-advisor"
               className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 px-6 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-600/25"
             >
-              Start Recommendation
+              AI Advisor
             </a>
             <Link
               href="/cards"
