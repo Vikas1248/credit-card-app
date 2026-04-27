@@ -60,6 +60,16 @@ function formatInr(value: number): string {
   }).format(value);
 }
 
+/** Short label for header chip so long DB `best_for` strings don’t crowd the card name. */
+function browsePreviewChipLabel(card: BrowseCreditCard): string {
+  const raw =
+    card.best_for ??
+    (card.reward_type === "cashback" ? "Cashback" : "Points");
+  const t = raw.replace(/\s+/g, " ").trim();
+  if (t.length <= 40) return t;
+  return `${t.slice(0, 37)}…`;
+}
+
 export function BrowseSection({
   cards,
   loading,
@@ -142,47 +152,55 @@ export function BrowseSection({
         </CardContent>
       </Card>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:items-stretch">
         {(loading ? mockCards : visibleCards).slice(0, 6).map((card) => {
-          const previewTag =
-            card.best_for ??
-            (card.reward_type === "cashback" ? "Cashback" : "Points");
+          const previewTag = browsePreviewChipLabel(card);
           const rewardLine =
             card.reward_rate ?? card.best_for ?? "Rewards and benefits";
           return (
             <Card
               key={card.id}
-              className="group relative flex h-full min-h-[19rem] flex-col overflow-hidden border-zinc-200/80 bg-white shadow-sm shadow-zinc-900/[0.03] transition hover:-translate-y-1 hover:border-blue-100 hover:shadow-xl hover:shadow-blue-900/[0.08]"
+              className="group flex h-full min-h-[17rem] flex-col overflow-hidden rounded-3xl border-zinc-200/80 bg-white shadow-sm shadow-zinc-900/[0.03] transition hover:-translate-y-1 hover:border-blue-100 hover:shadow-xl hover:shadow-blue-900/[0.08]"
             >
-              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-blue-500 to-cyan-400" />
-              <CardHeader className="flex-shrink-0 pb-2 pt-5">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <h3 className="line-clamp-2 min-h-[2.75rem] text-base font-black leading-snug text-zinc-950">
+              <div
+                className="h-1 shrink-0 bg-gradient-to-r from-violet-500 via-blue-500 to-cyan-400"
+                aria-hidden
+              />
+              <CardHeader className="flex-shrink-0 space-y-0 px-5 pb-3 pt-4">
+                <div className="min-w-0 space-y-2">
+                  <div className="min-w-0">
+                    <h3 className="line-clamp-2 text-base font-black leading-snug text-zinc-950">
                       {card.card_name}
                     </h3>
                     <p className="mt-1 truncate text-xs font-medium text-zinc-500">
                       {card.bank}
                     </p>
                   </div>
-                  <Badge variant="blue" className="shrink-0 text-[11px]">
-                    {previewTag}
+                  <Badge
+                    variant="blue"
+                    title={
+                      card.best_for ??
+                      (card.reward_type === "cashback" ? "Cashback" : "Points")
+                    }
+                    className="inline-flex max-w-full items-start rounded-2xl px-2.5 py-1.5 text-left text-[11px] font-semibold leading-snug text-blue-800"
+                  >
+                    <span className="line-clamp-2 break-words">{previewTag}</span>
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="flex flex-1 flex-col pb-5 pt-0">
-                <div className="min-h-[3.25rem] rounded-2xl border border-blue-100 bg-blue-50/60 p-3">
+              <CardContent className="flex min-h-0 flex-1 flex-col px-5 pb-5 pt-0">
+                <div className="min-h-[3rem] rounded-2xl border border-blue-100 bg-blue-50/60 p-3">
                   <p className="line-clamp-2 text-sm font-bold leading-snug text-blue-800">
                     {rewardLine}
                   </p>
                 </div>
-                <div className="mt-2 h-[2.75rem] overflow-hidden">
+                <div className="mt-2 min-h-[2.5rem] flex-1">
                   <p className="line-clamp-2 text-sm leading-snug text-zinc-600">
                     {card.key_benefits ??
                       "Compare fees, rewards, and category fit."}
                   </p>
                 </div>
-                <div className="mt-auto flex items-center justify-between gap-2 pt-4">
+                <div className="mt-auto flex flex-shrink-0 items-center justify-between gap-2 pt-3">
                   <span className="min-w-0 truncate rounded-full bg-zinc-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-zinc-500 ring-1 ring-zinc-200">
                     Fee {formatInr(card.annual_fee)}
                   </span>
