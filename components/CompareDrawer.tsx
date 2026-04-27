@@ -126,24 +126,6 @@ export function CompareDrawer({ cards }: { cards: BrowseCreditCard[] }) {
           </SheetTrigger>
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-2">
-          {compareCards.slice(0, 6).map((card) => (
-            <button
-              key={card.id}
-              type="button"
-              onClick={() => toggleCard(card.id)}
-              className={cn(
-                "rounded-full border px-3 py-1.5 text-xs font-bold transition",
-                validSelectedIds.includes(card.id)
-                  ? "border-blue-200 bg-blue-50 text-blue-700"
-                  : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"
-              )}
-            >
-              {card.card_name}
-            </button>
-          ))}
-        </div>
-
         <SheetContent className="lg:w-[min(1120px,94vw)]">
           <div className="flex items-start justify-between gap-4">
             <SheetHeader>

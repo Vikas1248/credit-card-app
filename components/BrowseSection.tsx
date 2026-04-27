@@ -121,7 +121,7 @@ export function BrowseSection({
         </div>
       </div>
 
-      <Card className="mt-7 bg-zinc-50 shadow-none">
+      <Card className="mt-7 border-blue-100 bg-gradient-to-br from-blue-50/70 via-white to-violet-50/60 shadow-none">
         <CardContent className="p-4">
           <form
             className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
@@ -144,7 +144,7 @@ export function BrowseSection({
             </div>
             <button
               type="submit"
-              className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-zinc-950 px-5 text-sm font-bold text-white transition hover:bg-zinc-800"
+              className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 px-5 text-sm font-bold text-white shadow-md shadow-blue-600/20 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-600/25"
             >
               Search full catalog
             </button>
@@ -166,7 +166,7 @@ export function BrowseSection({
                 className={cn(
                   "rounded-full border px-3 py-1.5 text-xs font-bold transition",
                   activeFilter === filter
-                    ? "border-blue-200 bg-blue-50 text-blue-700"
+                    ? "border-blue-200 bg-white text-blue-700 shadow-sm ring-2 ring-blue-100"
                     : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                 )}
               >
@@ -184,8 +184,9 @@ export function BrowseSection({
           return (
             <Card
               key={card.id}
-              className="shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+              className="group overflow-hidden border-zinc-200/80 bg-white shadow-sm shadow-zinc-900/[0.03] transition hover:-translate-y-1 hover:border-blue-100 hover:shadow-xl hover:shadow-blue-900/[0.08]"
             >
+              <div className="h-1 bg-gradient-to-r from-violet-500 via-blue-500 to-cyan-400" />
               <CardHeader>
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -196,28 +197,30 @@ export function BrowseSection({
                       {card.bank}
                     </p>
                   </div>
-                  <Badge variant="violet" className="text-[11px]">
+                  <Badge variant="blue" className="text-[11px]">
                     {matchedFilter}
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm font-semibold text-zinc-800">
-                  {card.reward_rate ?? card.best_for ?? "Rewards and benefits"}
-                </p>
+                <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-3">
+                  <p className="text-sm font-bold text-blue-800">
+                    {card.reward_rate ?? card.best_for ?? "Rewards and benefits"}
+                  </p>
+                </div>
                 <p className="mt-2 line-clamp-2 text-sm text-zinc-600">
                   {card.key_benefits ??
                     "Compare fees, rewards, and category fit."}
                 </p>
                 <div className="mt-5 flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wide text-zinc-500">
+                  <span className="rounded-full bg-zinc-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-zinc-500 ring-1 ring-zinc-200">
                     Fee {formatInr(card.annual_fee)}
                   </span>
                   <Link
                     href={
                       card.id.startsWith("mock") ? "/cards" : `/card/${card.id}`
                     }
-                    className="rounded-xl border border-zinc-200 px-3 py-2 text-xs font-bold text-zinc-800 transition hover:bg-zinc-50"
+                    className="rounded-xl border border-blue-100 bg-white px-3 py-2 text-xs font-bold text-blue-700 transition hover:border-blue-200 hover:bg-blue-50"
                   >
                     Details
                   </Link>
