@@ -313,22 +313,22 @@ export function CreditAdvisorChat() {
                 <p className="mt-2 text-xs leading-relaxed text-zinc-600">
                   {card.explanation ?? "Strong fit for your profile."}
                 </p>
-                <div className="mt-3 flex gap-2">
+                <div className="mt-3 flex flex-wrap items-start gap-2">
                   <Link
                     href={`/card/${card.card_id}`}
-                    className="inline-flex min-h-10 items-center justify-center rounded-lg border border-zinc-300 bg-white px-3 text-xs font-semibold text-zinc-800 transition hover:bg-zinc-50"
+                    className="inline-flex min-h-10 flex-1 basis-[7.5rem] items-center justify-center rounded-lg border border-zinc-300 bg-white px-3 text-xs font-semibold text-zinc-800 transition hover:bg-zinc-50"
                   >
                     View details
                   </Link>
                   <Link
                     href={`/card/${card.card_id}#apply`}
-                    className="inline-flex min-h-10 items-center justify-center rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white transition hover:bg-blue-700"
+                    className="inline-flex min-h-10 flex-1 basis-[7.5rem] items-center justify-center rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white transition hover:bg-blue-700"
                   >
                     Apply
                   </Link>
-                </div>
-                <div className="mt-2">
                   <SendRecommendationEmailButton
+                    compact
+                    className="flex-1 basis-[7.5rem]"
                     cardName={card.card_name}
                     applyLink={`/card/${card.card_id}#apply`}
                     rewards={

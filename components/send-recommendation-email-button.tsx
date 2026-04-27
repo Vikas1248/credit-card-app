@@ -7,6 +7,9 @@ type SendRecommendationEmailButtonProps = {
   cardName: string;
   applyLink: string;
   rewards?: string | null;
+  /** Smaller trigger for inline toolbars (e.g. beside Apply). */
+  compact?: boolean;
+  className?: string;
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -15,6 +18,8 @@ export function SendRecommendationEmailButton({
   cardName,
   applyLink,
   rewards,
+  compact = false,
+  className,
 }: SendRecommendationEmailButtonProps) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -60,7 +65,7 @@ export function SendRecommendationEmailButton({
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className={cn("flex flex-col gap-2", className)}>
       <button
         type="button"
         onClick={() => {
@@ -69,13 +74,16 @@ export function SendRecommendationEmailButton({
           setMessage(null);
         }}
         className={cn(
-          "inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border px-4 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5",
+          "inline-flex items-center justify-center border font-semibold shadow-sm transition hover:-translate-y-0.5",
+          compact
+            ? "min-h-10 w-full rounded-lg px-3 text-xs"
+            : "min-h-11 w-full rounded-xl px-4 text-sm",
           open
             ? "border-blue-600 bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-blue-600/20"
             : "border-blue-200 bg-white text-blue-700 hover:border-blue-300 hover:bg-blue-50"
         )}
       >
-        Send to Email
+        Email
       </button>
 
       {open ? (
@@ -96,7 +104,7 @@ export function SendRecommendationEmailButton({
             onClick={() => void sendEmail()}
             className="mt-2 inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-blue-600 px-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {sending ? "Sending..." : "Send recommendation"}
+            {sending ? "Sending..." : "Send"}
           </button>
           {message ? (
             <p className="mt-2 text-xs font-medium text-emerald-700">

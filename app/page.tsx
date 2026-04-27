@@ -6,6 +6,7 @@ import { AIChatAdvisor } from "@/components/AIChatAdvisor";
 import { CredGenieLogo } from "@/components/brand/credgenie-logo";
 import { BrowseSection, type BrowseCreditCard } from "@/components/BrowseSection";
 import { CompareDrawer } from "@/components/CompareDrawer";
+import { HomeNavLink } from "@/components/home-nav-link";
 import { HeroSection } from "@/components/HeroSection";
 import { RecommendationQuiz } from "@/components/RecommendationQuiz";
 import { SITE_NAME } from "@/lib/site";
@@ -24,32 +25,35 @@ type CreditCard = BrowseCreditCard & {
   metadata?: Record<string, unknown> | null;
 };
 
-const navItems = [
-  ["/", "Home"],
+const sectionNavItems = [
   ["#chat-advisor", "AI Advisor"],
   ["#recommendation-quiz", "Recommend Me"],
   ["#compare", "Compare Cards"],
   ["/cards", "Browse Cards"],
 ] as const;
 
+const siteHeaderNavItemClass =
+  "shrink-0 rounded-full px-3 py-1.5 text-sm font-bold text-zinc-600 transition hover:bg-white hover:text-zinc-950 hover:shadow-sm";
+
 function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-zinc-200/70 bg-white/90 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
-        <Link href="/" className="flex items-center gap-2.5">
+        <HomeNavLink className="flex items-center gap-2.5">
           <CredGenieLogo />
-        </Link>
+        </HomeNavLink>
 
         <nav
           className="flex gap-1 overflow-x-auto rounded-full border border-zinc-200 bg-zinc-50 p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           aria-label="Homepage sections"
         >
-          {navItems.map(([href, label]) =>
+          <HomeNavLink className={siteHeaderNavItemClass}>Home</HomeNavLink>
+          {sectionNavItems.map(([href, label]) =>
             href.startsWith("/") ? (
               <Link
                 key={href}
                 href={href}
-                className="shrink-0 rounded-full px-3 py-1.5 text-sm font-bold text-zinc-600 transition hover:bg-white hover:text-zinc-950 hover:shadow-sm"
+                className={siteHeaderNavItemClass}
               >
                 {label}
               </Link>
@@ -57,7 +61,7 @@ function SiteHeader() {
               <a
                 key={href}
                 href={href}
-                className="shrink-0 rounded-full px-3 py-1.5 text-sm font-bold text-zinc-600 transition hover:bg-white hover:text-zinc-950 hover:shadow-sm"
+                className={siteHeaderNavItemClass}
               >
                 {label}
               </a>
@@ -113,6 +117,17 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.location.hash !== "#hero") return;
+    window.requestAnimationFrame(() => {
+      document.getElementById("hero")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
   }, []);
 
   return (

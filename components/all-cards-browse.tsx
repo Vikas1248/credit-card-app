@@ -1617,24 +1617,29 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                   </span>
                 </div>
 
-                <div className="flex min-w-0 flex-1 flex-col">
-                  <div className="flex flex-wrap items-start gap-2">
-                    <h2 className="min-h-[2.75rem] text-base font-semibold leading-snug text-zinc-900">
-                      <Link
-                        href={`/card/${card.id}`}
-                        className="line-clamp-2 hover:text-blue-600"
-                      >
-                        {normalizeDisplayText(card.card_name, "Unnamed card")}
-                      </Link>
-                    </h2>
-                    <CardTopRewardTag card={card} />
+                <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+                  {/* Fixed vertical slots so fees/details line up across the row when titles wrap */}
+                  <div className="shrink-0 space-y-2">
+                    <div className="min-h-[2.75rem]">
+                      <h2 className="text-base font-semibold leading-snug text-zinc-900">
+                        <Link
+                          href={`/card/${card.id}`}
+                          className="line-clamp-2 block hover:text-blue-600"
+                        >
+                          {normalizeDisplayText(card.card_name, "Unnamed card")}
+                        </Link>
+                      </h2>
+                    </div>
+                    <div className="flex min-h-[2.25rem] flex-wrap items-center gap-2">
+                      <CardTopRewardTag card={card} />
+                    </div>
                   </div>
 
-                  <div className="mt-2 min-h-[4.75rem]">
+                  <div className="mt-2 h-[4.75rem] shrink-0 overflow-hidden [&_ul]:mt-0">
                     <CardKeyBenefits card={card} />
                   </div>
 
-                  <dl className="mt-3 grid grid-cols-2 gap-2 text-sm text-zinc-600">
+                  <dl className="mt-3 shrink-0 grid grid-cols-2 gap-2 text-sm text-zinc-600">
                     <div className="rounded-2xl border border-blue-100 bg-blue-50/60 px-3 py-2">
                       <dt className="text-[11px] text-zinc-500">Annual fee</dt>
                       <dd className="text-sm font-bold tabular-nums text-zinc-900">
@@ -1649,11 +1654,11 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                     </div>
                   </dl>
 
-                  <p className="mt-3 text-xs font-medium capitalize text-zinc-500">
+                  <p className="mt-3 shrink-0 text-xs font-medium capitalize text-zinc-500">
                     Reward type: {card.reward_type}
                   </p>
 
-                  <div className="mt-auto grid gap-2 pt-4">
+                  <div className="mt-auto grid shrink-0 gap-2 pt-4">
                     <Link
                       href={`/card/${card.id}`}
                       className={`${cardViewDetailsButtonClass} w-full`}

@@ -23,7 +23,10 @@ const heroCards = [
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden rounded-[2rem] border border-zinc-200/70 bg-white px-5 py-10 shadow-md shadow-zinc-900/[0.04] sm:px-8 lg:px-10 lg:py-14">
+    <section
+      id="hero"
+      className="scroll-mt-28 relative overflow-hidden rounded-[2rem] border border-zinc-200/70 bg-white px-5 py-10 shadow-md shadow-zinc-900/[0.04] sm:px-8 lg:px-10 lg:py-14"
+    >
       <div className="pointer-events-none absolute right-4 top-6 h-52 w-52 rounded-full bg-gradient-to-br from-violet-400/25 to-blue-400/20 blur-3xl" />
 
       <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.9fr)] lg:items-center">
