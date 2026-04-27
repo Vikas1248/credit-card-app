@@ -158,7 +158,12 @@ const browseSidebarChipBase =
   "inline-flex w-full min-h-[2.25rem] items-center justify-start gap-1.5 rounded-xl border px-2.5 py-1.5 text-left text-xs font-bold leading-snug shadow-sm transition active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600";
 
 const browseFilterSectionLabelClass =
-  "mb-1.5 flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-blue-700";
+  "flex w-full items-center justify-between gap-2 rounded-2xl border border-blue-100 bg-white px-3 py-2 text-left text-[10px] font-black uppercase tracking-wider text-blue-700 shadow-sm transition hover:bg-blue-50";
+
+const browseFilterSectionHintClass =
+  "mb-2 mt-1.5 text-[10px] leading-snug text-zinc-500";
+
+type FilterSectionId = "bank" | "spend" | "reward" | "fee" | "network";
 
 function sortCardsByIdOrder(
   list: CreditCard[],
@@ -450,23 +455,6 @@ function IconSquares2x2({ className }: { className?: string }) {
   );
 }
 
-function IconLayers({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-    </svg>
-  );
-}
-
 function IconIndianRupee({ className }: { className?: string }) {
   return (
     <svg
@@ -612,6 +600,15 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
     "all"
   );
   const [browseSortOpen, setBrowseSortOpen] = useState(false);
+  const [openFilterSections, setOpenFilterSections] = useState<
+    Record<FilterSectionId, boolean>
+  >({
+    bank: false,
+    spend: false,
+    reward: false,
+    fee: false,
+    network: false,
+  });
 
   const catalogNetworkLock = getOptionalCardNetworkFilter();
 
@@ -675,6 +672,13 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
     setFilterSpendFocus("all");
     setFilterRewardType("all");
     setFilterNetwork("all");
+  }
+
+  function toggleFilterSection(section: FilterSectionId) {
+    setOpenFilterSections((current) => ({
+      ...current,
+      [section]: !current[section],
+    }));
   }
 
   const browseSortNonDefault = browseSort !== "name";
@@ -1035,7 +1039,9 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
               <button
                 key={id}
                 type="button"
-                onClick={() => setFilterSpendFocus(id)}
+                onClick={() =>
+                  setFilterSpendFocus((current) => (current === id ? "all" : id))
+                }
                 aria-pressed={filterSpendFocus === id}
                 className={`rounded-full border px-3 py-1.5 text-xs font-bold shadow-sm transition ${
                   filterSpendFocus === id
@@ -1123,274 +1129,350 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
             </div>
 
             <div className="pt-3">
-              <p className={browseFilterSectionLabelClass}>
-                <IconBuildingBank className="h-3 w-3 shrink-0 opacity-70" />
-                Bank
-              </p>
-              <p className="mb-1.5 text-[10px] leading-snug text-zinc-500">
-                Tap one or more
-              </p>
-              <div
-                className="flex flex-col gap-1.5"
-                role="group"
-                aria-label="Filter by bank"
+              <button
+                type="button"
+                onClick={() => toggleFilterSection("bank")}
+                className={browseFilterSectionLabelClass}
+                aria-expanded={openFilterSections.bank}
+                aria-controls="browse-bank-filters"
               >
-                {catalogBankNames.map((bank) => {
-                  const on = filterBanks.includes(bank);
-                  return (
-                    <button
-                      key={bank}
-                      type="button"
-                      onClick={() => toggleBankFilter(bank)}
-                      aria-pressed={on}
-                      className={`${sidebarChipClass} ${
-                        on
-                          ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
-                          : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-                      }`}
-                    >
-                      <span
-                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[8px] font-bold leading-none ${issuerChipSurfaceClass(bank)}`}
+                <span className="flex items-center gap-1">
+                  <IconBuildingBank className="h-3 w-3 shrink-0 opacity-70" />
+                  Bank
+                </span>
+                <span className="text-sm leading-none" aria-hidden>
+                  {openFilterSections.bank ? "−" : "+"}
+                </span>
+              </button>
+              {openFilterSections.bank ? (
+                <>
+                  <p className={browseFilterSectionHintClass}>Tap one or more</p>
+                  <div
+                    id="browse-bank-filters"
+                    className="flex flex-col gap-1.5"
+                    role="group"
+                    aria-label="Filter by bank"
+                  >
+                    {catalogBankNames.map((bank) => {
+                      const on = filterBanks.includes(bank);
+                      return (
+                        <button
+                          key={bank}
+                          type="button"
+                          onClick={() => toggleBankFilter(bank)}
+                          aria-pressed={on}
+                          className={`${sidebarChipClass} ${
+                            on
+                              ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
+                              : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                          }`}
+                        >
+                          <span
+                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[8px] font-bold leading-none ${issuerChipSurfaceClass(bank)}`}
+                          >
+                            {bankInitials(bank)}
+                          </span>
+                          <span className="min-w-0 flex-1 truncate text-left">
+                            {shortBankLabel(bank)}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : null}
+            </div>
+
+            <div className="pt-3">
+              <button
+                type="button"
+                onClick={() => toggleFilterSection("spend")}
+                className={browseFilterSectionLabelClass}
+                aria-expanded={openFilterSections.spend}
+                aria-controls="browse-spend-filters"
+              >
+                <span className="flex items-center gap-1">
+                  <IconSquares2x2 className="h-3 w-3 shrink-0 opacity-70" />
+                  Spend category
+                </span>
+                <span className="text-sm leading-none" aria-hidden>
+                  {openFilterSections.spend ? "−" : "+"}
+                </span>
+              </button>
+              {openFilterSections.spend ? (
+                <>
+                  <p className={browseFilterSectionHintClass}>
+                    Where this card earns most
+                  </p>
+                  <div
+                    id="browse-spend-filters"
+                    className="flex flex-col gap-1.5"
+                    role="group"
+                    aria-label="Filter by strongest reward category"
+                  >
+                    {(
+                      [
+                        {
+                          id: "dining" as const,
+                          label: "Dining",
+                          icon: IconUtensils,
+                        },
+                        {
+                          id: "travel" as const,
+                          label: "Travel",
+                          icon: IconPlane,
+                        },
+                        {
+                          id: "shopping" as const,
+                          label: "Shopping",
+                          icon: IconShopping,
+                        },
+                        {
+                          id: "fuel" as const,
+                          label: "Fuel",
+                          icon: IconFuel,
+                        },
+                      ] as const
+                    ).map(({ id, label, icon: Icon }) => {
+                      const on = filterSpendFocus === id;
+                      return (
+                        <button
+                          key={id}
+                          type="button"
+                          onClick={() =>
+                            setFilterSpendFocus((current) =>
+                              current === id ? "all" : id
+                            )
+                          }
+                          aria-pressed={on}
+                          className={`${sidebarChipClass} ${
+                            on
+                              ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
+                              : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                          }`}
+                        >
+                          {Icon ? (
+                            <Icon className="h-3.5 w-3.5 shrink-0 text-current opacity-90" />
+                          ) : null}
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : null}
+            </div>
+
+            <div className="pt-3">
+              <button
+                type="button"
+                onClick={() => toggleFilterSection("reward")}
+                className={browseFilterSectionLabelClass}
+                aria-expanded={openFilterSections.reward}
+                aria-controls="browse-reward-filters"
+              >
+                <span className="flex items-center gap-1">
+                  <IconSparkles className="h-3 w-3 shrink-0 opacity-70" />
+                  Reward type
+                </span>
+                <span className="text-sm leading-none" aria-hidden>
+                  {openFilterSections.reward ? "−" : "+"}
+                </span>
+              </button>
+              {openFilterSections.reward ? (
+                <div
+                  id="browse-reward-filters"
+                  className="mt-2 flex flex-col gap-1.5"
+                  role="group"
+                  aria-label="Filter by reward type"
+                >
+                  {(
+                    [
+                      {
+                        id: "cashback" as const,
+                        label: "Cashback",
+                        icon: IconPercent,
+                      },
+                      {
+                        id: "points" as const,
+                        label: "Points",
+                        icon: IconSparkles,
+                      },
+                    ] as const
+                  ).map(({ id, label, icon: Icon }) => {
+                    const on = filterRewardType === id;
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() =>
+                          setFilterRewardType((current) =>
+                            current === id ? "all" : id
+                          )
+                        }
+                        aria-pressed={on}
+                        className={`${sidebarChipClass} ${
+                          on
+                            ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
+                            : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                        }`}
                       >
-                        {bankInitials(bank)}
-                      </span>
-                      <span className="min-w-0 flex-1 truncate text-left">
-                        {shortBankLabel(bank)}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+                        {Icon ? (
+                          <Icon className="h-3.5 w-3.5 shrink-0 text-current opacity-90" />
+                        ) : null}
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
             </div>
 
             <div className="pt-3">
-              <p className={browseFilterSectionLabelClass}>
-                <IconSquares2x2 className="h-3 w-3 shrink-0 opacity-70" />
-                Spend category
-              </p>
-              <p className="mb-1.5 text-[10px] leading-snug text-zinc-500">
-                Where this card earns most
-              </p>
-              <div
-                className="flex flex-col gap-1.5"
-                role="group"
-                aria-label="Filter by strongest reward category"
+              <button
+                type="button"
+                onClick={() => toggleFilterSection("fee")}
+                className={browseFilterSectionLabelClass}
+                aria-expanded={openFilterSections.fee}
+                aria-controls="browse-fee-filters"
               >
-                {(
-                  [
-                    {
-                      id: "all" as const,
-                      label: "Any",
-                      icon: IconSquares2x2,
-                    },
-                    {
-                      id: "dining" as const,
-                      label: "Dining",
-                      icon: IconUtensils,
-                    },
-                    {
-                      id: "travel" as const,
-                      label: "Travel",
-                      icon: IconPlane,
-                    },
-                    {
-                      id: "shopping" as const,
-                      label: "Shopping",
-                      icon: IconShopping,
-                    },
-                    {
-                      id: "fuel" as const,
-                      label: "Fuel",
-                      icon: IconFuel,
-                    },
-                  ] as const
-                ).map(({ id, label, icon: Icon }) => {
-                  const on = filterSpendFocus === id;
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setFilterSpendFocus(id)}
-                      aria-pressed={on}
-                      className={`${sidebarChipClass} ${
-                        on
-                          ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
-                          : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-                      }`}
-                    >
-                      {Icon ? (
-                        <Icon className="h-3.5 w-3.5 shrink-0 text-current opacity-90" />
-                      ) : null}
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
+                <span className="flex items-center gap-1">
+                  <IconIndianRupee className="h-3 w-3 shrink-0 opacity-70" />
+                  Annual fee
+                </span>
+                <span className="text-sm leading-none" aria-hidden>
+                  {openFilterSections.fee ? "−" : "+"}
+                </span>
+              </button>
+              {openFilterSections.fee ? (
+                <div
+                  id="browse-fee-filters"
+                  className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-1"
+                  role="group"
+                  aria-label="Filter by annual fee range"
+                >
+                  {(
+                    [
+                      {
+                        id: "free" as const,
+                        label: "Free",
+                        Icon: IconGift,
+                      },
+                      { id: "r1_1000" as const, label: "₹1 – ₹1,000", Icon: IconIndianRupee },
+                      {
+                        id: "r1001_5000" as const,
+                        label: "₹1,001 – ₹5,000",
+                        Icon: IconIndianRupee,
+                      },
+                      {
+                        id: "r5001_plus" as const,
+                        label: "₹5,001 & above",
+                        Icon: IconTrendingUp,
+                      },
+                    ] as const
+                  ).map(({ id, label, Icon: FeeIcon }) => {
+                    const on = filterAnnualBand === id;
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() =>
+                          setFilterAnnualBand((current) =>
+                            current === id ? "any" : id
+                          )
+                        }
+                        aria-pressed={on}
+                        className={`${sidebarChipClass} ${
+                          on
+                            ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
+                            : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                        }`}
+                      >
+                        <FeeIcon className="h-3.5 w-3.5 shrink-0 opacity-90" />
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
             </div>
 
             <div className="pt-3">
-              <p className={browseFilterSectionLabelClass}>
-                <IconSparkles className="h-3 w-3 shrink-0 opacity-70" />
-                Reward type
-              </p>
-              <div
-                className="flex flex-col gap-1.5"
-                role="group"
-                aria-label="Filter by reward type"
+              <button
+                type="button"
+                onClick={() => toggleFilterSection("network")}
+                className={browseFilterSectionLabelClass}
+                aria-expanded={openFilterSections.network}
+                aria-controls="browse-network-filters"
               >
-                {(
-                  [
-                    { id: "all" as const, label: "All", icon: IconLayers },
-                    {
-                      id: "cashback" as const,
-                      label: "Cashback",
-                      icon: IconPercent,
-                    },
-                    {
-                      id: "points" as const,
-                      label: "Points",
-                      icon: IconSparkles,
-                    },
-                  ] as const
-                ).map(({ id, label, icon: Icon }) => {
-                  const on = filterRewardType === id;
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setFilterRewardType(id)}
-                      aria-pressed={on}
-                      className={`${sidebarChipClass} ${
-                        on
-                          ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
-                          : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-                      }`}
-                    >
-                      {Icon ? (
-                        <Icon className="h-3.5 w-3.5 shrink-0 text-current opacity-90" />
-                      ) : null}
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="pt-3">
-              <p className={browseFilterSectionLabelClass}>
-                <IconIndianRupee className="h-3 w-3 shrink-0 opacity-70" />
-                Annual fee
-              </p>
-              <div
-                className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-1"
-                role="group"
-                aria-label="Filter by annual fee range"
-              >
-                {(
-                  [
-                    {
-                      id: "any" as const,
-                      label: "Any",
-                      Icon: IconSquares2x2,
-                    },
-                    {
-                      id: "free" as const,
-                      label: "Free",
-                      Icon: IconGift,
-                    },
-                    { id: "r1_1000" as const, label: "₹1 – ₹1,000", Icon: IconIndianRupee },
-                    {
-                      id: "r1001_5000" as const,
-                      label: "₹1,001 – ₹5,000",
-                      Icon: IconIndianRupee,
-                    },
-                    {
-                      id: "r5001_plus" as const,
-                      label: "₹5,001 & above",
-                      Icon: IconTrendingUp,
-                    },
-                  ] as const
-                ).map(({ id, label, Icon: FeeIcon }) => {
-                  const on = filterAnnualBand === id;
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setFilterAnnualBand(id)}
-                      aria-pressed={on}
-                      className={`${sidebarChipClass} ${
-                        on
-                          ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
-                          : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-                      }`}
-                    >
-                      <FeeIcon className="h-3.5 w-3.5 shrink-0 opacity-90" />
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="pt-3">
-              <p className={browseFilterSectionLabelClass}>
-                <IconNetworkCard className="h-3 w-3 shrink-0 opacity-70" />
-                Network
-              </p>
-              <div
-                className="flex flex-col gap-1.5"
-                role="group"
-                aria-label="Filter by card network"
-              >
-                {(
-                  [
-                    { id: "all" as const, label: "All", Icon: IconNetworkCard },
-                    { id: "Visa" as const, label: "Visa", Icon: IconVisaHint },
-                    {
-                      id: "Mastercard" as const,
-                      label: "Mastercard",
-                      Icon: IconMastercardHint,
-                    },
-                    { id: "Amex" as const, label: "Amex", Icon: IconAmexHint },
-                  ] as const
-                ).map(({ id, label, Icon: NetIcon }) => {
-                  const netLocked = Boolean(catalogNetworkLock);
-                  const on = netLocked
-                    ? id === catalogNetworkLock
-                    : id === "all"
-                      ? filterNetwork === "all"
-                      : filterNetwork === id;
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      disabled={netLocked}
-                      onClick={() => {
-                        if (!netLocked) setFilterNetwork(id);
-                      }}
-                      aria-pressed={on}
-                      className={`${sidebarChipClass} ${
-                        netLocked ? "cursor-not-allowed opacity-90" : ""
-                      } ${
-                        on
-                          ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
-                          : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-                      }`}
-                    >
-                      <NetIcon className="h-3.5 w-3.5 shrink-0 opacity-90" />
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-              {catalogNetworkLock ? (
-                <p className="mt-2 text-[10px] leading-snug text-zinc-500">
-                  Network locked to {catalogNetworkLock} via{" "}
-                  <code className="rounded bg-white px-1 py-0.5 text-[10px] ring-1 ring-blue-100">
-                    NEXT_PUBLIC_CARD_NETWORK
-                  </code>
-                  .
-                </p>
+                <span className="flex items-center gap-1">
+                  <IconNetworkCard className="h-3 w-3 shrink-0 opacity-70" />
+                  Network
+                </span>
+                <span className="text-sm leading-none" aria-hidden>
+                  {openFilterSections.network ? "−" : "+"}
+                </span>
+              </button>
+              {openFilterSections.network ? (
+                <>
+                  <div
+                    id="browse-network-filters"
+                    className="mt-2 flex flex-col gap-1.5"
+                    role="group"
+                    aria-label="Filter by card network"
+                  >
+                    {(
+                      [
+                        { id: "Visa" as const, label: "Visa", Icon: IconVisaHint },
+                        {
+                          id: "Mastercard" as const,
+                          label: "Mastercard",
+                          Icon: IconMastercardHint,
+                        },
+                        { id: "Amex" as const, label: "Amex", Icon: IconAmexHint },
+                      ] as const
+                    ).map(({ id, label, Icon: NetIcon }) => {
+                      const netLocked = Boolean(catalogNetworkLock);
+                      const on = netLocked
+                        ? id === catalogNetworkLock
+                        : filterNetwork === id;
+                      return (
+                        <button
+                          key={id}
+                          type="button"
+                          disabled={netLocked}
+                          onClick={() => {
+                            if (!netLocked) {
+                              setFilterNetwork((current) =>
+                                current === id ? "all" : id
+                              );
+                            }
+                          }}
+                          aria-pressed={on}
+                          className={`${sidebarChipClass} ${
+                            netLocked ? "cursor-not-allowed opacity-90" : ""
+                          } ${
+                            on
+                              ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
+                              : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                          }`}
+                        >
+                          <NetIcon className="h-3.5 w-3.5 shrink-0 opacity-90" />
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {catalogNetworkLock ? (
+                    <p className="mt-2 text-[10px] leading-snug text-zinc-500">
+                      Network locked to {catalogNetworkLock} via{" "}
+                      <code className="rounded bg-white px-1 py-0.5 text-[10px] ring-1 ring-blue-100">
+                        NEXT_PUBLIC_CARD_NETWORK
+                      </code>
+                      .
+                    </p>
+                  ) : null}
+                </>
               ) : null}
             </div>
             </div>
