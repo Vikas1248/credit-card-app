@@ -103,7 +103,7 @@ export function BrowseSection({
       className="scroll-mt-28 rounded-[2rem] border border-zinc-200/70 bg-white p-5 shadow-md shadow-zinc-900/[0.04] sm:p-8 lg:p-10"
       aria-labelledby="browse-heading"
     >
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+      <div>
         <div>
           <Badge variant="blue" className="uppercase tracking-[0.18em]">
             Browse cards
@@ -119,11 +119,6 @@ export function BrowseSection({
             for deeper browsing.
           </p>
         </div>
-        <Link href="/cards" className="inline-flex">
-          <span className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-zinc-950 px-5 text-sm font-bold text-white transition hover:bg-zinc-800">
-            Open full catalog
-          </span>
-        </Link>
       </div>
 
       <Card className="mt-7 bg-zinc-50 shadow-none">

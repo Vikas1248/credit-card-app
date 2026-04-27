@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { AIChatAdvisor } from "@/components/AIChatAdvisor";
 import { CredGenieLogo } from "@/components/brand/credgenie-logo";
 import { BrowseSection, type BrowseCreditCard } from "@/components/BrowseSection";
@@ -11,7 +11,6 @@ import { RecommendationQuiz } from "@/components/RecommendationQuiz";
 import { TrustStrip } from "@/components/TrustStrip";
 import { SITE_NAME } from "@/lib/site";
 import { getOptionalCardNetworkFilter } from "@/lib/cards/networkFilter";
-import type { SpendCategorySlug } from "@/lib/spendCategories";
 import type { CardNetwork } from "@/lib/types/card";
 
 type CreditCard = BrowseCreditCard & {
@@ -75,19 +74,6 @@ export default function Home() {
   const [cards, setCards] = useState<CreditCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [spendSplit, setSpendSplit] = useState<Record<SpendCategorySlug, number>>({
-    dining: 8000,
-    travel: 5000,
-    shopping: 12000,
-    fuel: 6000,
-  });
-
-  const handleRecommendSpendSplit = useCallback(
-    (split: Record<SpendCategorySlug, number>) => {
-      setSpendSplit(split);
-    },
-    []
-  );
 
   useEffect(() => {
     let cancelled = false;
@@ -130,11 +116,6 @@ export default function Home() {
     };
   }, []);
 
-  const monthlyTotal = Object.values(spendSplit).reduce(
-    (total, value) => total + value,
-    0
-  );
-
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-zinc-950">
       <SiteHeader />
@@ -144,7 +125,7 @@ export default function Home() {
           <HeroSection />
           <TrustStrip />
           <AIChatAdvisor />
-          <RecommendationQuiz onSpendSplitChange={handleRecommendSpendSplit} />
+          <RecommendationQuiz />
           <CompareDrawer cards={cards} />
           <BrowseSection cards={cards} loading={loading} />
 
@@ -166,11 +147,6 @@ export default function Home() {
         <CredGenieLogo iconOnly iconClassName="h-14 w-14 rounded-full shadow-none" />
       </a>
 
-      <footer className="mx-auto max-w-6xl px-4 pb-8 text-center text-xs text-zinc-500 sm:px-6">
-        Live spend context: ₹{monthlyTotal.toLocaleString("en-IN")} monthly
-        profile. Recommendations remain deterministic; AI explains and extracts
-        intent.
-      </footer>
     </div>
   );
 }

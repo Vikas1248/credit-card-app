@@ -97,17 +97,16 @@ export function CompareDrawer({ cards }: { cards: BrowseCreditCard[] }) {
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
           <div>
             <Badge variant="violet" className="uppercase tracking-[0.18em]">
-              Compare drawer
+              Compare Cards
             </Badge>
             <h2
               id="compare-heading"
               className="mt-3 text-3xl font-black tracking-tight text-zinc-950"
             >
-              Compare 2-3 cards side by side.
+              Compare top cards side by side to find your best match.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-600">
-              Open a side panel on desktop or bottom sheet style panel on mobile
-              to compare fees, rewards, best fit, and pros/cons.
+              Review fees, rewards, travel perks, and overall fit—all in one place.
             </p>
           </div>
           <SheetTrigger asChild>
