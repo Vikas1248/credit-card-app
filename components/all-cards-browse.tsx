@@ -180,23 +180,8 @@ const inputClass =
 const sectionShell =
   "rounded-[2rem] border border-zinc-200/70 bg-white p-5 shadow-md shadow-zinc-900/[0.04] sm:p-8 lg:p-10";
 
-const sectionTitleClass =
-  "text-3xl font-black tracking-tight text-zinc-950 sm:text-4xl";
-
-const sectionLeadClass =
-  "mt-3 max-w-2xl text-sm leading-7 text-zinc-600";
-
-const sectionHeaderRowClass =
-  "flex gap-4 border-b border-zinc-100 pb-6";
-
-const sectionHeaderAccentClass =
-  "mt-2 h-12 w-2 shrink-0 rounded-full bg-gradient-to-b from-violet-600 to-blue-600 shadow-sm shadow-blue-500/30";
-
 const headerInputClass =
   "w-full rounded-2xl border border-zinc-200 bg-white py-3 pl-11 pr-4 text-sm text-zinc-950 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20";
-
-const browseToolbarBtnClass =
-  "relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border text-zinc-700 shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600";
 
 function Spinner({ className }: { className?: string }) {
   return (
@@ -956,71 +941,112 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
       <section className={sectionShell}>
-        <div className="mb-6 inline-flex rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-blue-700">
-          Full catalog
+        <div>
+          <div className="inline-flex rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-blue-700">
+            Browse cards
+          </div>
+          <h1 className="mt-3 text-3xl font-black tracking-tight text-zinc-950 sm:text-4xl">
+            Search and filter the catalog.
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-600">
+            Use quick filters for common goals or search the full card list for
+            deeper browsing.
+          </p>
         </div>
-        <div className={sectionHeaderRowClass}>
-          <div className={sectionHeaderAccentClass} aria-hidden />
-          <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 flex-1">
-              <h1 className={sectionTitleClass}>All cards</h1>
-              <p className={sectionLeadClass}>
-                {textFilteredCards.length === cards.length && !search.trim() ? (
-                  <>
-                    {cards.length} {cards.length === 1 ? "card" : "cards"} in the
-                    catalog.
-                  </>
-                ) : (
-                  <>
-                    {textFilteredCards.length}{" "}
-                    {textFilteredCards.length === 1 ? "card" : "cards"}{" "}
-                    matching your criteria ({cards.length} in catalog).
-                  </>
-                )}{" "}
-                {search.trim().length >= 2 ? (
-                  <span className="text-zinc-500">
-                    When AI is available, results can reorder by relevance after
-                    you pause typing.
-                  </span>
-                ) : null}
-              </p>
-              <p className="mt-3 text-xs font-medium text-zinc-500">
-                Desktop: filters in the left column. Phone: filters sit under the
-                list. Tap <span className="font-bold text-zinc-700">Sort</span>{" "}
-                to change order.
-              </p>
+
+        <div className="mt-7 rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50/70 via-white to-violet-50/60 p-4">
+          <form
+            className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
+            onSubmit={(event) => event.preventDefault()}
+          >
+            <div className="relative min-w-0">
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400">
+                <IconSearch className="h-4 w-4" />
+              </span>
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search cards, banks, rewards..."
+                className={`${headerInputClass} ${searchAiLoading ? "pr-11" : ""}`}
+                aria-label="Search cards"
+                aria-busy={searchAiLoading}
+              />
+              {searchAiLoading ? (
+                <span
+                  className="pointer-events-none absolute right-3.5 top-1/2 flex -translate-y-1/2 items-center text-blue-600"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <Spinner className="h-4 w-4" />
+                  <span className="sr-only">Updating relevance order...</span>
+                </span>
+              ) : null}
             </div>
             {!loading && !error && cards.length > 0 ? (
-              <div
-                className="flex shrink-0 items-center gap-2"
-                role="toolbar"
-                aria-label="Browse tools"
+              <button
+                type="button"
+                onClick={() => {
+                  setBrowseSortOpen((o) => !o);
+                }}
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 px-5 text-sm font-bold text-white shadow-md shadow-blue-600/20 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-600/25"
+                aria-expanded={browseSortOpen}
+                aria-controls="browse-sort-panel"
               >
-                <button
-                  type="button"
-                  onClick={() => {
-                    setBrowseSortOpen((o) => !o);
-                  }}
-                  className={`${browseToolbarBtnClass} border-zinc-200 bg-white hover:bg-zinc-50 ${
-                    browseSortOpen
-                      ? "border-blue-400 ring-2 ring-blue-500/30 dark:border-blue-500/50"
-                      : ""
-                  }`}
-                  aria-expanded={browseSortOpen}
-                  aria-controls="browse-sort-panel"
-                  title="Sort cards"
-                >
-                  <SortIcon className="h-[1.15rem] w-[1.15rem]" />
-                  <span className="sr-only">Sort</span>
-                  {browseSortNonDefault ? (
-                    <span
-                      className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-indigo-500"
-                      aria-hidden
-                    />
-                  ) : null}
-                </button>
-              </div>
+                <SortIcon className="h-[1.05rem] w-[1.05rem]" />
+                Sort cards
+                {browseSortNonDefault ? (
+                  <span className="h-2 w-2 rounded-full bg-white" aria-hidden />
+                ) : null}
+              </button>
             ) : null}
+          </form>
+          <p className="mt-2 text-xs text-zinc-500">
+            {textFilteredCards.length === cards.length && !search.trim() ? (
+              <>
+                {cards.length} {cards.length === 1 ? "card" : "cards"} in the
+                catalog.
+              </>
+            ) : (
+              <>
+                {textFilteredCards.length}{" "}
+                {textFilteredCards.length === 1 ? "card" : "cards"} matching
+                your criteria ({cards.length} in catalog).
+              </>
+            )}{" "}
+            {search.trim().length >= 2 ? (
+              <span>
+                When AI is available, results can reorder by relevance after you
+                pause typing.
+              </span>
+            ) : null}
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wide text-zinc-400">
+              Quick filters
+            </span>
+            {(
+              [
+                ["dining", "Dining"],
+                ["travel", "Travel"],
+                ["shopping", "Shopping"],
+                ["fuel", "Fuel"],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setFilterSpendFocus(id)}
+                aria-pressed={filterSpendFocus === id}
+                className={`rounded-full border px-3 py-1.5 text-xs font-bold shadow-sm transition ${
+                  filterSpendFocus === id
+                    ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
+                    : "border-zinc-200 bg-white text-zinc-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -1373,58 +1399,6 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
           ) : null}
 
           <div className="min-w-0">
-            <div className="relative min-w-0">
-              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400">
-                <IconSearch className="h-4 w-4" />
-              </span>
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search credit cards…"
-                className={`${headerInputClass} ${searchAiLoading ? "pr-11" : ""}`}
-                aria-label="Search cards"
-                aria-busy={searchAiLoading}
-              />
-              {searchAiLoading ? (
-                <span
-                  className="pointer-events-none absolute right-3.5 top-1/2 flex -translate-y-1/2 items-center text-indigo-600 dark:text-indigo-400"
-                  role="status"
-                  aria-live="polite"
-                >
-                  <Spinner className="h-4 w-4" />
-                  <span className="sr-only">Updating relevance order…</span>
-                </span>
-              ) : null}
-            </div>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wide text-zinc-400">
-                Quick filters
-              </span>
-              {(
-                [
-                  ["dining", "Dining"],
-                  ["travel", "Travel"],
-                  ["shopping", "Shopping"],
-                  ["fuel", "Fuel"],
-                ] as const
-              ).map(([id, label]) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setFilterSpendFocus(id)}
-                  aria-pressed={filterSpendFocus === id}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-bold shadow-sm transition ${
-                    filterSpendFocus === id
-                      ? "border-blue-200 bg-blue-50 text-blue-700"
-                      : "border-zinc-200 bg-white text-zinc-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-
         {!loading && !error && cards.length > 0 && browseSortOpen ? (
           <div
             id="browse-sort-panel"
