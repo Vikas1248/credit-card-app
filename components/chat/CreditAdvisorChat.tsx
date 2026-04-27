@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { SendRecommendationEmailButton } from "@/components/send-recommendation-email-button";
+import { cardApplyButtonClass } from "@/lib/cardCta";
 import type { AdvisorProfile, ChatAdvisorResponseBody } from "@/lib/chatAdvisor/types";
 import type { RecommendedCard } from "@/lib/recommendV2/recommendCardsApiTypes";
+import { cn } from "@/lib/utils";
 
 type ChatMessage = {
   id: string;
@@ -322,7 +324,10 @@ export function CreditAdvisorChat() {
                   </Link>
                   <Link
                     href={`/card/${card.card_id}#apply`}
-                    className="inline-flex min-h-10 flex-1 basis-[7.5rem] items-center justify-center rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white transition hover:bg-blue-700"
+                    className={cn(
+                      cardApplyButtonClass,
+                      "flex-1 basis-[7.5rem] rounded-lg px-3 text-xs"
+                    )}
                   >
                     Apply
                   </Link>

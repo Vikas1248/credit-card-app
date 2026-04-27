@@ -6,7 +6,6 @@ import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 
 export type BrowseCreditCard = {
   id: string;
@@ -18,8 +17,6 @@ export type BrowseCreditCard = {
   best_for: string | null;
   key_benefits: string | null;
 };
-
-const filters = ["Travel", "Cashback", "Fuel", "Lifetime Free"] as const;
 
 const mockCards: BrowseCreditCard[] = [
   {
@@ -63,12 +60,6 @@ function formatInr(value: number): string {
   }).format(value);
 }
 
-function matchesFilter(card: BrowseCreditCard, filter: string): boolean {
-  const text = `${card.card_name} ${card.bank} ${card.reward_type} ${card.reward_rate ?? ""} ${card.best_for ?? ""} ${card.key_benefits ?? ""}`.toLowerCase();
-  if (filter === "Lifetime Free") return card.annual_fee === 0;
-  return text.includes(filter.toLowerCase());
-}
-
 export function BrowseSection({
   cards,
   loading,
@@ -78,19 +69,14 @@ export function BrowseSection({
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const sourceCards = cards.length > 0 ? cards : mockCards;
   const visibleCards = useMemo(() => {
     const q = query.trim().toLowerCase();
     return sourceCards.filter((card) => {
       const text = `${card.card_name} ${card.bank} ${card.reward_type} ${card.reward_rate ?? ""} ${card.best_for ?? ""} ${card.key_benefits ?? ""}`.toLowerCase();
-      const matchesQuery = q.length === 0 || text.includes(q);
-      const matchesActiveFilter = activeFilter
-        ? matchesFilter(card, activeFilter)
-        : true;
-      return matchesQuery && matchesActiveFilter;
+      return q.length === 0 || text.includes(q);
     });
-  }, [activeFilter, query, sourceCards]);
+  }, [query, sourceCards]);
 
   const submitSearch = () => {
     const q = query.trim();
@@ -115,8 +101,8 @@ export function BrowseSection({
             Search and filter the catalog.
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-600">
-            Use quick filters for common goals or jump into the full card list
-            for deeper browsing.
+            Search here or open the full catalog on Browse Cards for filters and
+            sorting.
           </p>
         </div>
       </div>
@@ -153,74 +139,58 @@ export function BrowseSection({
             This section previews a few cards. Press Enter or search to see all
             matching cards in Browse Cards.
           </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {filters.map((filter) => (
-              <button
-                key={filter}
-                type="button"
-                onClick={() =>
-                  setActiveFilter((current) =>
-                    current === filter ? null : filter
-                  )
-                }
-                className={cn(
-                  "rounded-full border px-3 py-1.5 text-xs font-bold transition",
-                  activeFilter === filter
-                    ? "border-blue-200 bg-white text-blue-700 shadow-sm ring-2 ring-blue-100"
-                    : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-                )}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
         </CardContent>
       </Card>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {(loading ? mockCards : visibleCards).slice(0, 6).map((card) => {
-          const matchedFilter =
-            filters.find((filter) => matchesFilter(card, filter)) ?? "Top pick";
+          const previewTag =
+            card.best_for ??
+            (card.reward_type === "cashback" ? "Cashback" : "Points");
+          const rewardLine =
+            card.reward_rate ?? card.best_for ?? "Rewards and benefits";
           return (
             <Card
               key={card.id}
-              className="group overflow-hidden border-zinc-200/80 bg-white shadow-sm shadow-zinc-900/[0.03] transition hover:-translate-y-1 hover:border-blue-100 hover:shadow-xl hover:shadow-blue-900/[0.08]"
+              className="group relative flex h-full min-h-[19rem] flex-col overflow-hidden border-zinc-200/80 bg-white shadow-sm shadow-zinc-900/[0.03] transition hover:-translate-y-1 hover:border-blue-100 hover:shadow-xl hover:shadow-blue-900/[0.08]"
             >
-              <div className="h-1 bg-gradient-to-r from-violet-500 via-blue-500 to-cyan-400" />
-              <CardHeader>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="line-clamp-2 text-base font-black text-zinc-950">
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-blue-500 to-cyan-400" />
+              <CardHeader className="flex-shrink-0 pb-2 pt-5">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="line-clamp-2 min-h-[2.75rem] text-base font-black leading-snug text-zinc-950">
                       {card.card_name}
                     </h3>
-                    <p className="mt-1 text-sm font-medium text-zinc-500">
+                    <p className="mt-1 truncate text-xs font-medium text-zinc-500">
                       {card.bank}
                     </p>
                   </div>
-                  <Badge variant="blue" className="text-[11px]">
-                    {matchedFilter}
+                  <Badge variant="blue" className="shrink-0 text-[11px]">
+                    {previewTag}
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-3">
-                  <p className="text-sm font-bold text-blue-800">
-                    {card.reward_rate ?? card.best_for ?? "Rewards and benefits"}
+              <CardContent className="flex flex-1 flex-col pb-5 pt-0">
+                <div className="min-h-[3.25rem] rounded-2xl border border-blue-100 bg-blue-50/60 p-3">
+                  <p className="line-clamp-2 text-sm font-bold leading-snug text-blue-800">
+                    {rewardLine}
                   </p>
                 </div>
-                <p className="mt-2 line-clamp-2 text-sm text-zinc-600">
-                  {card.key_benefits ??
-                    "Compare fees, rewards, and category fit."}
-                </p>
-                <div className="mt-5 flex items-center justify-between">
-                  <span className="rounded-full bg-zinc-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-zinc-500 ring-1 ring-zinc-200">
+                <div className="mt-2 h-[2.75rem] overflow-hidden">
+                  <p className="line-clamp-2 text-sm leading-snug text-zinc-600">
+                    {card.key_benefits ??
+                      "Compare fees, rewards, and category fit."}
+                  </p>
+                </div>
+                <div className="mt-auto flex items-center justify-between gap-2 pt-4">
+                  <span className="min-w-0 truncate rounded-full bg-zinc-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-zinc-500 ring-1 ring-zinc-200">
                     Fee {formatInr(card.annual_fee)}
                   </span>
                   <Link
                     href={
                       card.id.startsWith("mock") ? "/cards" : `/card/${card.id}`
                     }
-                    className="rounded-xl border border-blue-100 bg-white px-3 py-2 text-xs font-bold text-blue-700 transition hover:border-blue-200 hover:bg-blue-50"
+                    className="inline-flex min-h-9 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-white px-3 py-2 text-xs font-bold text-blue-700 transition hover:border-blue-200 hover:bg-blue-50"
                   >
                     Details
                   </Link>
@@ -232,7 +202,8 @@ export function BrowseSection({
       </div>
       {!loading && visibleCards.length === 0 ? (
         <p className="mt-5 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-500">
-          No cards match this search. Try another keyword or clear the filter.
+          No cards match this search. Try another keyword or open Browse Cards
+          for more options.
         </p>
       ) : null}
     </section>

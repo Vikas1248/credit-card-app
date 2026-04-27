@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SendRecommendationEmailButton } from "@/components/send-recommendation-email-button";
+import { cardApplyButtonClass } from "@/lib/cardCta";
 import type {
   RecommendCardsResponseBody,
   RecommendedCard,
@@ -16,6 +17,7 @@ import {
   type FeeTierUi,
 } from "@/lib/recommendV2/profileFromSpendSliders";
 import type { SpendCategorySlug } from "@/lib/spendCategories";
+import { cn } from "@/lib/utils";
 
 const STORAGE_KEY = "credgenie:v2-recommend-profile";
 
@@ -398,7 +400,10 @@ export function RecommendationSplitExperience({
                   </Link>
                   <Link
                     href={`/card/${c.card_id}#apply`}
-                    className="inline-flex min-h-10 flex-1 basis-[7.5rem] items-center justify-center rounded-xl bg-zinc-950 px-3 text-xs font-bold text-white shadow-sm transition hover:bg-zinc-800"
+                    className={cn(
+                      cardApplyButtonClass,
+                      "flex-1 basis-[7.5rem] px-3 text-xs shadow-sm"
+                    )}
                   >
                     Apply
                   </Link>
