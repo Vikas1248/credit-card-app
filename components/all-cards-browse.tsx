@@ -137,28 +137,28 @@ function bankInitials(bank: string): string {
 function issuerChipSurfaceClass(bank: string): string {
   const b = bank.toLowerCase();
   if (b.includes("axis"))
-    return "border-[#97144D]/35 bg-[#97144D]/12 text-[#6b0f36] dark:border-[#c43d6b]/40 dark:bg-[#c43d6b]/15 dark:text-[#f5c4d4]";
+    return "border-[#97144D]/20 bg-white text-[#6b0f36]";
   if (b.includes("american express") || b === "amex")
-    return "border-[#006FCF]/35 bg-[#006FCF]/10 text-[#004a9e] dark:border-[#2e8fdf]/40 dark:bg-[#2e8fdf]/12 dark:text-[#b8daf7]";
+    return "border-[#006FCF]/20 bg-white text-[#004a9e]";
   if (b.includes("sbi"))
-    return "border-[#0D4580]/35 bg-[#0D4580]/10 text-[#0a3563] dark:border-[#3d7ab8]/40 dark:bg-[#3d7ab8]/12 dark:text-[#c5daf0]";
+    return "border-[#0D4580]/20 bg-white text-[#0a3563]";
   if (b.includes("hdfc"))
-    return "border-[#004C8F]/35 bg-[#004C8F]/10 text-[#00386a] dark:border-[#3d8fd4]/40 dark:bg-[#3d8fd4]/12 dark:text-[#c2ddf9]";
+    return "border-[#004C8F]/20 bg-white text-[#00386a]";
   if (b.includes("indusind"))
-    return "border-[#C4151C]/35 bg-[#C4151C]/10 text-[#8f0f14] dark:border-[#e85c62]/40 dark:bg-[#e85c62]/12 dark:text-[#fcd4d6]";
+    return "border-[#C4151C]/20 bg-white text-[#8f0f14]";
   if (b.includes("icici"))
-    return "border-[#F37021]/40 bg-[#F37021]/12 text-[#a34a16] dark:border-[#ff9a5c]/35 dark:bg-[#ff9a5c]/12 dark:text-[#ffd4bc]";
+    return "border-[#F37021]/20 bg-white text-[#a34a16]";
   if (b.includes("kotak"))
-    return "border-[#ED232A]/35 bg-[#ED232A]/10 text-[#a0181d] dark:border-[#f56a70]/40 dark:bg-[#f56a70]/12 dark:text-[#fdd4d6]";
-  return "border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200";
+    return "border-[#ED232A]/20 bg-white text-[#a0181d]";
+  return "border-blue-100 bg-white text-blue-700";
 }
 
 /** Compact controls for the browse filter sidebar (readable at small width). */
 const browseSidebarChipBase =
-  "inline-flex w-full min-h-[2rem] items-center justify-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-left text-xs font-medium leading-snug transition active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600";
+  "inline-flex w-full min-h-[2.25rem] items-center justify-start gap-1.5 rounded-xl border px-2.5 py-1.5 text-left text-xs font-bold leading-snug shadow-sm transition active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600";
 
 const browseFilterSectionLabelClass =
-  "mb-1.5 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400";
+  "mb-1.5 flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-blue-700";
 
 function sortCardsByIdOrder(
   list: CreditCard[],
@@ -174,7 +174,7 @@ function sortCardsByIdOrder(
 }
 
 const inputClass =
-  "w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm transition placeholder:text-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-400";
+  "w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm transition placeholder:text-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20";
 
 const sectionShell =
   "rounded-[2rem] border border-zinc-200/70 bg-white p-5 shadow-md shadow-zinc-900/[0.04] sm:p-8 lg:p-10";
@@ -1096,13 +1096,13 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
           {showFacetSidebar ? (
             <aside
               id="browse-filter-panel"
-              className="shrink-0 rounded-3xl border border-zinc-200 bg-white p-4 shadow-md shadow-zinc-900/[0.04] sm:p-4 lg:sticky lg:top-24 lg:max-h-[min(100vh-6rem,42rem)] lg:overflow-y-auto lg:overflow-x-hidden lg:pr-1"
+              className="shrink-0 rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50/70 via-white to-violet-50/50 p-4 shadow-md shadow-blue-900/[0.05] sm:p-4 lg:sticky lg:top-24 lg:max-h-[min(100vh-6rem,42rem)] lg:overflow-y-auto lg:overflow-x-hidden lg:pr-1"
               aria-label="Catalog filters"
             >
-            <div className="flex flex-col divide-y divide-zinc-100">
+            <div className="flex flex-col divide-y divide-blue-100/70">
             <div className="flex items-start justify-between gap-2 pb-3">
               <div>
-              <h2 className="flex items-center gap-1.5 text-xs font-black uppercase tracking-[0.18em] text-zinc-600">
+              <h2 className="flex items-center gap-1.5 text-xs font-black uppercase tracking-[0.18em] text-blue-700">
                 <IconSlidersHorizontal className="h-3.5 w-3.5 shrink-0 text-blue-600" />
                 Filters
               </h2>
@@ -1114,7 +1114,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 <button
                   type="button"
                   onClick={resetBrowseFilters}
-                  className="inline-flex shrink-0 items-center gap-1 rounded-full border border-zinc-200 bg-white px-2.5 py-1.5 text-[10px] font-black text-zinc-700 shadow-sm hover:border-zinc-300 hover:bg-zinc-50"
+                  className="inline-flex shrink-0 items-center gap-1 rounded-full border border-blue-200 bg-white px-2.5 py-1.5 text-[10px] font-black text-blue-700 shadow-sm hover:bg-blue-50"
                 >
                   <IconArrowUturnLeft className="h-3 w-3 opacity-80" />
                   Reset
@@ -1127,7 +1127,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 <IconBuildingBank className="h-3 w-3 shrink-0 opacity-70" />
                 Bank
               </p>
-              <p className="mb-1.5 text-[10px] leading-snug text-zinc-400 dark:text-zinc-500">
+              <p className="mb-1.5 text-[10px] leading-snug text-zinc-500">
                 Tap one or more
               </p>
               <div
@@ -1145,8 +1145,8 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                       aria-pressed={on}
                       className={`${sidebarChipClass} ${
                         on
-                          ? "border-blue-500 bg-blue-50 text-blue-900 ring-1 ring-blue-500/35 dark:border-blue-400 dark:bg-blue-950/50 dark:text-blue-100"
-                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-200 hover:bg-white dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-zinc-500"
+                          ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
+                          : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                       }`}
                     >
                       <span
@@ -1168,7 +1168,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 <IconSquares2x2 className="h-3 w-3 shrink-0 opacity-70" />
                 Spend category
               </p>
-              <p className="mb-1.5 text-[10px] leading-snug text-zinc-400 dark:text-zinc-500">
+              <p className="mb-1.5 text-[10px] leading-snug text-zinc-500">
                 Where this card earns most
               </p>
               <div
@@ -1214,8 +1214,8 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                       aria-pressed={on}
                       className={`${sidebarChipClass} ${
                         on
-                          ? "border-indigo-500 bg-indigo-50 text-indigo-950 ring-1 ring-indigo-500/35 dark:border-indigo-400 dark:bg-indigo-950/40 dark:text-indigo-50"
-                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-200 hover:bg-white dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                          ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
+                          : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                       }`}
                     >
                       {Icon ? (
@@ -1262,8 +1262,8 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                       aria-pressed={on}
                       className={`${sidebarChipClass} ${
                         on
-                          ? "border-emerald-600 bg-emerald-50 text-emerald-950 ring-1 ring-emerald-500/35 dark:border-emerald-500 dark:bg-emerald-950/35 dark:text-emerald-50"
-                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-200 hover:bg-white dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                          ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
+                          : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                       }`}
                     >
                       {Icon ? (
@@ -1320,8 +1320,8 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                       aria-pressed={on}
                       className={`${sidebarChipClass} ${
                         on
-                          ? "border-amber-600 bg-amber-50 text-amber-950 ring-1 ring-amber-500/35 dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-50"
-                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-200 hover:bg-white dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                          ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
+                          : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                       }`}
                     >
                       <FeeIcon className="h-3.5 w-3.5 shrink-0 opacity-90" />
@@ -1373,8 +1373,8 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                         netLocked ? "cursor-not-allowed opacity-90" : ""
                       } ${
                         on
-                          ? "border-violet-600 bg-violet-50 text-violet-950 ring-1 ring-violet-500/35 dark:border-violet-500 dark:bg-violet-950/40 dark:text-violet-50"
-                          : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-200 hover:bg-white dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                          ? "border-blue-200 bg-white text-blue-700 ring-2 ring-blue-100"
+                          : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                       }`}
                     >
                       <NetIcon className="h-3.5 w-3.5 shrink-0 opacity-90" />
@@ -1384,9 +1384,9 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 })}
               </div>
               {catalogNetworkLock ? (
-                <p className="mt-2 text-[10px] leading-snug text-zinc-500 dark:text-zinc-400">
+                <p className="mt-2 text-[10px] leading-snug text-zinc-500">
                   Network locked to {catalogNetworkLock} via{" "}
-                  <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-[10px] dark:bg-zinc-800">
+                  <code className="rounded bg-white px-1 py-0.5 text-[10px] ring-1 ring-blue-100">
                     NEXT_PUBLIC_CARD_NETWORK
                   </code>
                   .
@@ -1401,15 +1401,15 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
         {!loading && !error && cards.length > 0 && browseSortOpen ? (
           <div
             id="browse-sort-panel"
-            className="mt-3 rounded-3xl border border-zinc-200 bg-zinc-50 p-4"
+            className="mt-3 rounded-3xl border border-blue-100 bg-blue-50/50 p-4"
           >
-            <h2 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              <SortIcon className="h-3.5 w-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" />
+            <h2 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-blue-700">
+              <SortIcon className="h-3.5 w-3.5 shrink-0 text-blue-600" />
               Sort
             </h2>
             <label className="mt-2 block sm:flex sm:items-end sm:gap-3">
               <div className="min-w-0 flex-1">
-                <span className="mb-1 block text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
+                <span className="mb-1 block text-[11px] font-medium text-zinc-600">
                   Order by
                 </span>
                 <select
@@ -1431,7 +1431,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
                 <span className="mt-2 flex items-center gap-2 text-xs text-zinc-500 sm:mt-0 sm:pb-2.5">
                   {browseAiLoading ? (
                     <>
-                      <Spinner className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                      <Spinner className="h-4 w-4 text-blue-600" />
                       Loading order…
                     </>
                   ) : !browseAiOrder ? (
@@ -1448,37 +1448,37 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
             {Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
-                className="h-24 animate-pulse rounded-2xl bg-zinc-100 dark:bg-zinc-800"
+                className="h-24 animate-pulse rounded-2xl bg-blue-50"
               />
             ))}
           </div>
         ) : error ? (
           <div
-            className="mt-6 flex gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/50 dark:text-red-200"
+            className="mt-6 flex gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
             role="alert"
           >
             <span className="font-semibold">Couldn’t load cards</span>
             <span>{error}</span>
           </div>
         ) : textFilteredCards.length === 0 ? (
-          <div className="mt-8 rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 px-6 py-12 text-center dark:border-zinc-700 dark:bg-zinc-900/30">
+          <div className="mt-8 rounded-xl border border-dashed border-blue-200 bg-blue-50/50 px-6 py-12 text-center">
             {cards.length === 0 && !search.trim() ? (
               <>
-                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <p className="text-sm font-medium text-zinc-700">
                   No cards in the database
                 </p>
                 <p className="mt-1 text-sm text-zinc-500">
                   Production loads from Supabase (
-                  <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">
+                  <code className="rounded bg-white px-1 py-0.5 text-xs ring-1 ring-blue-100">
                     credit_cards
                   </code>
                   ), not from repo{" "}
-                  <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">
+                  <code className="rounded bg-white px-1 py-0.5 text-xs ring-1 ring-blue-100">
                     data/
                   </code>
                   . Import rows into the same Supabase project your Vercel env
                   points to, and confirm{" "}
-                  <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">
+                  <code className="rounded bg-white px-1 py-0.5 text-xs ring-1 ring-blue-100">
                     NEXT_PUBLIC_SUPABASE_URL
                   </code>{" "}
                   and keys are set in Vercel.
@@ -1486,7 +1486,7 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
               </>
             ) : (
               <>
-                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <p className="text-sm font-medium text-zinc-700">
                   {feeTypeFilteredCards.length === 0
                     ? "No cards match your filters"
                     : "No cards match your search"}
