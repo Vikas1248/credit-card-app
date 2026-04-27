@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AllCardsBrowse } from "@/components/all-cards-browse";
+import { CredGenieLogo } from "@/components/brand/credgenie-logo";
 import { SpendCategoryIcon } from "@/components/spend-category-icons";
 import { SITE_NAME } from "@/lib/site";
 import { SPEND_CATEGORIES } from "@/lib/spendCategories";
@@ -49,13 +50,7 @@ export default async function CardsPage({ searchParams }: PageProps) {
               href="/"
               className="flex items-center gap-2.5 text-sm font-black text-zinc-950"
             >
-              <span
-                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-blue-600 text-lg font-black leading-tight text-white shadow-md shadow-blue-600/20"
-                aria-hidden
-              >
-                ✦
-              </span>
-              {SITE_NAME} AI
+              <CredGenieLogo />
             </Link>
             <nav
               className="flex gap-1 overflow-x-auto rounded-full border border-zinc-200 bg-zinc-50 p-1 text-sm [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { AIChatAdvisor } from "@/components/AIChatAdvisor";
+import { CredGenieLogo } from "@/components/brand/credgenie-logo";
 import { BrowseSection, type BrowseCreditCard } from "@/components/BrowseSection";
 import { CompareDrawer } from "@/components/CompareDrawer";
 import { HeroSection } from "@/components/HeroSection";
@@ -39,15 +40,7 @@ function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-zinc-200/70 bg-white/90 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
         <Link href="/" className="flex items-center gap-2.5">
-          <span
-            className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-blue-600 text-lg font-black text-white shadow-md shadow-blue-600/20"
-            aria-hidden
-          >
-            ✦
-          </span>
-          <span className="text-sm font-black tracking-tight text-zinc-950">
-            {SITE_NAME} AI
-          </span>
+          <CredGenieLogo />
         </Link>
 
         <nav
@@ -169,7 +162,7 @@ export default function Home() {
         aria-label="Open AI chat advisor"
         title={`Open ${SITE_NAME} AI advisor`}
       >
-        ✦
+        <CredGenieLogo iconOnly iconClassName="h-14 w-14 rounded-full shadow-none" />
       </a>
 
       <footer className="mx-auto max-w-6xl px-4 pb-8 text-center text-xs text-zinc-500 sm:px-6">
