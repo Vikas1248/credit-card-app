@@ -54,6 +54,15 @@ type BrowseSortMode =
   | "joining_desc"
   | "ai";
 
+const BROWSE_SORT_OPTIONS: { value: BrowseSortMode; label: string }[] = [
+  { value: "name", label: "Name (A-Z)" },
+  { value: "annual_asc", label: "Annual fee (low to high)" },
+  { value: "annual_desc", label: "Annual fee (high to low)" },
+  { value: "joining_asc", label: "Joining fee (low to high)" },
+  { value: "joining_desc", label: "Joining fee (high to low)" },
+  { value: "ai", label: "AI curated browse" },
+];
+
 function formatInr(value: number): string {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -180,9 +189,6 @@ function sortCardsByIdOrder(
     (a, b) => (idx.get(a.id) ?? 1e9) - (idx.get(b.id) ?? 1e9)
   );
 }
-
-const inputClass =
-  "w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm transition placeholder:text-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20";
 
 const sectionShell =
   "rounded-[2rem] border border-zinc-200/70 bg-white p-5 shadow-md shadow-zinc-900/[0.04] sm:p-8 lg:p-10";
@@ -685,6 +691,9 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
   }
 
   const browseSortNonDefault = browseSort !== "name";
+  const browseSortLabel =
+    BROWSE_SORT_OPTIONS.find((option) => option.value === browseSort)?.label ??
+    "Sort cards";
 
   const loadCards = async () => {
     try {
@@ -990,64 +999,75 @@ export function AllCardsBrowse({ initialQuery = "" }: { initialQuery?: string })
               ) : null}
             </div>
             {!loading && !error && cards.length > 0 ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setBrowseSortOpen((o) => !o);
-                }}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 px-5 text-sm font-bold text-white shadow-md shadow-blue-600/20 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-600/25"
-                aria-expanded={browseSortOpen}
-                aria-controls="browse-sort-panel"
-              >
-                <SortIcon className="h-[1.05rem] w-[1.05rem]" />
-                Sort cards
-                {browseSortNonDefault ? (
-                  <span className="h-2 w-2 rounded-full bg-white" aria-hidden />
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBrowseSortOpen((o) => !o);
+                  }}
+                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 px-5 text-sm font-bold text-white shadow-md shadow-blue-600/20 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-600/25 sm:w-auto"
+                  aria-expanded={browseSortOpen}
+                  aria-controls="browse-sort-options"
+                >
+                  <SortIcon className="h-[1.05rem] w-[1.05rem]" />
+                  Sort cards
+                  {browseSortNonDefault ? (
+                    <span className="h-2 w-2 rounded-full bg-white" aria-hidden />
+                  ) : null}
+                </button>
+                {browseSortOpen ? (
+                  <div
+                    id="browse-sort-options"
+                    className="absolute right-0 z-20 mt-2 w-full min-w-64 overflow-hidden rounded-2xl border border-blue-100 bg-white p-1.5 shadow-xl shadow-blue-900/[0.12] sm:w-72"
+                    role="menu"
+                    aria-label="Sort cards"
+                  >
+                    <p className="px-3 pb-1.5 pt-2 text-[10px] font-black uppercase tracking-[0.16em] text-blue-700">
+                      Sort by
+                    </p>
+                    {BROWSE_SORT_OPTIONS.map((option) => {
+                      const selected = browseSort === option.value;
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => {
+                            setBrowseSort(option.value);
+                            setBrowseSortOpen(false);
+                          }}
+                          className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-xs font-bold transition ${
+                            selected
+                              ? browseSelectedChipClass
+                              : "text-zinc-700 hover:bg-blue-50 hover:text-blue-700"
+                          }`}
+                          role="menuitemradio"
+                          aria-checked={selected}
+                        >
+                          <span>{option.label}</span>
+                          {selected ? <span aria-hidden>Selected</span> : null}
+                        </button>
+                      );
+                    })}
+                    {browseSort === "ai" ? (
+                      <div className="mt-1 rounded-xl bg-blue-50 px-3 py-2 text-xs text-zinc-600">
+                        {browseAiLoading ? (
+                          <span className="flex items-center gap-2">
+                            <Spinner className="h-4 w-4 text-blue-600" />
+                            Loading order...
+                          </span>
+                        ) : !browseAiOrder ? (
+                          <>AI order unavailable - using A-Z</>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
                 ) : null}
-              </button>
+                <p className="mt-1 text-center text-[10px] font-bold text-zinc-500 sm:text-left">
+                  {browseSortLabel}
+                </p>
+              </div>
             ) : null}
           </form>
-          {!loading && !error && cards.length > 0 && browseSortOpen ? (
-            <div
-              id="browse-sort-panel"
-              className="mt-3 rounded-2xl border border-blue-100 bg-white/85 p-3 shadow-sm"
-            >
-              <label className="block sm:flex sm:items-end sm:gap-3">
-                <div className="min-w-0 flex-1">
-                  <span className="mb-1.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-blue-700">
-                    <SortIcon className="h-3.5 w-3.5 shrink-0 text-blue-600" />
-                    Sort cards by
-                  </span>
-                  <select
-                    value={browseSort}
-                    onChange={(e) =>
-                      setBrowseSort(e.target.value as BrowseSortMode)
-                    }
-                    className={`${inputClass} py-2 text-sm`}
-                  >
-                    <option value="name">Name (A-Z)</option>
-                    <option value="annual_asc">Annual fee (low to high)</option>
-                    <option value="annual_desc">Annual fee (high to low)</option>
-                    <option value="joining_asc">Joining fee (low to high)</option>
-                    <option value="joining_desc">Joining fee (high to low)</option>
-                    <option value="ai">AI curated browse</option>
-                  </select>
-                </div>
-                {browseSort === "ai" ? (
-                  <span className="mt-2 flex items-center gap-2 text-xs text-zinc-500 sm:mt-0 sm:pb-2.5">
-                    {browseAiLoading ? (
-                      <>
-                        <Spinner className="h-4 w-4 text-blue-600" />
-                        Loading order...
-                      </>
-                    ) : !browseAiOrder ? (
-                      <>AI order unavailable - using A-Z</>
-                    ) : null}
-                  </span>
-                ) : null}
-              </label>
-            </div>
-          ) : null}
           <p className="mt-2 text-xs text-zinc-500">
             {textFilteredCards.length === cards.length && !search.trim() ? (
               <>
