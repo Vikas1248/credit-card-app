@@ -1,5 +1,18 @@
+"use client";
+
 import { useId } from "react";
 import { cn } from "@/lib/utils";
+
+/**
+ * HTML id for SVG href must be valid and stable across SSR + hydration.
+ * Design ref: https://pry-square-73654317.figma.site/ (gradient + slate + purple)
+ */
+function useSvgIdScope(prefix: string) {
+  const raw = useId().replace(/:/g, "");
+  const safe = raw.replace(/[^a-zA-Z0-9_-]/g, "x");
+  const scope = safe.length > 0 && /^[a-zA-Z_]/.test(safe) ? safe : `g${safe}`;
+  return (name: string) => `cgl-${prefix}-${name}-${scope}`;
+}
 
 type CredGenieLogoProps = {
   iconOnly?: boolean;
@@ -9,25 +22,29 @@ type CredGenieLogoProps = {
 };
 
 function CredGenieMark({ className }: { className?: string }) {
-  const gid = useId().replace(/:/g, "");
+  const id = useSvgIdScope("mark");
+  const idCard = id("card");
+  const idCircuit = id("circuit");
 
   return (
     <span
       className={cn(
-        "relative flex h-10 w-[7rem] shrink-0 items-center justify-center",
+        "relative flex h-10 w-[7.5rem] min-w-0 shrink-0 items-center justify-center overflow-visible",
         className
       )}
       aria-hidden
     >
       <svg
         viewBox="0 0 134 64"
-        className="h-full w-full"
+        className="h-full w-full max-h-10 min-h-[2.5rem] overflow-visible"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        aria-hidden
+        preserveAspectRatio="xMidYMid meet"
       >
         <defs>
           <linearGradient
-            id={`${gid}-card`}
+            id={idCard}
             x1="4"
             y1="10"
             x2="72"
@@ -38,7 +55,7 @@ function CredGenieMark({ className }: { className?: string }) {
             <stop offset="1" stopColor="#A855F7" />
           </linearGradient>
           <linearGradient
-            id={`${gid}-circuit`}
+            id={idCircuit}
             x1="54"
             y1="7"
             x2="110"
@@ -55,7 +72,7 @@ function CredGenieMark({ className }: { className?: string }) {
           width="62"
           height="36"
           rx="7"
-          fill={`url(#${gid}-card)`}
+          fill={`url(#${idCard})`}
         />
         <rect
           x="12"
@@ -74,7 +91,7 @@ function CredGenieMark({ className }: { className?: string }) {
         />
         <path
           d="M58 13H77M77 13L85 5M58 20H71M71 20L80 29H96"
-          stroke={`url(#${gid}-circuit)`}
+          stroke={`url(#${idCircuit})`}
           strokeWidth="4.3"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -86,51 +103,52 @@ function CredGenieMark({ className }: { className?: string }) {
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <circle cx="58" cy="13" r="4" fill={`url(#${gid}-circuit)`} />
-        <circle cx="85" cy="5" r="4" fill={`url(#${gid}-circuit)`} />
-        <circle cx="96" cy="29" r="4" fill={`url(#${gid}-circuit)`} />
+        <circle cx="58" cy="13" r="4" fill={`url(#${idCircuit})`} />
+        <circle cx="85" cy="5" r="4" fill={`url(#${idCircuit})`} />
+        <circle cx="96" cy="29" r="4" fill={`url(#${idCircuit})`} />
         <circle cx="58" cy="36" r="4" fill="white" />
         <circle cx="84" cy="44" r="4" fill="white" />
         <path
           d="M86 25L108 47L90 48C84 48 78 51 74 56C69 62 61 61 57 57"
-          stroke={`url(#${gid}-circuit)`}
+          stroke={`url(#${idCircuit})`}
           strokeWidth="6.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
           d="M72 56C68 58 64 61 61 64"
-          stroke={`url(#${gid}-circuit)`}
+          stroke={`url(#${idCircuit})`}
           strokeWidth="4.5"
           strokeLinecap="round"
         />
-        {/* AI neural cluster (design: replaces generic sparkles) */}
         <path
           d="M100 8 L112 5 M112 5 L118 14 M100 8 L106 16 M118 14 L128 10"
-          stroke={`url(#${gid}-circuit)`}
+          stroke={`url(#${idCircuit})`}
           strokeWidth="2.2"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <circle cx="100" cy="8" r="3.5" fill={`url(#${gid}-circuit)`} />
-        <circle cx="112" cy="5" r="3.5" fill={`url(#${gid}-circuit)`} />
-        <circle cx="118" cy="14" r="3.2" fill={`url(#${gid}-circuit)`} />
+        <circle cx="100" cy="8" r="3.5" fill={`url(#${idCircuit})`} />
+        <circle cx="112" cy="5" r="3.5" fill={`url(#${idCircuit})`} />
+        <circle cx="118" cy="14" r="3.2" fill={`url(#${idCircuit})`} />
         <circle
           cx="106"
           cy="16"
           r="3"
           fill="white"
-          stroke={`url(#${gid}-circuit)`}
+          stroke={`url(#${idCircuit})`}
           strokeWidth="1.3"
         />
-        <circle cx="128" cy="10" r="2.8" fill={`url(#${gid}-circuit)`} />
+        <circle cx="128" cy="10" r="2.8" fill={`url(#${idCircuit})`} />
       </svg>
     </span>
   );
 }
 
 function CredGenieIconMark({ className }: { className?: string }) {
-  const gid = useId().replace(/:/g, "");
+  const id = useSvgIdScope("icon");
+  const idCard = id("card");
+  const idCircuit = id("circuit");
 
   return (
     <span
@@ -142,13 +160,15 @@ function CredGenieIconMark({ className }: { className?: string }) {
     >
       <svg
         viewBox="0 0 64 64"
-        className="h-full w-full"
+        className="h-full w-full overflow-visible"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        aria-hidden
+        preserveAspectRatio="xMidYMid meet"
       >
         <defs>
           <linearGradient
-            id={`${gid}-icon-card`}
+            id={idCard}
             x1="8"
             y1="23"
             x2="37"
@@ -159,7 +179,7 @@ function CredGenieIconMark({ className }: { className?: string }) {
             <stop offset="1" stopColor="#A855F7" />
           </linearGradient>
           <linearGradient
-            id={`${gid}-icon-circuit`}
+            id={idCircuit}
             x1="31"
             y1="9"
             x2="58"
@@ -176,7 +196,7 @@ function CredGenieIconMark({ className }: { className?: string }) {
           width="30"
           height="18"
           rx="4"
-          fill={`url(#${gid}-icon-card)`}
+          fill={`url(#${idCard})`}
         />
         <rect
           x="13"
@@ -195,40 +215,40 @@ function CredGenieIconMark({ className }: { className?: string }) {
         />
         <path
           d="M35 19H43M43 19L47 15M35 25H41M41 25L46 30H54"
-          stroke={`url(#${gid}-icon-circuit)`}
+          stroke={`url(#${idCircuit})`}
           strokeWidth="2.8"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
           d="M48 25L57 35L49 35.5C45 35.8 42 37.5 40 40C37 43.5 33 43 31 41"
-          stroke={`url(#${gid}-icon-circuit)`}
+          stroke={`url(#${idCircuit})`}
           strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <circle cx="35" cy="19" r="2.3" fill={`url(#${gid}-icon-circuit)`} />
-        <circle cx="47" cy="15" r="2.3" fill={`url(#${gid}-icon-circuit)`} />
-        <circle cx="54" cy="30" r="2.3" fill={`url(#${gid}-icon-circuit)`} />
+        <circle cx="35" cy="19" r="2.3" fill={`url(#${idCircuit})`} />
+        <circle cx="47" cy="15" r="2.3" fill={`url(#${idCircuit})`} />
+        <circle cx="54" cy="30" r="2.3" fill={`url(#${idCircuit})`} />
         <path
           d="M44 8 L50 6 M50 6 L54 11 M44 8 L48 13 M54 11 L58 8"
-          stroke={`url(#${gid}-icon-circuit)`}
+          stroke={`url(#${idCircuit})`}
           strokeWidth="1.6"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <circle cx="44" cy="8" r="2.2" fill={`url(#${gid}-icon-circuit)`} />
-        <circle cx="50" cy="6" r="2.2" fill={`url(#${gid}-icon-circuit)`} />
-        <circle cx="54" cy="11" r="2" fill={`url(#${gid}-icon-circuit)`} />
+        <circle cx="44" cy="8" r="2.2" fill={`url(#${idCircuit})`} />
+        <circle cx="50" cy="6" r="2.2" fill={`url(#${idCircuit})`} />
+        <circle cx="54" cy="11" r="2" fill={`url(#${idCircuit})`} />
         <circle
           cx="48"
           cy="13"
           r="1.8"
           fill="white"
-          stroke={`url(#${gid}-icon-circuit)`}
+          stroke={`url(#${idCircuit})`}
           strokeWidth="0.85"
         />
-        <circle cx="58" cy="8" r="1.7" fill={`url(#${gid}-icon-circuit)`} />
+        <circle cx="58" cy="8" r="1.7" fill={`url(#${idCircuit})`} />
       </svg>
     </span>
   );
@@ -249,16 +269,17 @@ export function CredGenieLogo({
   }
 
   return (
-    <span className={cn("inline-flex items-center gap-3", className)}>
+    <span className={cn("inline-flex min-w-0 items-center gap-3", className)}>
       <CredGenieMark className={iconClassName} />
       <span
         className={cn(
-          "text-2xl font-black leading-none tracking-tight sm:text-3xl",
+          "min-w-0 text-2xl font-black leading-none tracking-tight sm:text-3xl",
           wordmarkClassName
         )}
       >
         <span className="text-[#1e293b]">Cred</span>
-        <span className="bg-gradient-to-r from-[#6366f1] to-[#a855f7] bg-clip-text text-transparent">
+        {/* Figma system: gradient icon + slate Cred + purple-accent Genie */}
+        <span className="inline-block bg-gradient-to-r from-[#6366f1] via-[#9333ea] to-[#a855f7] bg-clip-text text-transparent">
           Genie
         </span>
       </span>
