@@ -58,9 +58,9 @@ export function CredGenieLogo({
         alt="CredGenie"
         width={LOGO_W}
         height={LOGO_H}
-        className="h-10 w-auto sm:h-12 md:h-14 lg:h-16"
+        className="h-12 w-auto sm:h-14 md:h-16 lg:h-20"
         priority
-        sizes="(max-width: 640px) 280px, (max-width: 1024px) 380px, 420px"
+        sizes="(max-width: 640px) 300px, (max-width: 1024px) 420px, 480px"
       />
     </span>
   );

@@ -158,7 +158,7 @@ export default function Home() {
         aria-label="Open AI chat advisor"
         title={`Open ${SITE_NAME} AI advisor`}
       >
-        <CredGenieLogo iconOnly iconClassName="h-[4.5rem] w-[4.5rem] rounded-full shadow-none sm:h-[5rem] sm:w-[5rem]" />
+        <CredGenieLogo iconOnly iconClassName="h-14 w-14 rounded-full shadow-none" />
       </a>
 
     </div>
