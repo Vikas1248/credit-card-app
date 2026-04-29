@@ -35,6 +35,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.5,
     },
+    {
+      url: `${base}/guides`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.65,
+    },
+    {
+      url: `${base}/guides/best-credit-card-for-airtel-users`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
   ];
 
   try {

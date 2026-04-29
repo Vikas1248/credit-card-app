@@ -8,7 +8,12 @@
   <circle cx="35" cy="19" r="2.3" fill="url(#circuit)" />
   <circle cx="47" cy="15" r="2.3" fill="url(#circuit)" />
   <circle cx="54" cy="30" r="2.3" fill="url(#circuit)" />
-  <path d="M52 9L54 13L58 15L54 17L52 21L50 17L46 15L50 13L52 9Z" fill="#7C3AED" />
+  <path d="M44 8 L50 6 M50 6 L54 11 M44 8 L48 13 M54 11 L58 8" stroke="url(#circuit)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="44" cy="8" r="2.2" fill="url(#circuit)" />
+  <circle cx="50" cy="6" r="2.2" fill="url(#circuit)" />
+  <circle cx="54" cy="11" r="2" fill="url(#circuit)" />
+  <circle cx="48" cy="13" r="1.8" fill="white" stroke="url(#circuit)" stroke-width="0.85" />
+  <circle cx="58" cy="8" r="1.7" fill="url(#circuit)" />
   <defs>
     <linearGradient id="card" x1="8" y1="23" x2="37" y2="41" gradientUnits="userSpaceOnUse">
       <stop stop-color="#6366F1" />

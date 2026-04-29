@@ -10,7 +10,12 @@
   <circle cx="174" cy="70" r="6" fill="url(#node)" />
   <path d="M150 96L178 126L154 128C142 129 132 134 124 144C116 154 103 153 96 146" stroke="url(#node)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
   <path d="M122 144C114 150 108 158 105 166" stroke="url(#node)" stroke-width="7" stroke-linecap="round" />
-  <path d="M158 42L163 52L173 57L163 62L158 72L153 62L143 57L153 52L158 42Z" fill="#7C3AED" />
+  <path d="M148 38 L158 34 M158 34 L168 42 M148 38 L152 48 M168 42 L176 36" stroke="url(#node)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="148" cy="38" r="7" fill="url(#node)" />
+  <circle cx="158" cy="34" r="7" fill="url(#node)" />
+  <circle cx="168" cy="42" r="6" fill="url(#node)" />
+  <circle cx="152" cy="48" r="5.5" fill="white" stroke="url(#node)" stroke-width="2" />
+  <circle cx="176" cy="36" r="5" fill="url(#node)" />
   <defs>
     <linearGradient id="card" x1="24" y1="56" x2="115" y2="114" gradientUnits="userSpaceOnUse">
       <stop stop-color="#6366F1" />

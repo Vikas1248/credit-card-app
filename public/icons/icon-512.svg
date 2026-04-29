@@ -12,7 +12,12 @@
   <circle cx="378" cy="274" r="16" fill="white" />
   <path d="M380 195L454 272L392 276C366 278 344 290 326 312C306 337 274 334 258 318" stroke="url(#circuit)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" />
   <path d="M322 312C303 326 288 344 280 366" stroke="url(#circuit)" stroke-width="18" stroke-linecap="round" />
-  <path d="M430 82L442 106L466 118L442 130L430 154L418 130L394 118L418 106L430 82Z" fill="#7C3AED" />
+  <path d="M400 70 L424 62 M424 62 L436 82 M400 70 L412 94 M436 82 L450 68" stroke="url(#circuit)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="400" cy="70" r="14" fill="url(#circuit)" />
+  <circle cx="424" cy="62" r="14" fill="url(#circuit)" />
+  <circle cx="436" cy="82" r="12" fill="url(#circuit)" />
+  <circle cx="412" cy="94" r="11" fill="white" stroke="url(#circuit)" stroke-width="5" />
+  <circle cx="450" cy="68" r="10" fill="url(#circuit)" />
   <defs>
     <linearGradient id="card" x1="72" y1="178" x2="306" y2="318" gradientUnits="userSpaceOnUse">
       <stop stop-color="#6366F1" />
