@@ -118,6 +118,13 @@ export default function RootLayout({
               About CredGenie
             </Link>{" "}
             ·{" "}
+            <Link
+              href="/guides"
+              className="font-medium text-zinc-600 hover:underline dark:text-zinc-300"
+            >
+              Guides
+            </Link>{" "}
+            ·{" "}
             <a
               href="mailto:support@credgenie.in"
               className="font-medium text-zinc-600 hover:underline dark:text-zinc-300"

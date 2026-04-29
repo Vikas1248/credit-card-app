@@ -31,6 +31,7 @@ const headerNavItems = [
   ["/#recommendation-quiz", "Recommend Me"],
   ["/#compare", "Compare Cards"],
   ["/cards", "Browse Cards"],
+  ["/guides", "Guides"],
 ] as const;
 
 type PageProps = {

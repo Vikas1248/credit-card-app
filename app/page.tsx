@@ -30,6 +30,7 @@ const sectionNavItems = [
   ["#recommendation-quiz", "Recommend Me"],
   ["#compare", "Compare Cards"],
   ["/cards", "Browse Cards"],
+  ["/guides", "Guides"],
 ] as const;
 
 const siteHeaderNavItemClass =
@@ -45,7 +46,7 @@ function SiteHeader() {
 
         <nav
           className="flex gap-1 overflow-x-auto rounded-full border border-zinc-200 bg-zinc-50 p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          aria-label="Homepage sections"
+          aria-label="Site navigation"
         >
           <HomeNavLink className={siteHeaderNavItemClass}>Home</HomeNavLink>
           {sectionNavItems.map(([href, label]) =>

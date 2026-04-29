@@ -15,6 +15,10 @@ const PAGE_TITLE =
 const PAGE_DESCRIPTION =
   "Discover how Airtel users can maximize cashback on broadband, postpaid, utility bills, Zomato, Blinkit, and more using the right credit card.";
 
+const HERO_SUB =
+  "If you're deep into the Airtel ecosystem, the right credit card can unlock serious annual savings. " +
+  PAGE_DESCRIPTION;
+
 export const metadata: Metadata = {
   title: PAGE_TITLE,
   description: PAGE_DESCRIPTION,
@@ -227,123 +231,139 @@ export default function BestCreditCardAirtelGuidePage() {
                 in India
               </>
             }
-            subheadline={PAGE_DESCRIPTION}
+            subheadline={HERO_SUB}
             savingsHighlight="Save roughly ₹15,000–₹20,000+ / year"
             primaryCta={{ href: "/#compare", label: "Compare Cards" }}
             secondaryCta={{ href: "/cards", label: "Apply Now" }}
           />
 
           <p className="guide-lead text-center text-sm font-medium text-zinc-500">
-            Educational guide—not financial advice. Rewards, categories, and fees
-            change; confirm details with issuers before applying.
+            Educational guide—not financial advice. Illustrative math uses example
+            rates; real cashback depends on your bank, bill-pay path, and monthly
+            caps. Confirm the latest MITC before you apply.
           </p>
 
           <GuideSection
-            id="savings"
-            eyebrow="Where savings come from"
-            title="Savings breakdown (typical Airtel-heavy household)"
-            description="Illustrative buckets you can optimize when your card’s bonus categories align with broadband, postpaid, utilities, and partner merchants."
+            id="best-for"
+            eyebrow="Is this for you?"
+            title="Best credit card for Airtel users?"
+            description="This strategy fits best when a large share of your money already flows through Airtel and partner channels."
           >
-            <div className="overflow-x-auto rounded-2xl border border-zinc-200">
-              <table className="min-w-full text-left text-sm">
-                <thead className="bg-zinc-50 text-xs font-black uppercase tracking-wider text-zinc-500">
-                  <tr>
-                    <th className="px-4 py-3 sm:px-5">Spend bucket</th>
-                    <th className="px-4 py-3 sm:px-5">Why it matters</th>
-                    <th className="px-4 py-3 sm:px-5">Example lever</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-100">
-                  <tr>
-                    <td className="px-4 py-4 font-semibold text-zinc-900 sm:px-5">
-                      Airtel bills
-                    </td>
-                    <td className="px-4 py-4 text-zinc-600 sm:px-5">
-                      Fiber, postpaid family plans, add-ons—often a predictable
-                      monthly chunk when paid on-card or via eligible rails.
-                    </td>
-                    <td className="px-4 py-4 text-zinc-600 sm:px-5">
-                      Cards with strong utility / online bill-pay rewards (watch
-                      caps).
-                    </td>
-                  </tr>
-                  <tr className="bg-zinc-50/50">
-                    <td className="px-4 py-4 font-semibold text-zinc-900 sm:px-5">
-                      Dining & grocery
-                    </td>
-                    <td className="px-4 py-4 text-zinc-600 sm:px-5">
-                      Partner ecosystems often overlap with food delivery and quick
-                      commerce where accelerated cashback is common.
-                    </td>
-                    <td className="px-4 py-4 text-zinc-600 sm:px-5">
-                      Category bonuses on select merchants—verify MCC eligibility.
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-4 font-semibold text-zinc-900 sm:px-5">
-                      Utility & BBPS-style bills
-                    </td>
-                    <td className="px-4 py-4 text-zinc-600 sm:px-5">
-                      Electricity, gas, water—stack with bill-pay promotions when
-                      your issuer counts them.
-                    </td>
-                    <td className="px-4 py-4 text-zinc-600 sm:px-5">
-                      Separate monthly caps from telecom—plan payment timing.
-                    </td>
-                  </tr>
-                  <tr className="bg-zinc-50/50">
-                    <td className="px-4 py-4 font-semibold text-zinc-900 sm:px-5">
-                      General spending
-                    </td>
-                    <td className="px-4 py-4 text-zinc-600 sm:px-5">
-                      Everything else should still earn a{" "}
-                      <strong className="text-zinc-800">respectable base rate</strong>
-                      —especially if Airtel isn’t your biggest line item.
-                    </td>
-                    <td className="px-4 py-4 text-zinc-600 sm:px-5">
-                      Flat cashback cards vs category kings—compare on{" "}
-                      <Link href="/cards" className="font-semibold text-blue-700 underline">
-                        CredGenie
-                      </Link>
-                      .
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <p className="text-base font-semibold text-zinc-800">
+              If you use:
+            </p>
+            <ul className="mt-4 list-inside list-disc space-y-2 text-zinc-700 sm:list-outside sm:pl-5">
+              <li>Airtel broadband</li>
+              <li>Airtel postpaid (for you + partner)</li>
+              <li>Airtel Thanks app for bill payments</li>
+              <li>
+                Zomato, Blinkit, and movie bookings (where your card lists
+                accelerated rewards)
+              </li>
+            </ul>
+            <p className="mt-6 rounded-2xl border border-violet-200 bg-violet-50/80 px-5 py-4 text-center text-base font-bold text-zinc-900 sm:text-lg">
+              <strong className="text-violet-800">You</strong> could be missing
+              out on{" "}
+              <span className="bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">
+                ₹15,000–₹20,000+ yearly savings
+              </span>{" "}
+              with the right card and payment habits.
+            </p>
           </GuideSection>
 
           <GuideSection
-            id="who"
-            eyebrow="Fit check"
-            title="Who should prioritize this strategy?"
+            id="savings"
+            eyebrow="Here’s how"
+            title="How those savings can stack (illustrative)"
+            description="Example only—issuers change rates, caps, and eligible merchant codes. Use this as a planning model, not a guarantee."
           >
-            <ul className="grid gap-4 sm:grid-cols-1 lg:grid-cols-3">
-              {[
-                {
-                  title: "Airtel broadband households",
-                  body: "High fiber ARPU plus predictable recharge cycles—ideal if your card rewards online utilities or telecom spends.",
-                },
-                {
-                  title: "Couples on postpaid",
-                  body: "Multiple lines and add-ons increase monthly telecom volume; watch issuer caps so accelerated rates don’t clip early.",
-                },
-                {
-                  title: "Frequent Airtel Thanks / ecosystem users",
-                  body: "If you already route spends through partner brands (food, travel, lifestyle), align those merchants with your card’s bonus categories.",
-                },
-              ].map((card) => (
-                <li
-                  key={card.title}
-                  className="rounded-2xl border border-blue-100 bg-gradient-to-b from-blue-50/80 to-white p-5 shadow-sm"
-                >
-                  <h3 className="font-black text-zinc-950">{card.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-zinc-600">
-                    {card.body}
-                  </p>
-                </li>
-              ))}
-            </ul>
+            <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+                <p className="text-2xl" aria-hidden>
+                  📶
+                </p>
+                <h3 className="mt-2 font-black text-zinc-950">Airtel bill cashback</h3>
+                <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                  A monthly Airtel household bill of around{" "}
+                  <strong>₹2,000</strong> can, in a strong bill-pay / utility
+                  cashback setup, support roughly <strong>25% back</strong> on the
+                  eligible portion—often modeled around{" "}
+                  <strong>~₹500 cashback/month</strong> when the category and
+                  cap allow it.
+                </p>
+                <p className="mt-3 text-sm font-bold text-emerald-800">
+                  ➡️ Annual savings: ~₹6,000
+                </p>
+              </div>
+              <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+                <p className="text-2xl" aria-hidden>
+                  🍔
+                </p>
+                <h3 className="mt-2 font-black text-zinc-950">
+                  10% cashback on Zomato, Blinkit &amp; movie bookings
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                  When your card accelerates these merchants and you use them
+                  consistently, partner spend can add a meaningful second layer on
+                  top of telecom.
+                </p>
+                <p className="mt-3 text-sm font-bold text-emerald-800">
+                  ➡️ Annual savings: ~₹7,200
+                </p>
+              </div>
+              <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+                <p className="text-2xl" aria-hidden>
+                  💡
+                </p>
+                <h3 className="mt-2 font-black text-zinc-950">
+                  Utility bill cashback
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                  Extra upside when electricity, gas, or other utilities are paid
+                  through paths your issuer treats as eligible—often stacked via
+                  the Airtel Thanks / bill-pay journey you already use.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+                <p className="text-2xl" aria-hidden>
+                  🛒
+                </p>
+                <h3 className="mt-2 font-black text-zinc-950">
+                  1% cashback on all other spends
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                  Everything outside bonus categories still earns a baseline rate—
+                  important when your month isn&apos;t only telecom and delivery.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-8 rounded-[1.75rem] border-2 border-blue-200 bg-gradient-to-br from-blue-50 via-white to-violet-50 px-6 py-8 text-center shadow-inner">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-700">
+                Total potential savings
+              </p>
+              <p className="mt-3 text-3xl font-black tracking-tight text-zinc-950 sm:text-4xl">
+                ₹15,000–₹20,000{" "}
+                <span className="text-xl font-bold text-zinc-600 sm:text-2xl">
+                  per year
+                </span>
+              </p>
+              <p className="mx-auto mt-3 max-w-lg text-xs text-zinc-500">
+                Combined illustration across buckets above—your mix may be higher
+                or lower.
+              </p>
+            </div>
+          </GuideSection>
+
+          <GuideSection id="bottom-line" eyebrow="Summary" title="Bottom line">
+            <p className="text-lg leading-relaxed text-zinc-700">
+              If you heavily use <strong>Airtel broadband</strong>,{" "}
+              <strong>Airtel postpaid</strong>, and the broader{" "}
+              <strong>Airtel ecosystem</strong>, the right cashback card can be
+              among the most rewarding products you carry—especially when you route
+              bills and partner spends through eligible categories and stay inside
+              issuer caps.
+            </p>
           </GuideSection>
 
           <GuideSection
@@ -399,6 +419,65 @@ export default function BestCreditCardAirtelGuidePage() {
           </GuideSection>
 
           <GuideSection
+            id="credgenie"
+            eyebrow="Next step"
+            title="Want to explore the best credit cards for your spending habits?"
+            description={`Try ${SITE_NAME}—built for discovery without friction.`}
+          >
+            <ul className="space-y-3 text-zinc-700">
+              <li className="flex gap-3">
+                <span className="mt-1 font-bold text-blue-600">✓</span>
+                <span>AI-powered recommendations</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-1 font-bold text-blue-600">✓</span>
+                <span>Compare cards easily</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-1 font-bold text-blue-600">✓</span>
+                <span>No signup required</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-1 font-bold text-blue-600">✓</span>
+                <span>No spam calls</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-1 font-bold text-blue-600">✓</span>
+                <span>No personal details needed for browsing and comparing</span>
+              </li>
+            </ul>
+            <p className="mt-6 text-base font-semibold text-zinc-900">
+              Discover your best-fit credit card smarter with {SITE_NAME}.
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Link
+                href="/cards"
+                className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 px-8 text-sm font-bold text-white shadow-lg shadow-blue-600/25 transition hover:-translate-y-0.5"
+              >
+                Apply Now
+              </Link>
+              <Link
+                href="/#recommendation-quiz"
+                className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-zinc-200 bg-white px-8 text-sm font-bold text-zinc-800 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50"
+              >
+                Get recommendations
+              </Link>
+              <Link
+                href="/#chat-advisor"
+                className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-violet-200 bg-violet-50 px-8 text-sm font-bold text-violet-900 transition hover:bg-violet-100"
+              >
+                AI Advisor
+              </Link>
+              <Link
+                href="/#compare"
+                className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-blue-100 bg-blue-50/80 px-8 text-sm font-bold text-blue-800 transition hover:bg-blue-100"
+              >
+                Compare cards
+              </Link>
+            </div>
+          </GuideSection>
+
+          <GuideSection
             id="alternatives"
             eyebrow="Explore further"
             title="Alternatives & comparisons"
@@ -443,8 +522,11 @@ export default function BestCreditCardAirtelGuidePage() {
 
           <GuideSection id="faq" eyebrow="FAQ" title="Common questions">
             <GuideFaq
-            items={FAQ_UI.map(({ question, answer }) => ({ question, answer }))}
-          />
+              items={FAQ_UI.map(({ question, answer }) => ({
+                question,
+                answer,
+              }))}
+            />
           </GuideSection>
 
           <GuideFinalCta
