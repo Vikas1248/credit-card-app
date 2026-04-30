@@ -11,6 +11,11 @@ export type SpendCategorySlug = "shopping" | "dining" | "travel" | "fuel";
 export type CredgenieRecommendationInput = {
   monthlySpend: number;
   categories: SpendCategorySlug[] | Partial<Record<SpendCategorySlug, number>>;
+  /**
+   * Optional 0–1 share of spend on bills / utilities (from slider UI), not represented
+   * in the four scored categories after bills are merged into shopping + fuel.
+   */
+  billPayWeightShare?: number;
   /** When set, skips mock catalog (e.g. pass Supabase rows). */
   candidatesOverride?: CardRowForScoring[];
   profileOverrides?: Partial<

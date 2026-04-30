@@ -1,5 +1,12 @@
 import type { UserProfile as RecommendUserProfile } from "@/lib/recommendV2/userProfile";
-import type { AdvisorLevel, AdvisorProfile, AdvisorRewardPreference } from "./types";
+import type {
+  AdvisorLevel,
+  CredGenieAdvisorProfile,
+  AdvisorRewardPreference,
+  LoungePriority,
+  TelecomEcosystem,
+  TravelFrequency,
+} from "./types";
 
 const LEVEL_SCORE: Record<AdvisorLevel, number> = {
   low: 1,
@@ -14,15 +21,16 @@ const REWARD_SCORE: Record<AdvisorRewardPreference, number> = {
 };
 
 const CATEGORY_KEYS = ["shopping", "dining", "travel", "fuel"] as const;
-
 type CategoryKey = (typeof CATEGORY_KEYS)[number];
+
+const TELECOM_WEIGHT_FOR_BILLS = 0.12;
 
 function levelToWeight(v?: AdvisorLevel): number {
   if (!v) return 0;
   return LEVEL_SCORE[v];
 }
 
-function normalizeWeightMap(profile: AdvisorProfile): Record<CategoryKey, number> {
+function normalizeWeightMap(profile: CredGenieAdvisorProfile): Record<CategoryKey, number> {
   const raw: Record<CategoryKey, number> = {
     shopping: levelToWeight(profile.shopping),
     dining: levelToWeight(profile.dining),
@@ -41,100 +49,176 @@ function normalizeWeightMap(profile: AdvisorProfile): Record<CategoryKey, number
   };
 }
 
-export function mergeAdvisorProfile(
-  current: AdvisorProfile,
-  extracted: Partial<AdvisorProfile>
-): AdvisorProfile {
-  const merged: AdvisorProfile = { ...current };
+function strongerLevel(existing?: AdvisorLevel, incoming?: AdvisorLevel): AdvisorLevel | undefined {
+  if (!incoming) return existing;
+  if (!existing) return incoming;
+  return LEVEL_SCORE[incoming] > LEVEL_SCORE[existing] ? incoming : existing;
+}
+
+function strongerTravelFreq(
+  existing?: TravelFrequency,
+  incoming?: TravelFrequency
+): TravelFrequency | undefined {
+  const rank: Record<TravelFrequency, number> = {
+    rarely: 1,
+    occasionally: 2,
+    frequent: 3,
+  };
+  if (!incoming) return existing;
+  if (!existing) return incoming;
+  return rank[incoming] >= rank[existing] ? incoming : existing;
+}
+
+export function mergeCredGenieAdvisorProfile(
+  current: CredGenieAdvisorProfile,
+  extracted: Partial<CredGenieAdvisorProfile>
+): CredGenieAdvisorProfile {
+  const merged: CredGenieAdvisorProfile = { ...current };
 
   for (const key of CATEGORY_KEYS) {
-    const existing = merged[key];
-    const incoming = extracted[key];
-    if (!incoming) continue;
-    if (!existing || LEVEL_SCORE[incoming] > LEVEL_SCORE[existing]) {
-      merged[key] = incoming;
-    }
+    merged[key] = strongerLevel(merged[key], extracted[key]);
   }
 
-  const feeExisting = merged.fees;
-  const feeIncoming = extracted.fees;
-  if (feeIncoming) {
-    if (!feeExisting || LEVEL_SCORE[feeIncoming] > LEVEL_SCORE[feeExisting]) {
-      merged.fees = feeIncoming;
-    }
+  merged.fees = strongerLevel(merged.fees, extracted.fees);
+  merged.preferred_rewards = mergeRewardPreference(
+    merged.preferred_rewards,
+    extracted.preferred_rewards
+  );
+
+  if (extracted.telecomEcosystem && extracted.telecomEcosystem !== "none") {
+    merged.telecomEcosystem = extracted.telecomEcosystem;
+  } else if (extracted.telecomEcosystem === "none") {
+    merged.telecomEcosystem = "none";
   }
 
-  const rewardExisting = merged.preferred_rewards;
-  const rewardIncoming = extracted.preferred_rewards;
-  if (rewardIncoming) {
-    if (!rewardExisting || REWARD_SCORE[rewardIncoming] >= REWARD_SCORE[rewardExisting]) {
-      merged.preferred_rewards = rewardIncoming;
-    }
+  merged.travelFrequency = strongerTravelFreq(merged.travelFrequency, extracted.travelFrequency);
+
+  if (extracted.travelType) merged.travelType = extracted.travelType;
+
+  if (extracted.loungePriority) {
+    const lpRank: Record<LoungePriority, number> = {
+      none: 0,
+      nice_to_have: 1,
+      must_have: 2,
+    };
+    const prev = merged.loungePriority ?? "none";
+    merged.loungePriority =
+      lpRank[extracted.loungePriority] >= lpRank[prev] ? extracted.loungePriority : prev;
+  }
+
+  if (Array.isArray(extracted.existingCards) && extracted.existingCards.length > 0) {
+    merged.existingCards = normalizeStringList([
+      ...(merged.existingCards ?? []),
+      ...extracted.existingCards,
+    ]);
+  }
+
+  if (typeof extracted.monthlySpend === "number" && Number.isFinite(extracted.monthlySpend)) {
+    const n = Math.round(Math.max(0, Math.min(500_000, extracted.monthlySpend)));
+    if (n > 0) merged.monthlySpend = n;
+  }
+
+  if (Array.isArray(extracted.preferredBrands) && extracted.preferredBrands.length > 0) {
+    merged.preferredBrands = normalizeStringList([
+      ...(merged.preferredBrands ?? []),
+      ...extracted.preferredBrands,
+    ]);
   }
 
   return merged;
 }
 
-export function missingProfileFields(profile: AdvisorProfile): string[] {
-  const required: Array<keyof AdvisorProfile> = [
-    "dining",
-    "travel",
-    "shopping",
-    "fuel",
-    "fees",
-    "preferred_rewards",
-  ];
-  return required.filter((k) => !profile[k]).map(String);
+/** @deprecated Use mergeCredGenieAdvisorProfile — alias for backward compat. */
+export function mergeAdvisorProfile(
+  current: CredGenieAdvisorProfile,
+  extracted: Partial<CredGenieAdvisorProfile>
+): CredGenieAdvisorProfile {
+  return mergeCredGenieAdvisorProfile(current, extracted);
 }
 
-export function nextQuestionForProfile(profile: AdvisorProfile): string {
-  const next = nextMissingProfileField(profile);
-  if (next === "preferred_rewards") {
-    return "Do you prefer cashback, travel rewards, or a balanced mix?";
-  }
-  if (next === "fees") {
-    return "How fee-sensitive are you: low fee, medium fee, or premium perks with higher fee?";
-  }
-  if (next === "shopping") {
-    return "How much of your monthly spend goes to shopping: low, medium, or high?";
-  }
-  if (next === "dining") {
-    return "How much do you spend on dining/food delivery: low, medium, or high?";
-  }
-  if (next === "travel") {
-    return "How travel-heavy are you each month: low, medium, or high?";
-  }
-  if (next === "fuel") {
-    return "How much do you spend on fuel: low, medium, or high?";
-  }
-  return "Tell me your top priority, and I will refine the picks.";
+function mergeRewardPreference(
+  existing?: AdvisorRewardPreference,
+  incoming?: AdvisorRewardPreference
+): AdvisorRewardPreference | undefined {
+  if (!incoming) return existing;
+  if (!existing) return incoming;
+  return REWARD_SCORE[incoming] >= REWARD_SCORE[existing] ? incoming : existing;
 }
 
-export function nextMissingProfileField(
-  profile: AdvisorProfile
-): keyof AdvisorProfile | null {
-  if (!profile.preferred_rewards) return "preferred_rewards";
-  if (!profile.fees) return "fees";
-  if (!profile.shopping) return "shopping";
-  if (!profile.dining) return "dining";
-  if (!profile.travel) return "travel";
-  if (!profile.fuel) return "fuel";
-  return null;
+function normalizeStringList(items: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of items) {
+    const s = raw.trim().toLowerCase();
+    if (s.length < 2 || seen.has(s)) continue;
+    seen.add(s);
+    out.push(s);
+  }
+  return out.slice(0, 24);
 }
 
-export function isProfileSufficient(profile: AdvisorProfile): boolean {
-  const filled =
-    CATEGORY_KEYS.filter((k) => Boolean(profile[k])).length +
-    (profile.fees ? 1 : 0) +
-    (profile.preferred_rewards ? 1 : 0);
-  return filled >= 4;
+function lifestyleFromProfile(profile: CredGenieAdvisorProfile): string[] {
+  const lifestyle: string[] = [];
+  const lp = profile.loungePriority;
+  if (lp === "must_have") {
+    lifestyle.push("lounge_domestic", "lounge_international");
+  } else if (lp === "nice_to_have") {
+    lifestyle.push("lounge_domestic");
+  }
+
+  if (profile.travelFrequency === "frequent") lifestyle.push("traveler");
+
+  return [...new Set(lifestyle)].slice(0, 10);
 }
 
-export function toRecommendUserProfile(profile: AdvisorProfile): RecommendUserProfile {
+/** Derive merchant / app affinity for deterministic uplift in scoring. */
+function spendContextFromProfile(profile: CredGenieAdvisorProfile): RecommendUserProfile["spendContext"] {
+  const brands = profile.preferredBrands ?? [];
+  const hay = brands.join(" ");
+
+  let preferredMerchant: "none" | "flipkart" | "amazon" = "none";
+  if (hay.includes("amazon")) preferredMerchant = "amazon";
+  else if (hay.includes("flipkart")) preferredMerchant = "flipkart";
+
+  let preferredApp: "none" | "swiggy" | "zomato" = "none";
+  if (hay.includes("swiggy")) preferredApp = "swiggy";
+  else if (hay.includes("zomato")) preferredApp = "zomato";
+
+  const diningDeliveryPct =
+    profile.dining === "high" ? 70 : profile.dining === "medium" ? 55 : 45;
+
+  const modes: Array<"flights" | "trains" | "hotels"> = [];
+  if (profile.travel === "high" || profile.travelFrequency === "frequent") {
+    modes.push("flights", "hotels");
+  } else if (profile.travel === "medium" || profile.travelFrequency === "occasionally") {
+    modes.push("flights");
+  }
+
+  return {
+    shopping: {
+      onlinePct: profile.shopping === "high" ? 85 : profile.shopping === "medium" ? 72 : 60,
+      preferredMerchant,
+    },
+    dining: {
+      deliveryPct: diningDeliveryPct,
+      preferredApp,
+    },
+    travel: {
+      modes,
+      preferredAirline: "none",
+      flightsPct: profile.travelType === "international" ? 75 : 60,
+    },
+  };
+}
+
+function billPayShareFromTelecom(eco?: TelecomEcosystem): number | undefined {
+  if (!eco || eco === "none") return undefined;
+  return TELECOM_WEIGHT_FOR_BILLS;
+}
+
+export function toRecommendUserProfile(profile: CredGenieAdvisorProfile): RecommendUserProfile {
   const weights = normalizeWeightMap(profile);
-  const topCategories = [...CATEGORY_KEYS]
-    .sort((a, b) => weights[b] - weights[a])
-    .slice(0, 3);
+  const topCategories = [...CATEGORY_KEYS].sort((a, b) => weights[b] - weights[a]).slice(0, 3);
 
   const preferredRewardType: RecommendUserProfile["preferredRewardType"] =
     profile.preferred_rewards === "travel"
@@ -146,17 +230,21 @@ export function toRecommendUserProfile(profile: AdvisorProfile): RecommendUserPr
   const feeSensitivity: RecommendUserProfile["feeSensitivity"] =
     profile.fees === "low" ? "high" : profile.fees === "medium" ? "medium" : "low";
 
+  const monthlySpend =
+    typeof profile.monthlySpend === "number" && profile.monthlySpend > 0
+      ? profile.monthlySpend
+      : 35_000;
+
+  const billPayWeightShare = billPayShareFromTelecom(profile.telecomEcosystem);
+
   return {
-    monthlySpend: 35_000,
+    monthlySpend,
     topCategories,
     categoryWeights: weights,
+    ...(typeof billPayWeightShare === "number" ? { billPayWeightShare } : {}),
     preferredRewardType,
     feeSensitivity,
-    lifestyle: [],
-    spendContext: {
-      shopping: { onlinePct: 70, preferredMerchant: "none" },
-      dining: { deliveryPct: 60, preferredApp: "none" },
-      travel: { modes: [], preferredAirline: "none", flightsPct: 60 },
-    },
+    lifestyle: lifestyleFromProfile(profile),
+    spendContext: spendContextFromProfile(profile),
   };
 }

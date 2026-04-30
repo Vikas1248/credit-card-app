@@ -12,6 +12,12 @@ export type UserProfile = {
     travel?: number;
     fuel?: number;
   };
+  /**
+   * Share of total spend mix on bills / utilities (0–1) from the slider UI, before
+   * bills are folded into shopping + fuel for the four-bucket reward model.
+   * Used to surface co-brands like Airtel Axis for broadband / Airtel Thanks spend.
+   */
+  billPayWeightShare?: number;
   preferredRewardType: "cashback" | "points" | "miles";
   feeSensitivity: "low" | "medium" | "high";
   lifestyle: string[]; // ["traveler", "online_shopper"]
@@ -35,6 +41,11 @@ export type UserProfile = {
 function clampPct(n: unknown, fallback: number): number {
   if (typeof n !== "number" || !Number.isFinite(n)) return fallback;
   return Math.max(0, Math.min(100, Math.round(n)));
+}
+
+function clamp01Weight(n: unknown): number | undefined {
+  if (typeof n !== "number" || !Number.isFinite(n)) return undefined;
+  return Math.max(0, Math.min(1, n));
 }
 
 export function parseUserProfile(
@@ -82,6 +93,8 @@ export function parseUserProfile(
     }
     if (Object.keys(out).length > 0) categoryWeights = out;
   }
+
+  const billPayWeightShare = clamp01Weight(o.billPayWeightShare);
 
   const lifestyleRaw = o.lifestyle;
   const lifestyle = Array.isArray(lifestyleRaw)
@@ -144,6 +157,7 @@ export function parseUserProfile(
       monthlySpend,
       topCategories: topCategories.slice(0, 8),
       ...(categoryWeights ? { categoryWeights } : {}),
+      ...(typeof billPayWeightShare === "number" ? { billPayWeightShare } : {}),
       preferredRewardType,
       feeSensitivity,
       lifestyle: lifestyle.slice(0, 10),

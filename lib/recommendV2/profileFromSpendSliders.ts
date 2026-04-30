@@ -85,6 +85,13 @@ export function buildUserProfileFromSpendUi(opts: {
   const feeSensitivity: UserProfile["feeSensitivity"] =
     opts.feeTier === "free" ? "high" : opts.feeTier === "low" ? "medium" : "low";
 
+  const w = opts.weights;
+  const rawSum = w.shopping + w.dining + w.travel + w.fuel + w.bills;
+  const billPayWeightShare =
+    Number.isFinite(rawSum) && rawSum > 0
+      ? Math.max(0, Math.min(1, w.bills / rawSum))
+      : 0;
+
   return {
     monthlySpend: Math.max(0, Math.round(opts.monthlySpendTotal)),
     topCategories: topCategories.length > 0 ? topCategories : ["shopping"],
@@ -94,6 +101,7 @@ export function buildUserProfileFromSpendUi(opts: {
       travel: effective.travel,
       fuel: effective.fuel,
     },
+    billPayWeightShare,
     // Slider UI has no reward-type selector; scoring normalizes points/cashback to INR
     // in `calculateYearlyValue` and `rewardTypeAlignment` only applies a light nudge for
     // mismatches, so the choice here is directional, not decisive.

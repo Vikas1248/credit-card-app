@@ -34,6 +34,10 @@ export function profileToGraphInput(profile: UserProfile): CredgenieRecommendati
   return {
     monthlySpend: profile.monthlySpend,
     categories,
+    ...(typeof profile.billPayWeightShare === "number" &&
+    Number.isFinite(profile.billPayWeightShare)
+      ? { billPayWeightShare: profile.billPayWeightShare }
+      : {}),
     profileOverrides: {
       preferredRewardType: profile.preferredRewardType,
       feeSensitivity: profile.feeSensitivity,

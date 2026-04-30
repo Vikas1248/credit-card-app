@@ -107,6 +107,9 @@ export async function normalizeUserInput(
     feeSensitivity: input.profileOverrides?.feeSensitivity ?? "medium",
     lifestyle: input.profileOverrides?.lifestyle ?? [],
     spendContext: input.profileOverrides?.spendContext,
+    ...(typeof input.billPayWeightShare === "number" && Number.isFinite(input.billPayWeightShare)
+      ? { billPayWeightShare: Math.max(0, Math.min(1, input.billPayWeightShare)) }
+      : {}),
   };
 
   return { categoryWeights, userProfile };

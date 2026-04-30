@@ -263,6 +263,22 @@ function rewardTypeAlignment(card: CardRowForScoring, profile: UserProfile): num
   return card.reward_type === pref ? 1 : 0.85;
 }
 
+/**
+ * Bill pay is merged into shopping + fuel for the four-bucket reward model, so telecom
+ * co-brands do not get full credit from `computeYearlyRewards`. When the user assigns
+ * weight to the Bills slider, add a conservative INR uplift for Airtel Axis only.
+ */
+function airtelAxisBillPayUplift(card: CardRowForScoring, profile: UserProfile): number {
+  const name = (card.card_name ?? "").toLowerCase();
+  if (!name.includes("airtel axis bank credit card")) return 0;
+  const share = profile.billPayWeightShare;
+  if (typeof share !== "number" || !Number.isFinite(share) || share < 0.05) return 0;
+  const monthly = Math.max(0, profile.monthlySpend);
+  const billMonthly = monthly * share;
+  const raw = billMonthly * 12 * 0.11;
+  return Math.min(Math.round(raw), 9000);
+}
+
 export function calculateYearlyValue(card: CardRowForScoring, profile: UserProfile): YearlyValue {
   const annualFee = Number.isFinite(card.annual_fee) ? card.annual_fee : 0;
   const spendSplit = buildSpendSplit(profile);
@@ -348,6 +364,8 @@ export function calculateYearlyValue(card: CardRowForScoring, profile: UserProfi
       yearlyReward += airlineMonthly * 12 * ((boostedPct - baseTravelPct) / 100);
     }
   }
+
+  yearlyReward += airtelAxisBillPayUplift(card, profile);
 
   const netGain = yearlyReward - annualFee;
   return {
