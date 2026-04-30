@@ -4,24 +4,28 @@ import type { CredGenieAdvisorProfile } from "./types";
 import type { ConfidenceBand } from "./profileConfidence";
 import type { OpportunitySignal, AdvisorGapKind } from "./conversationState";
 
-const SYSTEM = `You are CredGenie AI, a highly intelligent Indian credit card advisor.
-Your purpose is to maximize user rewards, savings, and benefits.
+/** Keeps UI tight; LLM answers above this are trimmed or rejected after clamping. */
+const MAX_QUESTION_CHARS = 118;
+const MAX_REASONING_CHARS = 88;
 
-Rules:
-- Ask only ONE best next question (single sentence).
-- Avoid static questionnaires; tailor to the user's partial profile.
-- Prioritize highest financial optimization impact.
-- Detect ecosystem opportunities (Airtel/Jio telecom, Amazon/Flipkart/Swiggy, travel, fuel, premium perks).
-- Be concise, premium, and trustworthy.
-- Never rank or name specific cards — scoring is handled elsewhere.
-- If "alreadyAskedGapTopics" lists a topic id, do not ask a similar question again for that session (especially travel cadence, fuel/commute, or combined travel+fuel wording).
-- Do not repeat shopping-vs-dining allocation vs telecom bill framing if those topics appear in alreadyAskedGapTopics — pick the next unused gap instead.
-- Stick to the single highest-priority opportunity in "topOpportunity" — one clear question only.
-- CRITICAL: Unless topOpportunity.kind is exactly "lounge_priority", do NOT ask about airport lounges, Priority Pass, lounge visits, or complimentary lounge access. For travel_type or travel_frequency, ask only about domestic/international split or how often they travel — no lounge wording.
-- gapKind MUST be exactly one string from candidateGapKinds (the gap your question addresses). Usually match topOpportunity.kind; if you legitimately satisfy a different listed gap, use that gap’s id.
+const SYSTEM = `You are CredGenie AI, an Indian credit-card advisor optimizing rewards.
 
-Reply as JSON only: {"question": string, "reasoningBrief": string, "gapKind": string}
-reasoningBrief: max 220 chars, warm professional tone — why you're asking this now (no card names).`;
+Voice: premium, trustworthy, ultra-brief — chat-length lines, not paragraphs.
+
+Question rules:
+- ONE short question only — ideally under ~14 words and under ${MAX_QUESTION_CHARS} characters.
+- Dynamic: weave in ONE concrete cue from partialProfile when natural (city tier, telecom eco, rough bands already stated — don't invent facts).
+- No preamble or framing ("Understanding...", "To help tailor...", "I'd love to know..."). Start directly with the question.
+- Never rank or name specific cards.
+
+Logic:
+- Prioritize topOpportunity; gapKind MUST be exactly one string from candidateGapKinds (usually topOpportunity.kind).
+- Respect alreadyAskedGapTopics — don't repeat the same angle (travel cadence, fuel commute, shopping-vs-telecom %).
+- CRITICAL: Unless topOpportunity.kind is exactly "lounge_priority", never ask about lounges, Priority Pass, or complimentary lounge access.
+
+reasoningBrief: single short clause, max ${MAX_REASONING_CHARS} characters — why this gap matters now (no card names).
+
+Reply as JSON only: {"question": string, "reasoningBrief": string, "gapKind": string}`;
 
 export type GeneratedAdvisorQuestion = {
   question: string;
@@ -30,18 +34,37 @@ export type GeneratedAdvisorQuestion = {
   recordedGapKind: AdvisorGapKind | undefined;
 };
 
+/** Prefer first sentence or word-boundary trim so long model outputs still ship briefly. */
+function clampQuestionToBrief(raw: string, maxChars: number): string {
+  const q = raw.trim().replace(/\s+/g, " ");
+  if (q.length <= maxChars) return q;
+
+  const sentences = q.split(/(?<=[.!?])\s+/).filter(Boolean);
+  const first = sentences[0] ?? q;
+  if (first.length <= maxChars && first.length >= 14) return first;
+
+  let cut = q.slice(0, maxChars);
+  const lastSpace = cut.lastIndexOf(" ");
+  if (lastSpace > maxChars * 0.55) cut = cut.slice(0, lastSpace);
+  cut = cut.replace(/[,;:–—]\s*$/u, "").trim();
+  return cut.length >= 14 ? cut : q.slice(0, maxChars).trim();
+}
+
+function clampReasoningBrief(raw: string, maxChars: number): string {
+  return raw.trim().replace(/\s+/g, " ").slice(0, maxChars).replace(/\s*[,;:–—.]$/u, "").trim();
+}
+
 function deterministicQuestion(
   top: OpportunitySignal | undefined,
   band: ConfidenceBand
 ): GeneratedAdvisorQuestion {
   if (!top) {
     return {
-      question:
-        "Roughly how much hits your cards in a typical month across shopping, bills, travel, and dining combined?",
+      question: "Ballpark monthly spend on your cards overall?",
       reasoningBrief:
         band === "foundational"
-          ? "Monthly spend anchors realistic reward estimates."
-          : "A quick spend check keeps optimization honest.",
+          ? "Spend anchors reward sizing."
+          : "Quick spend check keeps picks realistic.",
       recordedGapKind: undefined,
     };
   }
@@ -51,72 +74,63 @@ function deterministicQuestion(
   switch (top.kind) {
     case "monthly_spend":
       return {
-        question:
-          "What’s a realistic monthly figure for everything you put on cards — groceries, bills, travel, dining?",
-        reasoningBrief: "Reward math scales directly with monthly spend.",
+        question: "Rough total monthly spend on cards (₹ ballpark)?",
+        reasoningBrief: "Rewards scale with spend.",
         recordedGapKind,
       };
     case "category_mix":
       return {
         question:
-          "Among shopping, dining out or delivery, travel, and fuel — which two are biggest for you, and would you call each low, medium, or high?",
-        reasoningBrief: "Category mix drives which accelerated earn rates matter.",
+          "Top two among shopping, dining, travel, fuel — say low / medium / high each?",
+        reasoningBrief: "Category mix picks accelerated earn lanes.",
         recordedGapKind,
       };
     case "reward_format":
       return {
-        question:
-          "Do you prefer straight cashback, travel points/miles you can redeem for flights/hotels, or a balanced mix?",
-        reasoningBrief: "Reward format decides whether to bias everyday cashback vs travel upside.",
+        question: "Prefer cashback, travel points, or a mix?",
+        reasoningBrief: "Format steers cashback vs miles-heavy cards.",
         recordedGapKind,
       };
     case "fee_tolerance":
       return {
-        question:
-          "Are you strictly low- or no-fee cards, okay with mid fees for perks, or open to premium fees for lounges and upgrades?",
-        reasoningBrief: "Fee appetite separates premium perk cards from lean, low-fee picks.",
+        question: "Strictly no annual fee, okay with mid fees, or premium with perks?",
+        reasoningBrief: "Fee appetite gates lounge-heavy vs free-card picks.",
         recordedGapKind,
       };
     case "telecom_spend_depth":
       return {
-        question:
-          "Roughly what share of your monthly spend goes to telecom — broadband, postpaid family plans, or prepaid top-ups?",
-        reasoningBrief: "Strong telecom spend makes ecosystem-specific cards worth weighing.",
+        question: "Rough share of monthly spend on telecom — broadband / family plans / recharge?",
+        reasoningBrief: "Heavy telecom favors eco-specific cards.",
         recordedGapKind,
       };
     case "travel_type":
       return {
-        question:
-          "Is most of your flying domestic within India, international, or fairly mixed?",
-        reasoningBrief: "Domestic vs international travel shifts forex rules and airline tie-ups.",
+        question: "Flights mostly domestic, international, or mixed?",
+        reasoningBrief: "Domestic vs int’l shifts forex and airline tie-ups.",
         recordedGapKind,
       };
     case "travel_frequency":
       return {
-        question:
-          "How often are you flying or booking hotels — rarely, a few trips a year, or almost every month?",
-        reasoningBrief: "Travel cadence decides how much mileage and annual-fee travel products matter.",
+        question: "Travel rarely, a few trips a year, or almost monthly?",
+        reasoningBrief: "Cadence drives miles vs simple cashback bias.",
         recordedGapKind,
       };
     case "lounge_priority":
       return {
-        question:
-          "If you paid a higher annual fee, would airport lounge access be a must-have, nice-to-have, or not important?",
-        reasoningBrief: "Lounge priority separates premium travel cards from lean cashback picks.",
+        question: "Lounges — must-have, nice-to-have, or skip?",
+        reasoningBrief: "Separates premium travel cards from lean picks.",
         recordedGapKind,
       };
     case "merchant_ecosystem":
       return {
-        question:
-          "For online spends, do you lean Amazon, Flipkart, both equally, or mostly hyperlocal apps?",
-        reasoningBrief: "Merchant ecosystems unlock category-specific cashback stacks.",
+        question: "Online spend lean Amazon, Flipkart, split, or hyperlocal apps?",
+        reasoningBrief: "Merchant tilt unlocks stacked cashback routes.",
         recordedGapKind,
       };
     default:
       return {
-        question:
-          "Tell me the single spend bucket that would upset you most if a card rewarded it poorly.",
-        reasoningBrief: "Pinpointing one weak spot avoids mismatched picks.",
+        question: "Which spend bucket hurts most if rewards are weak?",
+        reasoningBrief: "One anchor avoids mismatched picks.",
         recordedGapKind,
       };
   }
@@ -187,14 +201,17 @@ export async function generateDynamicNextQuestion(opts: {
 
     const raw = await openAiJsonCompletion(
       SYSTEM,
-      `Context JSON:\n${payload}\n\nProduce the single best next question. gapKind must be one of candidateGapKinds.`,
-      0.35
+      `Context JSON:\n${payload}\n\nOne brief question + short reasoningBrief. gapKind ∈ candidateGapKinds.`,
+      0.28
     );
 
     const o = raw as Record<string, unknown>;
-    const question = typeof o.question === "string" ? o.question.trim() : "";
+    const rawQuestion = typeof o.question === "string" ? o.question.trim() : "";
+    const question = clampQuestionToBrief(rawQuestion, MAX_QUESTION_CHARS);
     const reasoningBrief =
-      typeof o.reasoningBrief === "string" ? o.reasoningBrief.trim().slice(0, 280) : "";
+      typeof o.reasoningBrief === "string"
+        ? clampReasoningBrief(o.reasoningBrief, MAX_REASONING_CHARS)
+        : "";
     const parsedGk = parseRecordedGapKind(o.gapKind, candidateGapKinds, undefined);
     const recordedGapKind = alignRecordedGapKindFromQuestion(
       question,
@@ -204,13 +221,13 @@ export async function generateDynamicNextQuestion(opts: {
     );
 
     if (
-      question.length > 12 &&
-      question.length < 320 &&
+      question.length >= 14 &&
+      question.length <= MAX_QUESTION_CHARS &&
       !/\b(rank|best card|top \d|recommend)\b/i.test(question)
     ) {
       return {
         question,
-        reasoningBrief: reasoningBrief || fallback.reasoningBrief,
+        reasoningBrief: clampReasoningBrief(reasoningBrief || fallback.reasoningBrief, MAX_REASONING_CHARS),
         recordedGapKind: recordedGapKind ?? fallback.recordedGapKind,
       };
     }

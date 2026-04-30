@@ -114,12 +114,9 @@ async function generateNextQuestionNode(
 
   if (filtered.length === 0 && state.opportunities.length > 0) {
     return {
-      nextQuestion:
-        "Beyond what you have shared, is there another major spend bucket we should factor in — for example groceries, bills, or online shopping?",
-      reasoningBrief:
-        "Skipping repeat topics while still tightening your spend profile.",
-      assistantSummary:
-        "Skipping repeat topics while still tightening your spend profile.",
+      nextQuestion: "Anything major still missing — groceries, bills, or online shopping?",
+      reasoningBrief: "Covering gaps without repeating topics.",
+      assistantSummary: "Covering gaps without repeating topics.",
       recommendations: undefined,
       askedGapKinds: state.askedGapKinds,
     };
