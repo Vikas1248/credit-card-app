@@ -126,7 +126,7 @@ async function generateNextQuestionNode(
   }
 
   const topKind = filtered[0]?.kind;
-  const { question, reasoningBrief } = await generateDynamicNextQuestion({
+  const { question, reasoningBrief, recordedGapKind } = await generateDynamicNextQuestion({
     profile: state.mergedProfile,
     opportunities: filtered,
     confidenceBand: state.confidenceBand,
@@ -134,7 +134,10 @@ async function generateNextQuestionNode(
     askedGapKinds: state.askedGapKinds,
   });
 
-  const askedGapKinds = nextAskedGapKindsAfterQuestion(state.askedGapKinds, topKind);
+  const askedGapKinds = nextAskedGapKindsAfterQuestion(
+    state.askedGapKinds,
+    recordedGapKind ?? topKind
+  );
 
   return {
     nextQuestion: question,

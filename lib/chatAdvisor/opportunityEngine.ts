@@ -74,7 +74,7 @@ export function analyzeAdvisorOpportunities(
       opportunities,
       "travel_type",
       76,
-      "Travel-active user — domestic vs international split affects lounge/miles cards."
+      "Travel-active user — domestic vs international split affects forex and miles-heavy picks."
     );
   }
 
@@ -83,7 +83,7 @@ export function analyzeAdvisorOpportunities(
   }
 
   if (!profile.fees) {
-    push(opportunities, "fee_tolerance", 84, "Fee tolerance unknown for lounge/premium cards.");
+    push(opportunities, "fee_tolerance", 84, "Fee tolerance unknown — unlocks premium vs low-fee positioning.");
   }
 
   if (

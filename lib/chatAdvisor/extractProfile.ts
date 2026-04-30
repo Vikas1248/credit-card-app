@@ -60,9 +60,10 @@ function pickTravelType(v: unknown): TravelType | undefined {
 function pickLounge(v: unknown): LoungePriority | undefined {
   if (typeof v !== "string") return undefined;
   const n = v.trim().toLowerCase();
-  if (/\b(must|critical|essential)\b/.test(n)) return "must_have";
-  if (/\b(nice|helpful|bonus)\b/.test(n)) return "nice_to_have";
-  if (/\b(not important|don't care|skip|no lounge)\b/.test(n)) return "none";
+  if (/\b(must|critical|essential|non-negotiable)\b/.test(n)) return "must_have";
+  if (/\b(nice|helpful|bonus|prefer complimentary|complimentary)\b/.test(n)) return "nice_to_have";
+  if (/\b(not important|don't care|dont care|skip|no lounge|never|rarely|don't use)\b/.test(n)) return "none";
+  if (n === "none" || n === "nice_to_have" || n === "must_have") return n as LoungePriority;
   return undefined;
 }
 
@@ -115,6 +116,32 @@ function hasIntensifier(text: string): boolean {
   return /\b(very|mostly|frequent|frequently|often|a lot|high|heavy|regularly)\b/.test(text);
 }
 
+/** Infer lounge preference when users answer frequency/access wording without explicit must/nice/none labels. */
+function inferLoungePriorityFromKeywords(text: string): LoungePriority | undefined {
+  const t = text.toLowerCase();
+  const loungeCtx =
+    /\b(lounges?\b|airport lounges?\b|priority pass)\b/.test(t) ||
+    (/\bcomplimentary\b/.test(t) && /\b(access|visits)\b/.test(t));
+  const domesticLounges = /\bdomestic\b/.test(t) && /\b(lounges?\b|airport)\b/.test(t);
+
+  if (!loungeCtx && !domesticLounges) return undefined;
+
+  if (/\b(never|don't use|dont use|rarely|hardly ever|not important|don't care|dont care|no need|skip)\b/.test(t)) {
+    return "none";
+  }
+  if (
+    /\b(must|essential|critical|every trip|always|very frequent|multiple times (a )?(month|week))\b/.test(t)
+  ) {
+    return "must_have";
+  }
+  if (/\b(often|frequent|weekly|monthly|several times)\b/.test(t)) return "must_have";
+  if (/\b(nice|sometimes|occasionally|few times a year|okay|bonus|prefer complimentary)\b/.test(t)) {
+    return "nice_to_have";
+  }
+
+  return "nice_to_have";
+}
+
 /** Keyword fallback when APIs unavailable or return sparse intent. */
 export function keywordCredGenieExtract(message: string): Partial<CredGenieAdvisorProfile> {
   const t = message.toLowerCase();
@@ -145,9 +172,8 @@ export function keywordCredGenieExtract(message: string): Partial<CredGenieAdvis
   const telecom = pickTelecom(t);
   if (telecom) out.telecomEcosystem = telecom;
 
-  if (/\b(lounge|priority pass)\b/.test(t)) {
-    out.loungePriority = /\b(must|need|want)\b/.test(t) ? "must_have" : "nice_to_have";
-  }
+  const inferredLounges = inferLoungePriorityFromKeywords(message);
+  if (inferredLounges) out.loungePriority = inferredLounges;
 
   if (/\b(frequent|often)\b/.test(t) && /\b(travel|fly)\b/.test(t)) {
     out.travelFrequency = "frequent";
@@ -251,7 +277,8 @@ Return JSON only with nullable fields:
  "existingCards": string[]|null
 }
 
-Only populate what is clearly implied. Use null otherwise. monthlySpend must be total monthly card spend in INR if stated.`;
+Only populate what is clearly implied. Use null otherwise. monthlySpend must be total monthly card spend in INR if stated.
+For loungePriority, infer from lounge/Priority Pass mentions, visit frequency, complimentary access preference, or explicit must-have vs not important.`;
 
 /**
  * Primary entry: Langflow (legacy slots) → OpenAI JSON (rich) → keywords.
