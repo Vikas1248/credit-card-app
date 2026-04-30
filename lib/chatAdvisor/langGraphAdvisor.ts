@@ -91,8 +91,9 @@ function routeRecommendVsQuestion(state: AdvisorGraphState): "recommendCards" | 
   const m = state.mergedProfile;
   const spendOk = typeof m.monthlySpend === "number" && m.monthlySpend >= 5000;
   const cats = [m.shopping, m.dining, m.travel, m.fuel].filter(Boolean).length;
+  /** Align with profileConfidence: core profile + bump crosses this without optional slots. */
   if (
-    state.confidenceScore >= 0.85 &&
+    state.confidenceScore >= 0.8 &&
     spendOk &&
     cats >= 2 &&
     Boolean(m.preferred_rewards) &&

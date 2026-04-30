@@ -1,8 +1,10 @@
 import type { CredGenieAdvisorProfile } from "./types";
 
 /**
- * Aggregate confidence (0–1). Tuned so typical multi-turn chats cross 0.85 after
- * spend + rewards + fees + category signals — without requiring every optional field.
+ * Aggregate confidence (0–1).
+ * When monthly spend, fee stance, rewards format, and at least two spend lanes are known,
+ * we apply a small "core complete" bump so routing can recommend without chasing lounge,
+ * travel subtype, merchant tilt, etc. (those still refine scoring when present).
  */
 export function computeProfileConfidence(profile: CredGenieAdvisorProfile): number {
   let score = 0;
@@ -41,6 +43,18 @@ export function computeProfileConfidence(profile: CredGenieAdvisorProfile): numb
     finalScore = Math.min(finalScore, 0.82);
   }
 
+  const coreComplete =
+    typeof profile.monthlySpend === "number" &&
+    profile.monthlySpend >= 5000 &&
+    cats.length >= 2 &&
+    Boolean(profile.preferred_rewards) &&
+    Boolean(profile.fees);
+
+  /** Enough signal to rank cards — stops chasing lounge/travel subtype/telco depth first. */
+  if (coreComplete) {
+    finalScore = Math.min(1, Math.max(finalScore, 0.805));
+  }
+
   return finalScore;
 }
 
@@ -48,6 +62,6 @@ export type ConfidenceBand = "foundational" | "optimization" | "ready";
 
 export function confidenceBandFromScore(score: number): ConfidenceBand {
   if (score < 0.6) return "foundational";
-  if (score < 0.85) return "optimization";
+  if (score < 0.8) return "optimization";
   return "ready";
 }
