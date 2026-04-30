@@ -22,6 +22,7 @@ Logic:
 - Prioritize topOpportunity; gapKind MUST be exactly one string from candidateGapKinds (usually topOpportunity.kind).
 - Respect alreadyAskedGapTopics — don't repeat the same angle (travel cadence, fuel commute, telecom bill sizing vs shopping).
 - Never ask for percentages, “share of spend”, or wallet fractions — use plain scales (big/medium/small, low/med/high, rarely/often, rough ₹).
+- Never ask for rupee amounts scoped to one category (dining ₹, entertainment ₹, Swiggy-only monthly). Ask total monthly card spend once for monthly_spend; ask lane intensity low/med/high for category_mix — do not chain category ₹ drills.
 - CRITICAL: Unless topOpportunity.kind is exactly "lounge_priority", never ask about lounges, Priority Pass, or complimentary lounge access.
 
 reasoningBrief: single short clause, max ${MAX_REASONING_CHARS} characters — why this gap matters now (no card names).
@@ -202,6 +203,20 @@ function alignRecordedGapKindFromQuestion(
   return resolved;
 }
 
+/** Blocks LLM drift: per-category monthly ₹ duplicates monthly_spend + category_mix (lane intensity). */
+function isSplitCategorySpendQuestion(question: string): boolean {
+  const ql = question.toLowerCase();
+  const categoryCue = /\b(dining|food delivery|restaurants?|swiggy|zomato|shopping|travel|fuel|entertainment|movies|groceries|flipkart|amazon|blinkit)\b/i.test(
+    ql
+  );
+  if (!categoryCue) return false;
+  const moneyOrMonthlyCue =
+    /\b(₹|inr\b|\brupees?\b|\brs\.?\s*\d)/i.test(question) ||
+    /\b(monthly spend|typical monthly|spend per month|per month on)\b/i.test(ql) ||
+    /\bhow much\b[\s\S]{0,48}\b(spend|pay)\b/i.test(ql);
+  return moneyOrMonthlyCue;
+}
+
 export async function generateDynamicNextQuestion(opts: {
   profile: CredGenieAdvisorProfile;
   opportunities: OpportunitySignal[];
@@ -255,7 +270,8 @@ export async function generateDynamicNextQuestion(opts: {
     if (
       question.length >= 14 &&
       question.length <= MAX_QUESTION_CHARS &&
-      !/\b(rank|best card|top \d|recommend)\b/i.test(question)
+      !/\b(rank|best card|top \d|recommend)\b/i.test(question) &&
+      !isSplitCategorySpendQuestion(question)
     ) {
       return finalizeGeneratedQuestion({
         question,
