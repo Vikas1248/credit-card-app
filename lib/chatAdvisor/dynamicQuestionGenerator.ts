@@ -23,6 +23,7 @@ Logic:
 - Respect alreadyAskedGapTopics — don't repeat the same angle (travel cadence, fuel commute, telecom bill sizing vs shopping).
 - Never ask for percentages, “share of spend”, or wallet fractions — use plain scales (big/medium/small, low/med/high, rarely/often, rough ₹).
 - Never ask for rupee amounts scoped to one category (dining ₹, entertainment ₹, Swiggy-only monthly). Ask total monthly card spend once for monthly_spend; ask lane intensity low/med/high for category_mix — do not chain category ₹ drills.
+- Never ask combined multi-lane monthly ₹ (e.g. dining + shopping together, “combined” totals) — same as above: total on cards once, then lane levels.
 - CRITICAL: Unless topOpportunity.kind is exactly "lounge_priority", never ask about lounges, Priority Pass, or complimentary lounge access.
 
 reasoningBrief: single short clause, max ${MAX_REASONING_CHARS} characters — why this gap matters now (no card names).
@@ -179,23 +180,40 @@ function alignRecordedGapKindFromQuestion(
   const resolved = parsedGapKind ?? topKind;
   if (resolved === "fee_tolerance") return resolved;
 
-  const q = question.toLowerCase();
-  const mentionsLounges = /\b(lounges?\b|airport lounges?\b|priority pass)\b/.test(q);
-  const cadenceLounges = /\bhow often\b/.test(q) && mentionsLounges;
+  const qn = question.normalize("NFKC").toLowerCase();
+
+  const spendShape =
+    /\b(₹|inr\b|\brupees?\b)/i.test(question) ||
+    /\b(monthly spend|typical monthly|spend per month|per month on|each month|every month)\b/i.test(qn) ||
+    /\bmonthly\b[\s\S]{0,44}\bspend\b/i.test(qn);
+
+  const coreLaneHits = qn.match(/\b(dining|shopping|travel|fuel)\b/gi) ?? [];
+  const multiLaneMoneyAsk =
+    spendShape &&
+    candidates.includes("monthly_spend") &&
+    (/\b(combined|together)\b/i.test(qn) ||
+      /\b(dining|shopping|travel|fuel)\s+and\s+(dining|shopping|travel|fuel)\b/i.test(qn) ||
+      coreLaneHits.length >= 2);
+
+  if (multiLaneMoneyAsk) return "monthly_spend";
+
+  const mentionsLounges = /\b(lounges?\b|airport lounges?\b|priority pass)\b/.test(qn);
+  const cadenceLounges = /\bhow often\b/.test(qn) && mentionsLounges;
   const domesticLounges =
     mentionsLounges &&
-    /\b(domestic travel|domestic travels|complimentary access|visits per year|maximize your travel experience)\b/.test(q);
+    /\b(domestic travel|domestic travels|complimentary access|visits per year|maximize your travel experience)\b/.test(qn);
 
   if ((cadenceLounges || domesticLounges) && candidates.includes("lounge_priority")) {
     return "lounge_priority";
   }
 
   const diningFreqCue =
-    /\b(how often|how many times|monthly|per month)\b/i.test(q) ||
-    /\btimes\b[\s\S]{0,48}\b(month|week)\b/i.test(q);
+    /\b(how often|how many times|monthly|per month)\b/i.test(qn) ||
+    /\btimes\b[\s\S]{0,48}\b(month|week)\b/i.test(qn);
   const asksCategoryDiningCadence =
+    !spendShape &&
     candidates.includes("category_mix") &&
-    /\b(dine|dining|food delivery|restaurants?|swiggy|zomato|eat out|eating out|order food)\b/i.test(q) &&
+    /\b(dine|dining|food delivery|restaurants?|swiggy|zomato|eat out|eating out|order food)\b/i.test(qn) &&
     diningFreqCue;
 
   if (asksCategoryDiningCadence) return "category_mix";
@@ -203,18 +221,22 @@ function alignRecordedGapKindFromQuestion(
   return resolved;
 }
 
-/** Blocks LLM drift: per-category monthly ₹ duplicates monthly_spend + category_mix (lane intensity). */
+/** Blocks LLM drift: any lane-specific monthly ₹ question; use total spend + low/med/high lanes instead. */
 function isSplitCategorySpendQuestion(question: string): boolean {
-  const ql = question.toLowerCase();
-  const categoryCue = /\b(dining|food delivery|restaurants?|swiggy|zomato|shopping|travel|fuel|entertainment|movies|groceries|flipkart|amazon|blinkit)\b/i.test(
-    ql
-  );
-  if (!categoryCue) return false;
-  const moneyOrMonthlyCue =
-    /\b(₹|inr\b|\brupees?\b|\brs\.?\s*\d)/i.test(question) ||
-    /\b(monthly spend|typical monthly|spend per month|per month on)\b/i.test(ql) ||
-    /\bhow much\b[\s\S]{0,48}\b(spend|pay)\b/i.test(ql);
-  return moneyOrMonthlyCue;
+  const raw = question.normalize("NFKC").trim();
+  const ql = raw.toLowerCase();
+
+  const laneRx =
+    /\b(dining|food delivery|restaurants?|swiggy|zomato|shopping|travel|fuel|entertainment|movies|groceries|flipkart|amazon|blinkit)\b/gi;
+  const laneHits = ql.match(laneRx) ?? [];
+
+  const spendCue =
+    /\b(₹|inr\b|\brupees?\b|\brs\.?\s*\d)/i.test(raw) ||
+    /\b(monthly spend|typical monthly|spend per month|per month on|each month|every month)\b/i.test(ql) ||
+    /\bmonthly\b[\s\S]{0,44}\bspend\b/i.test(ql) ||
+    /\bhow much\b[\s\S]{0,56}\b(spend|pay)\b/i.test(ql);
+
+  return spendCue && laneHits.length >= 1;
 }
 
 export async function generateDynamicNextQuestion(opts: {
