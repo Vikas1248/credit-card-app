@@ -92,6 +92,16 @@ function quickRepliesForQuestion(question: string | null): QuickReply[] {
       { label: "Balanced", value: "A balanced mix works for me." },
     ];
   }
+  if (
+    (/\bdining\b|\bdine\b|\bfood delivery\b|\bzomato\b|\bswiggy\b|\beat out\b|\border food\b/.test(q)) &&
+    /\b(often|monthly|times|week)\b/.test(q)
+  ) {
+    return [
+      { label: "Rarely", value: "Rarely — maybe once or twice a month." },
+      { label: "~Weekly", value: "Roughly once or twice a week." },
+      { label: "Often", value: "Often — multiple times a week." },
+    ];
+  }
   if (q.includes("fee") || q.includes("premium fees")) {
     return [
       { label: "Low / no fee", value: "I'm strictly low or no annual fee." },
@@ -187,6 +197,8 @@ export function CreditAdvisorChat() {
     if (!text || loading) return;
     if (!sessionId) return;
 
+    const precedingAssistantQuestion = lastNextQuestion;
+
     const userMessage: ChatMessage = {
       id: `u-${Date.now()}`,
       role: "user",
@@ -203,7 +215,15 @@ export function CreditAdvisorChat() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
-        body: JSON.stringify({ message: text, profile, sessionId, askedGapKinds }),
+        body: JSON.stringify({
+          message: text,
+          profile,
+          sessionId,
+          askedGapKinds,
+          ...(precedingAssistantQuestion
+            ? { precedingAssistantQuestion }
+            : {}),
+        }),
       });
       const payload = (await response.json()) as
         | ChatAdvisorResponseBody

@@ -24,6 +24,7 @@ Logic:
 - CRITICAL: Unless topOpportunity.kind is exactly "lounge_priority", never ask about lounges, Priority Pass, or complimentary lounge access.
 
 reasoningBrief: single short clause, max ${MAX_REASONING_CHARS} characters — why this gap matters now (no card names).
+- reasoningBrief must NOT be preamble copy (“Understanding … can enhance …”). Start as a fragment (“Dining cadence drives cashback boosts.”).
 
 Reply as JSON only: {"question": string, "reasoningBrief": string, "gapKind": string}`;
 
@@ -52,6 +53,25 @@ function clampQuestionToBrief(raw: string, maxChars: number): string {
 
 function clampReasoningBrief(raw: string, maxChars: number): string {
   return raw.trim().replace(/\s+/g, " ").slice(0, maxChars).replace(/\s*[,;:–—.]$/u, "").trim();
+}
+
+/** Strip LLM preamble drift before UI merges reasoning + question. */
+function sanitizeReasoningBrief(raw: string): string {
+  let s = raw.trim().replace(/\s+/g, " ");
+  s = s.replace(/^understanding\s+[^.!?]+[.!?]\s*/i, "").trim();
+  s = s.replace(/^to\s+(better|help|enhance|optimize|tailor)\s+[^.!?]+[.!?]\s*/i, "").trim();
+  return s;
+}
+
+function finalizeReasoningBrief(raw: string): string {
+  return clampReasoningBrief(sanitizeReasoningBrief(raw), MAX_REASONING_CHARS);
+}
+
+function finalizeGeneratedQuestion(gen: GeneratedAdvisorQuestion): GeneratedAdvisorQuestion {
+  return {
+    ...gen,
+    reasoningBrief: finalizeReasoningBrief(gen.reasoningBrief),
+  };
 }
 
 function deterministicQuestion(
@@ -167,6 +187,16 @@ function alignRecordedGapKindFromQuestion(
     return "lounge_priority";
   }
 
+  const diningFreqCue =
+    /\b(how often|how many times|monthly|per month)\b/i.test(q) ||
+    /\btimes\b[\s\S]{0,48}\b(month|week)\b/i.test(q);
+  const asksCategoryDiningCadence =
+    candidates.includes("category_mix") &&
+    /\b(dine|dining|food delivery|restaurants?|swiggy|zomato|eat out|eating out|order food)\b/i.test(q) &&
+    diningFreqCue;
+
+  if (asksCategoryDiningCadence) return "category_mix";
+
   return resolved;
 }
 
@@ -182,7 +212,7 @@ export async function generateDynamicNextQuestion(opts: {
   const candidateGapKinds = opts.opportunities.slice(0, 8).map((o) => o.kind);
 
   if (areThirdPartyApisDisabled() || !isOpenAiConfigured()) {
-    return fallback;
+    return finalizeGeneratedQuestion(fallback);
   }
 
   try {
@@ -225,15 +255,15 @@ export async function generateDynamicNextQuestion(opts: {
       question.length <= MAX_QUESTION_CHARS &&
       !/\b(rank|best card|top \d|recommend)\b/i.test(question)
     ) {
-      return {
+      return finalizeGeneratedQuestion({
         question,
-        reasoningBrief: clampReasoningBrief(reasoningBrief || fallback.reasoningBrief, MAX_REASONING_CHARS),
+        reasoningBrief: reasoningBrief || fallback.reasoningBrief,
         recordedGapKind: recordedGapKind ?? fallback.recordedGapKind,
-      };
+      });
     }
   } catch {
     /* use fallback */
   }
 
-  return fallback;
+  return finalizeGeneratedQuestion(fallback);
 }

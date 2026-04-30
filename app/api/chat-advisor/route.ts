@@ -40,6 +40,11 @@ export async function POST(request: Request) {
     const clientAsked = parseAskedGapKindsPayload(body.askedGapKinds);
     const priorAskedGapKinds = mergeAskedGapKindsLists(storedSession.askedGapKinds, clientAsked);
 
+    const precedingAssistantQuestion =
+      typeof body.precedingAssistantQuestion === "string"
+        ? body.precedingAssistantQuestion.trim().slice(0, 600)
+        : undefined;
+
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase.from("credit_cards").select(SELECT_FIELDS);
     if (error) {
@@ -52,6 +57,7 @@ export async function POST(request: Request) {
       priorProfile,
       candidates: cards,
       priorAskedGapKinds,
+      precedingAssistantQuestion,
     });
 
     await persistAdvisorSession(sessionId, {

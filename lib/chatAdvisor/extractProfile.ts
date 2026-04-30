@@ -11,6 +11,49 @@ import type {
 } from "./types";
 import { extractIntentViaLangflow, normalizeAdvisorIntent } from "./langflowClient";
 
+/** Infer dining intensity when user replies with cadence only after a dining-focused assistant question. */
+function inferLevelFromCadenceReply(t: string): AdvisorLevel | undefined {
+  const s = t.toLowerCase();
+  if (/\b(rarely|hardly ever|almost never|once in a while|once a month or less)\b/.test(s)) return "low";
+  if (/\bnever\b/.test(s) && !/\bnever\s+(mind|thought)\b/.test(s)) return "low";
+  if (
+    /\b(daily|every day|almost daily|\d+\s*-\s*\d+\s*times\s*a\s*week|\d+\s*times\s*a\s*week|weekly)\b/.test(s)
+  ) {
+    return "high";
+  }
+  if (
+    /\b(often|frequently|few times a month|\d+\s*times\s*a\s*month|couple times a month)\b/.test(s)
+  ) {
+    return "medium";
+  }
+  if (/\b(sometimes|occasionally)\b/.test(s)) return "medium";
+  if (/\d+/.test(s) && /\b(month|week)\b/.test(s)) return "medium";
+  return undefined;
+}
+
+function inferCategoryLevelsFromPrecedingQuestion(
+  message: string,
+  preceding: string | null | undefined
+): Partial<CredGenieAdvisorProfile> {
+  const out: Partial<CredGenieAdvisorProfile> = {};
+  if (!preceding || typeof preceding !== "string") return out;
+
+  const p = preceding.toLowerCase();
+  const freqCue =
+    /\b(how often|how many times|monthly|per month)\b/i.test(p) ||
+    /\btimes\b[\s\S]{0,48}\b(month|week)\b/i.test(p);
+  const asksDiningCadence =
+    /\b(dine|dining|food delivery|restaurants?|swiggy|zomato|eat out|eating out|order food)\b/.test(p) &&
+    freqCue;
+
+  if (asksDiningCadence) {
+    const level = inferLevelFromCadenceReply(message);
+    if (level) out.dining = level;
+  }
+
+  return out;
+}
+
 const LEVELS = new Set(["low", "medium", "high"]);
 
 function pickLevel(v: unknown): AdvisorLevel | undefined {
@@ -147,7 +190,9 @@ export function keywordCredGenieExtract(message: string): Partial<CredGenieAdvis
   const t = message.toLowerCase();
   const out: Partial<CredGenieAdvisorProfile> = {};
 
-  if (/\b(swiggy|zomato|restaurant|dining|food delivery|eating out)\b/.test(t)) {
+  if (
+    /\b(swiggy|zomato|restaurant|dining|food delivery|eating out|dine out|eat out|takeaway|take-out|ordering food)\b/.test(t)
+  ) {
     out.dining = hasIntensifier(t) ? "high" : "medium";
   }
   if (/\b(travel|flight|flights|hotel|trip|airport)\b/.test(t)) {
@@ -278,23 +323,37 @@ Return JSON only with nullable fields:
 }
 
 Only populate what is clearly implied. Use null otherwise. monthlySpend must be total monthly card spend in INR if stated.
-For loungePriority, infer from lounge/Priority Pass mentions, visit frequency, complimentary access preference, or explicit must-have vs not important.`;
+For loungePriority, infer from lounge/Priority Pass mentions, visit frequency, complimentary access preference, or explicit must-have vs not important.
+When the user states how often they dine out or order food (times per week/month), map dining to low/medium/high even without naming restaurants.`;
+
+export type ExtractCredGenieProfileOpts = {
+  precedingAssistantQuestion?: string | null;
+};
 
 /**
  * Primary entry: Langflow (legacy slots) → OpenAI JSON (rich) → keywords.
  */
-export async function extractCredGenieProfile(message: string): Promise<Partial<CredGenieAdvisorProfile>> {
+export async function extractCredGenieProfile(
+  message: string,
+  opts?: ExtractCredGenieProfileOpts
+): Promise<Partial<CredGenieAdvisorProfile>> {
   const keyword = keywordCredGenieExtract(message);
+  const fromPreceding = inferCategoryLevelsFromPrecedingQuestion(
+    message,
+    opts?.precedingAssistantQuestion
+  );
+  let merged = { ...keyword, ...fromPreceding };
 
   if (areThirdPartyApisDisabled()) {
-    return keyword;
+    return merged;
   }
 
   const langflowParsed = await extractIntentViaLangflow(message);
   if (langflowParsed) {
     const normalizedLangflow = normalizeAdvisorIntent(langflowParsed) as Partial<CredGenieAdvisorProfile>;
     if (Object.keys(normalizedLangflow).length > 0) {
-      return { ...keyword, ...normalizedLangflow };
+      merged = { ...merged, ...normalizedLangflow };
+      return merged;
     }
   }
 
@@ -303,12 +362,12 @@ export async function extractCredGenieProfile(message: string): Promise<Partial<
       const raw = await openAiJsonCompletion(OPENAI_SYSTEM, message, 0.2);
       const fromAi = normalizeOpenAiExtract(raw);
       if (Object.keys(fromAi).length > 0) {
-        return { ...keyword, ...fromAi };
+        return { ...merged, ...fromAi };
       }
     } catch {
       /* fall through */
     }
   }
 
-  return keyword;
+  return merged;
 }

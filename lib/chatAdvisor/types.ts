@@ -42,6 +42,8 @@ export type ChatAdvisorRequestBody = {
   sessionId?: string;
   /** Echo prior asks so dedupe works even when DB persistence fails. */
   askedGapKinds?: AdvisorGapKind[];
+  /** Last assistant question shown before this user reply — improves extraction for short answers. */
+  precedingAssistantQuestion?: string | null;
 };
 
 export type ChatAdvisorResponseBody = {

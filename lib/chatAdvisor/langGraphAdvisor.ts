@@ -34,6 +34,8 @@ import { getTopRecommendationsForProfile } from "./recommend";
 
 const AdvisorState = Annotation.Root({
   userMessage: Annotation<string>(),
+  /** Prior assistant question — helps interpret terse replies (e.g. cadence-only answers). */
+  precedingAssistantQuestion: Annotation<string | undefined>(),
   priorProfile: Annotation<CredGenieAdvisorProfile>(),
   extracted: Annotation<Partial<CredGenieAdvisorProfile> | undefined>(),
   mergedProfile: Annotation<CredGenieAdvisorProfile>(),
@@ -203,11 +205,17 @@ export async function runAdvisorConversationTurn(input: {
   priorProfile: CredGenieAdvisorProfile;
   candidates: CardRowForScoring[];
   priorAskedGapKinds?: AdvisorGapKind[];
+  precedingAssistantQuestion?: string | null;
 }): Promise<AdvisorConversationState> {
   const app = getCompiledAdvisorGraph();
   const askedGapKinds = input.priorAskedGapKinds ?? [];
+  const priorQ =
+    typeof input.precedingAssistantQuestion === "string"
+      ? input.precedingAssistantQuestion.trim().slice(0, 600)
+      : undefined;
   const result = (await app.invoke({
     userMessage: input.userMessage,
+    precedingAssistantQuestion: priorQ,
     priorProfile: input.priorProfile,
     extracted: undefined,
     mergedProfile: input.priorProfile,

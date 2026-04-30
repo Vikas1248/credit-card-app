@@ -2,7 +2,16 @@ import type { CredGenieAdvisorProfile } from "./types";
 import type { AdvisorGapKind, OpportunitySignal } from "./conversationState";
 
 /** Gaps where a second ask is acceptable if the profile field is still empty. */
-const REPEAT_OK = new Set<AdvisorGapKind>(["monthly_spend", "reward_format", "fee_tolerance"]);
+const REPEAT_OK = new Set<AdvisorGapKind>([
+  "monthly_spend",
+  "reward_format",
+  "fee_tolerance",
+  "category_mix",
+]);
+
+function filledCategoryCount(profile: CredGenieAdvisorProfile): number {
+  return [profile.shopping, profile.dining, profile.travel, profile.fuel].filter(Boolean).length;
+}
 
 function gapStillOpen(kind: AdvisorGapKind, profile: CredGenieAdvisorProfile): boolean {
   switch (kind) {
@@ -12,6 +21,8 @@ function gapStillOpen(kind: AdvisorGapKind, profile: CredGenieAdvisorProfile): b
       return !profile.preferred_rewards;
     case "fee_tolerance":
       return !profile.fees;
+    case "category_mix":
+      return filledCategoryCount(profile) < 2;
     default:
       return false;
   }
@@ -74,7 +85,14 @@ export function dedupeShoppingDiningTelecomOpportunities(
 
   const shoppingClusterAsked = askedGapKinds.some((k) => SHOPPING_OR_MERCHANT_SHAPE.has(k));
   if (shoppingClusterAsked) {
-    out = out.filter((o) => !SHOPPING_OR_MERCHANT_SHAPE.has(o.kind));
+    const cats = filledCategoryCount(profile);
+    const categoryMixNeedsRepeat =
+      cats < 2 && askedGapKinds.includes("category_mix");
+    out = out.filter((o) => {
+      if (!SHOPPING_OR_MERCHANT_SHAPE.has(o.kind)) return true;
+      if (categoryMixNeedsRepeat && o.kind === "category_mix") return true;
+      return false;
+    });
   }
 
   out.sort((a, b) => b.priority - a.priority);
