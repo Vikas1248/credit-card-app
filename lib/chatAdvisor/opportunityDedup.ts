@@ -22,7 +22,7 @@ function gapStillOpen(kind: AdvisorGapKind, profile: CredGenieAdvisorProfile): b
     case "fee_tolerance":
       return !profile.fees;
     case "category_mix":
-      return filledCategoryCount(profile) < 2;
+      return filledCategoryCount(profile) < 1;
     default:
       return false;
   }
@@ -87,7 +87,7 @@ export function dedupeShoppingDiningTelecomOpportunities(
   if (shoppingClusterAsked) {
     const cats = filledCategoryCount(profile);
     const categoryMixNeedsRepeat =
-      cats < 2 && askedGapKinds.includes("category_mix");
+      cats < 1 && askedGapKinds.includes("category_mix");
     out = out.filter((o) => {
       if (!SHOPPING_OR_MERCHANT_SHAPE.has(o.kind)) return true;
       if (categoryMixNeedsRepeat && o.kind === "category_mix") return true;

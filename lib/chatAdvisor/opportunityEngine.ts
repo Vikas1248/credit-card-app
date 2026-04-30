@@ -51,12 +51,12 @@ export function analyzeAdvisorOpportunities(
   const filledCats = filledCategoryCount(profile);
   const travelCadenceGap = travelNeedsCadence(profile);
 
-  if (filledCats < 2 && !travelCadenceGap) {
+  if (filledCats < 1 && !travelCadenceGap) {
     push(
       opportunities,
       "category_mix",
       92,
-      "Need at least two spend lanes (shopping/dining/travel/fuel) with intensity."
+      "Need at least one anchored spend lane (shopping/dining/travel/fuel) with intensity."
     );
   }
 

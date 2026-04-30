@@ -101,8 +101,8 @@ function deterministicQuestion(
     case "category_mix":
       return {
         question:
-          "Top two among shopping, dining, travel, fuel — say low / medium / high each?",
-        reasoningBrief: "Category mix picks accelerated earn lanes.",
+          "Strongest lane among shopping, dining, travel, fuel — low / medium / high? (Second lane optional.)",
+        reasoningBrief: "One anchored lane is enough to rank; extras sharpen splits.",
         recordedGapKind,
       };
     case "reward_format":

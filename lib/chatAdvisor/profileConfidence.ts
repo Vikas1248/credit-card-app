@@ -2,9 +2,8 @@ import type { CredGenieAdvisorProfile } from "./types";
 
 /**
  * Aggregate confidence (0–1).
- * When monthly spend, fee stance, rewards format, and at least two spend lanes are known,
- * we apply a small "core complete" bump so routing can recommend without chasing lounge,
- * travel subtype, merchant tilt, etc. (those still refine scoring when present).
+ * When monthly spend, fee stance, rewards format, and at least **one** spend lane are known,
+ * we floor confidence so routing can recommend without chasing a second lane, lounge, travel subtype, etc.
  */
 export function computeProfileConfidence(profile: CredGenieAdvisorProfile): number {
   let score = 0;
@@ -46,7 +45,7 @@ export function computeProfileConfidence(profile: CredGenieAdvisorProfile): numb
   const coreComplete =
     typeof profile.monthlySpend === "number" &&
     profile.monthlySpend >= 5000 &&
-    cats.length >= 2 &&
+    cats.length >= 1 &&
     Boolean(profile.preferred_rewards) &&
     Boolean(profile.fees);
 
