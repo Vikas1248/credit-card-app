@@ -42,6 +42,8 @@ export type AdvisorConversationState = {
   assistantSummary?: string;
   /** Cards loaded in route — passed through for deterministic ranking only */
   candidates?: CardRowForScoring[];
+  /** Gap kinds already used for a question this session (persisted server-side). */
+  askedGapKinds: AdvisorGapKind[];
 };
 
 export function emptyAdvisorState(
@@ -57,5 +59,6 @@ export function emptyAdvisorState(
     confidenceScore: 0,
     confidenceBand: "foundational",
     nextQuestion: null,
+    askedGapKinds: [],
   };
 }

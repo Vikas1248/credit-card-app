@@ -10,8 +10,34 @@ function push(
   out.push({ kind, priority, hint });
 }
 
+function filledCategoryCount(profile: CredGenieAdvisorProfile): number {
+  return [profile.shopping, profile.dining, profile.travel, profile.fuel].filter(Boolean).length;
+}
+
+/** User shows travel spend level but not how often they fly — handle before generic category_mix. */
+function travelNeedsCadence(profile: CredGenieAdvisorProfile): boolean {
+  return (
+    Boolean(profile.travel) &&
+    !profile.travelFrequency &&
+    (profile.travel === "high" || profile.travel === "medium")
+  );
+}
+
+function shouldAskTravelType(profile: CredGenieAdvisorProfile): boolean {
+  if (profile.travelType) return false;
+  if (!profile.travelFrequency || profile.travelFrequency === "rarely") return false;
+  return (
+    profile.travel === "high" ||
+    profile.travel === "medium" ||
+    profile.travelFrequency === "frequent" ||
+    profile.travelFrequency === "occasionally"
+  );
+}
+
 /**
  * Identify missing high-value attributes and ecosystem hooks for follow-up questions.
+ * Travel is sequenced: cadence → domestic/international — never stack with generic
+ * “category mix” when only travel cadence is missing (avoids duplicate travel/fuel asks).
  */
 export function analyzeAdvisorOpportunities(
   profile: CredGenieAdvisorProfile
@@ -22,18 +48,33 @@ export function analyzeAdvisorOpportunities(
     push(opportunities, "monthly_spend", 100, "Need typical monthly card spend for reward sizing.");
   }
 
-  const filledCats = [
-    profile.shopping,
-    profile.dining,
-    profile.travel,
-    profile.fuel,
-  ].filter(Boolean).length;
-  if (filledCats < 2) {
+  const filledCats = filledCategoryCount(profile);
+  const travelCadenceGap = travelNeedsCadence(profile);
+
+  if (filledCats < 2 && !travelCadenceGap) {
     push(
       opportunities,
       "category_mix",
       92,
       "Need at least two spend lanes (shopping/dining/travel/fuel) with intensity."
+    );
+  }
+
+  if (travelCadenceGap) {
+    push(
+      opportunities,
+      "travel_frequency",
+      91,
+      "Travel spend level known but cadence unknown — ask before domestic/international split."
+    );
+  }
+
+  if (shouldAskTravelType(profile)) {
+    push(
+      opportunities,
+      "travel_type",
+      76,
+      "Travel-active user — domestic vs international split affects lounge/miles cards."
     );
   }
 
@@ -51,31 +92,6 @@ export function analyzeAdvisorOpportunities(
       "telecom_spend_depth",
       78,
       `User tied to ${profile.telecomEcosystem}; quantify broadband/recharge share of spend.`
-    );
-  }
-
-  if (
-    profile.travel === "high" ||
-    profile.travel === "medium" ||
-    profile.travelFrequency === "frequent" ||
-    profile.travelFrequency === "occasionally"
-  ) {
-    if (!profile.travelType) {
-      push(
-        opportunities,
-        "travel_type",
-        76,
-        "Travel-active user — domestic vs international split affects lounge/miles cards."
-      );
-    }
-  }
-
-  if (!profile.travelFrequency && (profile.travel === "high" || profile.travel === "medium")) {
-    push(
-      opportunities,
-      "travel_frequency",
-      70,
-      "Coarse travel frequency refines airline/lounge recommendations."
     );
   }
 

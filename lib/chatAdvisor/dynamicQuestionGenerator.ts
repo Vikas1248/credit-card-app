@@ -2,7 +2,7 @@ import { isOpenAiConfigured, openAiJsonCompletion } from "@/lib/ai/openaiClient"
 import { areThirdPartyApisDisabled } from "@/lib/config/externalAccess";
 import type { CredGenieAdvisorProfile } from "./types";
 import type { ConfidenceBand } from "./profileConfidence";
-import type { OpportunitySignal } from "./conversationState";
+import type { OpportunitySignal, AdvisorGapKind } from "./conversationState";
 
 const SYSTEM = `You are CredGenie AI, a highly intelligent Indian credit card advisor.
 Your purpose is to maximize user rewards, savings, and benefits.
@@ -14,6 +14,8 @@ Rules:
 - Detect ecosystem opportunities (Airtel/Jio telecom, Amazon/Flipkart/Swiggy, travel, fuel, premium perks).
 - Be concise, premium, and trustworthy.
 - Never rank or name specific cards — scoring is handled elsewhere.
+- If "alreadyAskedGapTopics" lists a topic id, do not ask a similar question again for that session (especially travel cadence, fuel/commute, or combined travel+fuel wording).
+- Stick to the single highest-priority opportunity in "topOpportunity" — one clear question only.
 
 Reply as JSON only: {"question": string, "reasoningBrief": string}
 reasoningBrief: max 220 chars, warm professional tone — why you're asking this now (no card names).`;
@@ -103,6 +105,7 @@ export async function generateDynamicNextQuestion(opts: {
   opportunities: OpportunitySignal[];
   confidenceBand: ConfidenceBand;
   userMessage: string;
+  askedGapKinds?: AdvisorGapKind[];
 }): Promise<{ question: string; reasoningBrief: string }> {
   const top = opts.opportunities[0];
   const fallback = deterministicQuestion(opts.profile, top, opts.confidenceBand);
@@ -118,6 +121,7 @@ export async function generateDynamicNextQuestion(opts: {
         topOpportunity: top ?? null,
         confidenceBand: opts.confidenceBand,
         userLastMessage: opts.userMessage,
+        alreadyAskedGapTopics: opts.askedGapKinds ?? [],
       },
       null,
       0

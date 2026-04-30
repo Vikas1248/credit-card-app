@@ -4,8 +4,8 @@ import { NextResponse } from "next/server";
 import { runAdvisorConversationTurn } from "@/lib/chatAdvisor/langGraphAdvisor";
 import {
   hydratePriorProfile,
-  loadAdvisorSessionProfile,
-  persistAdvisorSessionProfile,
+  loadAdvisorSession,
+  persistAdvisorSession,
   sanitizeCredGeniePayload,
 } from "@/lib/chatAdvisor/sessionPersistence";
 import type {
@@ -32,8 +32,8 @@ export async function POST(request: Request) {
         : randomUUID();
 
     const clientProfile = sanitizeCredGeniePayload(body.profile);
-    const storedProfile = await loadAdvisorSessionProfile(sessionId);
-    const priorProfile = hydratePriorProfile(storedProfile, clientProfile);
+    const storedSession = await loadAdvisorSession(sessionId);
+    const priorProfile = hydratePriorProfile(storedSession.profile, clientProfile);
 
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase.from("credit_cards").select(SELECT_FIELDS);
@@ -46,9 +46,13 @@ export async function POST(request: Request) {
       userMessage: message,
       priorProfile,
       candidates: cards,
+      priorAskedGapKinds: storedSession.askedGapKinds,
     });
 
-    await persistAdvisorSessionProfile(sessionId, turn.mergedProfile);
+    await persistAdvisorSession(sessionId, {
+      profile: turn.mergedProfile,
+      askedGapKinds: turn.askedGapKinds,
+    });
 
     const response: ChatAdvisorResponseBody = {
       profile: turn.mergedProfile,

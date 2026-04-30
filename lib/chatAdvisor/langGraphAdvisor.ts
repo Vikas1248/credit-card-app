@@ -23,6 +23,10 @@ import type { CredGenieAdvisorProfile } from "./types";
 import { mergeCredGenieAdvisorProfile, toRecommendUserProfile } from "./profile";
 import { computeProfileConfidence, confidenceBandFromScore } from "./profileConfidence";
 import { analyzeAdvisorOpportunities } from "./opportunityEngine";
+import {
+  filterOpportunitiesAfterAsked,
+  nextAskedGapKindsAfterQuestion,
+} from "./opportunityDedup";
 import { generateDynamicNextQuestion } from "./dynamicQuestionGenerator";
 import { extractCredGenieProfile } from "./extractProfile";
 import { getTopRecommendationsForProfile } from "./recommend";
@@ -41,6 +45,7 @@ const AdvisorState = Annotation.Root({
   recommendations: Annotation<RecommendedCard[] | undefined>(),
   assistantSummary: Annotation<string | undefined>(),
   candidates: Annotation<CardRowForScoring[] | undefined>(),
+  askedGapKinds: Annotation<AdvisorGapKind[]>(),
 });
 
 type AdvisorGraphState = typeof AdvisorState.State;
@@ -87,17 +92,42 @@ function routeRecommendVsQuestion(state: AdvisorGraphState): "recommendCards" | 
 async function generateNextQuestionNode(
   state: AdvisorGraphState
 ): Promise<Partial<AdvisorGraphState>> {
+  const filtered = filterOpportunitiesAfterAsked(
+    state.opportunities,
+    state.askedGapKinds,
+    state.mergedProfile
+  );
+
+  if (filtered.length === 0 && state.opportunities.length > 0) {
+    return {
+      nextQuestion:
+        "Beyond what you have shared, is there another major spend bucket we should factor in — for example groceries, bills, or online shopping?",
+      reasoningBrief:
+        "Skipping repeat topics while still tightening your spend profile.",
+      assistantSummary:
+        "Skipping repeat topics while still tightening your spend profile.",
+      recommendations: undefined,
+      askedGapKinds: state.askedGapKinds,
+    };
+  }
+
+  const topKind = filtered[0]?.kind;
   const { question, reasoningBrief } = await generateDynamicNextQuestion({
     profile: state.mergedProfile,
-    opportunities: state.opportunities,
+    opportunities: filtered,
     confidenceBand: state.confidenceBand,
     userMessage: state.userMessage,
+    askedGapKinds: state.askedGapKinds,
   });
+
+  const askedGapKinds = nextAskedGapKindsAfterQuestion(state.askedGapKinds, topKind);
+
   return {
     nextQuestion: question,
     reasoningBrief,
     assistantSummary: reasoningBrief,
     recommendations: undefined,
+    askedGapKinds,
   };
 }
 
@@ -157,8 +187,10 @@ export async function runAdvisorConversationTurn(input: {
   userMessage: string;
   priorProfile: CredGenieAdvisorProfile;
   candidates: CardRowForScoring[];
+  priorAskedGapKinds?: AdvisorGapKind[];
 }): Promise<AdvisorConversationState> {
   const app = getCompiledAdvisorGraph();
+  const askedGapKinds = input.priorAskedGapKinds ?? [];
   const result = (await app.invoke({
     userMessage: input.userMessage,
     priorProfile: input.priorProfile,
@@ -173,6 +205,7 @@ export async function runAdvisorConversationTurn(input: {
     recommendations: undefined,
     assistantSummary: undefined,
     candidates: input.candidates,
+    askedGapKinds,
   })) as AdvisorGraphState;
 
   return {
@@ -189,6 +222,7 @@ export async function runAdvisorConversationTurn(input: {
     recommendations: result.recommendations,
     assistantSummary: result.assistantSummary,
     candidates: result.candidates,
+    askedGapKinds: result.askedGapKinds,
   };
 }
 

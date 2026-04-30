@@ -130,6 +130,8 @@ export function CreditAdvisorChat() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<RecommendedCard[]>([]);
   const [confidenceScore, setConfidenceScore] = useState<number>(0);
+  /** Avoid showing 0% before any server round-trip (reads like a bug). */
+  const [confidenceReady, setConfidenceReady] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastNextQuestion, setLastNextQuestion] = useState<string | null>(null);
@@ -222,6 +224,7 @@ export function CreditAdvisorChat() {
           ? advisorPayload.confidenceScore
           : 0
       );
+      setConfidenceReady(true);
       setLastNextQuestion(advisorPayload.nextQuestion ?? null);
 
       if (advisorPayload.recommendations?.length) {
@@ -252,10 +255,15 @@ export function CreditAdvisorChat() {
       <section className="rounded-[1.75rem] border border-violet-100 bg-white/95 p-4 shadow-lg shadow-violet-900/[0.08] ring-1 ring-white/70 sm:p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h3 className="text-lg font-semibold text-zinc-950">CredGenie advisor</h3>
+            <h3
+              className="text-lg font-semibold text-zinc-950"
+              title="Your chat updates a structured profile; card order always comes from CredGenie's scoring engine, not from the AI that writes questions."
+            >
+              CredGenie advisor
+            </h3>
             <p className="mt-1 text-sm text-zinc-600">
-              Free-form chat → structured profile → deterministic card scores. Rankings never come
-              from the LLM.
+              Describe how you spend in plain language — I&apos;ll narrow it down with one follow-up
+              at a time, then surface card picks matched to that profile.
             </p>
           </div>
           <div className="min-w-[140px] flex-1 rounded-2xl border border-violet-100 bg-violet-50/50 px-3 py-2">
@@ -264,11 +272,19 @@ export function CreditAdvisorChat() {
             </p>
             <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-violet-200/80">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-violet-600 to-blue-600 transition-[width] duration-500 ease-out"
-                style={{ width: `${pct}%` }}
+                className={`h-full rounded-full bg-gradient-to-r from-violet-600 to-blue-600 transition-[width] duration-500 ease-out ${
+                  !confidenceReady ? "opacity-40" : ""
+                }`}
+                style={{ width: confidenceReady ? `${pct}%` : "0%" }}
               />
             </div>
-            <p className="mt-1 text-xs font-medium text-violet-900">{pct}%</p>
+            <p className="mt-1 text-xs font-medium text-violet-900">
+              {confidenceReady ? (
+                `${pct}%`
+              ) : (
+                <span className="font-normal text-violet-700/90">Updates after your first reply</span>
+              )}
+            </p>
           </div>
         </div>
 
