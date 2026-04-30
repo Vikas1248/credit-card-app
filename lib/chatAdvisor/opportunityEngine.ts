@@ -86,7 +86,11 @@ export function analyzeAdvisorOpportunities(
     push(opportunities, "fee_tolerance", 84, "Fee tolerance unknown for lounge/premium cards.");
   }
 
-  if (profile.telecomEcosystem === "airtel" || profile.telecomEcosystem === "jio") {
+  if (
+    profile.telecomEcosystem === "airtel" ||
+    profile.telecomEcosystem === "jio" ||
+    profile.telecomEcosystem === "vi"
+  ) {
     push(
       opportunities,
       "telecom_spend_depth",

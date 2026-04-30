@@ -1,18 +1,9 @@
 import type { RecommendedCard } from "@/lib/recommendV2/recommendCardsApiTypes";
 import type { CardRowForScoring } from "@/lib/recommendV2/scoring";
 import type { CredGenieAdvisorProfile } from "./types";
+import type { AdvisorGapKind } from "./gapKinds";
 
-/** Prioritized gap / upsell dimension for dynamic questioning. */
-export type AdvisorGapKind =
-  | "monthly_spend"
-  | "category_mix"
-  | "reward_format"
-  | "fee_tolerance"
-  | "telecom_spend_depth"
-  | "travel_type"
-  | "travel_frequency"
-  | "lounge_priority"
-  | "merchant_ecosystem";
+export type { AdvisorGapKind } from "./gapKinds";
 
 export type OpportunitySignal = {
   kind: AdvisorGapKind;

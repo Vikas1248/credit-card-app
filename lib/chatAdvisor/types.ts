@@ -1,4 +1,5 @@
 import type { RecommendedCard } from "@/lib/recommendV2/recommendCardsApiTypes";
+import type { AdvisorGapKind } from "./gapKinds";
 
 export type AdvisorLevel = "low" | "medium" | "high";
 export type AdvisorRewardPreference = "cashback" | "travel" | "mixed";
@@ -39,12 +40,16 @@ export type ChatAdvisorRequestBody = {
   profile?: CredGenieAdvisorProfile;
   /** Stable id for Supabase-backed session persistence. */
   sessionId?: string;
+  /** Echo prior asks so dedupe works even when DB persistence fails. */
+  askedGapKinds?: AdvisorGapKind[];
 };
 
 export type ChatAdvisorResponseBody = {
   profile: CredGenieAdvisorProfile;
   /** Always returned — create on first turn if omitted in request. */
   sessionId: string;
+  /** Gap ids already used for questions this session (merge client + server). */
+  askedGapKinds: AdvisorGapKind[];
   /** 0–1 aggregate from `profileConfidence` (not persisted on profile blob). */
   confidenceScore: number;
   /** Short human rationale for the next question or recommendations (never card ordering). */

@@ -39,3 +39,44 @@ export function nextAskedGapKindsAfterQuestion(
   if (!usedKind || prior.includes(usedKind)) return prior;
   return [...prior, usedKind];
 }
+
+const SHOPPING_OR_MERCHANT_SHAPE = new Set<AdvisorGapKind>(["category_mix", "merchant_ecosystem"]);
+
+/**
+ * telecom_spend_depth + category_mix often produce the same “shopping vs telecom %” LLM question.
+ * Also treat category_mix vs merchant_ecosystem as one “shopping-shape” slot per session.
+ */
+export function dedupeShoppingDiningTelecomOpportunities(
+  opportunities: OpportunitySignal[],
+  profile: CredGenieAdvisorProfile,
+  askedGapKinds: AdvisorGapKind[]
+): OpportunitySignal[] {
+  const hasTelecomEco =
+    profile.telecomEcosystem === "airtel" ||
+    profile.telecomEcosystem === "jio" ||
+    profile.telecomEcosystem === "vi";
+
+  let out = [...opportunities];
+
+  const telecomStillQueued =
+    hasTelecomEco &&
+    !askedGapKinds.includes("telecom_spend_depth") &&
+    out.some((o) => o.kind === "telecom_spend_depth");
+
+  if (telecomStillQueued) {
+    out = out.filter((o) => !SHOPPING_OR_MERCHANT_SHAPE.has(o.kind));
+  }
+
+  const telecomAlreadyPrompted = askedGapKinds.includes("telecom_spend_depth");
+  if (hasTelecomEco && telecomAlreadyPrompted) {
+    out = out.filter((o) => o.kind !== "category_mix");
+  }
+
+  const shoppingClusterAsked = askedGapKinds.some((k) => SHOPPING_OR_MERCHANT_SHAPE.has(k));
+  if (shoppingClusterAsked) {
+    out = out.filter((o) => !SHOPPING_OR_MERCHANT_SHAPE.has(o.kind));
+  }
+
+  out.sort((a, b) => b.priority - a.priority);
+  return out;
+}

@@ -1,7 +1,7 @@
 import type { CredGenieAdvisorProfile } from "./types";
 import { mergeCredGenieAdvisorProfile } from "./profile";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
-import type { AdvisorGapKind } from "./conversationState";
+import type { AdvisorGapKind } from "./gapKinds";
 
 const TABLE = "credgenie_advisor_sessions";
 const ENVELOPE_MARKER = "credgenieEnvelope";
@@ -89,7 +89,7 @@ function decodeStoredProfileColumn(raw: unknown): AdvisorSessionBlob {
   if (o[ENVELOPE_MARKER] === true && o.profile && typeof o.profile === "object") {
     return {
       profile: normalizeProfileBlob(o.profile as Record<string, unknown>),
-      askedGapKinds: normalizeAskedGapKinds(o.askedGapKinds),
+      askedGapKinds: parseAskedGapKindsPayload(o.askedGapKinds),
     };
   }
   return {
@@ -98,7 +98,8 @@ function decodeStoredProfileColumn(raw: unknown): AdvisorSessionBlob {
   };
 }
 
-function normalizeAskedGapKinds(raw: unknown): AdvisorGapKind[] {
+/** Validates client-supplied gap ids for merge with server-side session memory. */
+export function parseAskedGapKindsPayload(raw: unknown): AdvisorGapKind[] {
   if (!Array.isArray(raw)) return [];
   const out: AdvisorGapKind[] = [];
   for (const item of raw) {
@@ -107,6 +108,17 @@ function normalizeAskedGapKinds(raw: unknown): AdvisorGapKind[] {
     if (!out.includes(item as AdvisorGapKind)) out.push(item as AdvisorGapKind);
   }
   return out.slice(0, 24);
+}
+
+/** Union merge so dedupe survives flaky DB writes when the client echoes prior asks. */
+export function mergeAskedGapKindsLists(...lists: AdvisorGapKind[][]): AdvisorGapKind[] {
+  const out: AdvisorGapKind[] = [];
+  for (const list of lists) {
+    for (const k of list) {
+      if (!out.includes(k)) out.push(k);
+    }
+  }
+  return out.slice(0, 32);
 }
 
 function normalizeProfileBlob(raw: Record<string, unknown>): CredGenieAdvisorProfile {

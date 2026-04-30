@@ -5,6 +5,8 @@ import { runAdvisorConversationTurn } from "@/lib/chatAdvisor/langGraphAdvisor";
 import {
   hydratePriorProfile,
   loadAdvisorSession,
+  mergeAskedGapKindsLists,
+  parseAskedGapKindsPayload,
   persistAdvisorSession,
   sanitizeCredGeniePayload,
 } from "@/lib/chatAdvisor/sessionPersistence";
@@ -35,6 +37,9 @@ export async function POST(request: Request) {
     const storedSession = await loadAdvisorSession(sessionId);
     const priorProfile = hydratePriorProfile(storedSession.profile, clientProfile);
 
+    const clientAsked = parseAskedGapKindsPayload(body.askedGapKinds);
+    const priorAskedGapKinds = mergeAskedGapKindsLists(storedSession.askedGapKinds, clientAsked);
+
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase.from("credit_cards").select(SELECT_FIELDS);
     if (error) {
@@ -46,7 +51,7 @@ export async function POST(request: Request) {
       userMessage: message,
       priorProfile,
       candidates: cards,
-      priorAskedGapKinds: storedSession.askedGapKinds,
+      priorAskedGapKinds,
     });
 
     await persistAdvisorSession(sessionId, {
@@ -57,6 +62,7 @@ export async function POST(request: Request) {
     const response: ChatAdvisorResponseBody = {
       profile: turn.mergedProfile,
       sessionId,
+      askedGapKinds: turn.askedGapKinds,
       confidenceScore: turn.confidenceScore,
       ...(turn.reasoningBrief || turn.assistantSummary
         ? { reasoningBrief: turn.reasoningBrief ?? turn.assistantSummary }

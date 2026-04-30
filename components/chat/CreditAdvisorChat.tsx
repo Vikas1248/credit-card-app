@@ -8,6 +8,7 @@ import type {
   ChatAdvisorResponseBody,
   CredGenieAdvisorProfile,
 } from "@/lib/chatAdvisor/types";
+import type { AdvisorGapKind } from "@/lib/chatAdvisor/gapKinds";
 import type { RecommendedCard } from "@/lib/recommendV2/recommendCardsApiTypes";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +26,30 @@ const SAMPLE_PROMPTS = [
 ] as const;
 
 const SESSION_ID_KEY = "credgenie:advisor-session-id";
+const SESSION_ASKED_KEY = "credgenie:advisor-asked-gaps";
+
+function loadStoredAskedGapKinds(sessionId: string): AdvisorGapKind[] {
+  try {
+    const raw = sessionStorage.getItem(SESSION_ASKED_KEY);
+    if (!raw) return [];
+    const o = JSON.parse(raw) as { sessionId?: string; askedGapKinds?: unknown };
+    if (o.sessionId !== sessionId || !Array.isArray(o.askedGapKinds)) return [];
+    return o.askedGapKinds.filter((x): x is AdvisorGapKind => typeof x === "string") as AdvisorGapKind[];
+  } catch {
+    return [];
+  }
+}
+
+function persistStoredAskedGapKinds(sessionId: string, askedGapKinds: AdvisorGapKind[]) {
+  try {
+    sessionStorage.setItem(
+      SESSION_ASKED_KEY,
+      JSON.stringify({ sessionId, askedGapKinds })
+    );
+  } catch {
+    /* ignore */
+  }
+}
 
 type QuickReply = {
   label: string;
@@ -98,25 +123,6 @@ function quickRepliesForQuestion(question: string | null): QuickReply[] {
   return [];
 }
 
-function profileSummaryLines(profile: CredGenieAdvisorProfile): string[] {
-  const lines: string[] = [];
-  if (typeof profile.monthlySpend === "number" && profile.monthlySpend >= 5000) {
-    lines.push(`Monthly card spend ~ ${formatInr(profile.monthlySpend)}`);
-  }
-  if (profile.telecomEcosystem && profile.telecomEcosystem !== "none") {
-    lines.push(`Telecom: ${profile.telecomEcosystem}`);
-  }
-  if (profile.preferredBrands?.length) {
-    lines.push(`Brands: ${profile.preferredBrands.join(", ")}`);
-  }
-  if (profile.travelFrequency) lines.push(`Travel cadence: ${profile.travelFrequency}`);
-  if (profile.travelType) lines.push(`Travel type: ${profile.travelType}`);
-  if (profile.loungePriority && profile.loungePriority !== "none") {
-    lines.push(`Lounges: ${profile.loungePriority.replace(/_/g, " ")}`);
-  }
-  return lines;
-}
-
 export function CreditAdvisorChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -128,10 +134,8 @@ export function CreditAdvisorChat() {
   const [input, setInput] = useState("");
   const [profile, setProfile] = useState<CredGenieAdvisorProfile>({});
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [askedGapKinds, setAskedGapKinds] = useState<AdvisorGapKind[]>([]);
   const [recommendations, setRecommendations] = useState<RecommendedCard[]>([]);
-  const [confidenceScore, setConfidenceScore] = useState<number>(0);
-  /** Avoid showing 0% before any server round-trip (reads like a bug). */
-  const [confidenceReady, setConfidenceReady] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastNextQuestion, setLastNextQuestion] = useState<string | null>(null);
@@ -150,6 +154,12 @@ export function CreditAdvisorChat() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!sessionId) return;
+    const stored = loadStoredAskedGapKinds(sessionId);
+    if (stored.length > 0) setAskedGapKinds(stored);
+  }, [sessionId]);
+
   const profilePills = useMemo(() => {
     const out: string[] = [];
     if (profile.shopping) out.push(`Shopping: ${profile.shopping}`);
@@ -166,8 +176,6 @@ export function CreditAdvisorChat() {
     }
     return out;
   }, [profile]);
-
-  const summaryLines = useMemo(() => profileSummaryLines(profile), [profile]);
 
   const quickReplies = useMemo(
     () => quickRepliesForQuestion(lastNextQuestion),
@@ -195,7 +203,7 @@ export function CreditAdvisorChat() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
-        body: JSON.stringify({ message: text, profile, sessionId }),
+        body: JSON.stringify({ message: text, profile, sessionId, askedGapKinds }),
       });
       const payload = (await response.json()) as
         | ChatAdvisorResponseBody
@@ -210,6 +218,11 @@ export function CreditAdvisorChat() {
       }
 
       const advisorPayload = payload as ChatAdvisorResponseBody;
+      const nextAsked = advisorPayload.askedGapKinds ?? [];
+      setAskedGapKinds(nextAsked);
+      if (advisorPayload.sessionId) {
+        persistStoredAskedGapKinds(advisorPayload.sessionId, nextAsked);
+      }
       setProfile(advisorPayload.profile ?? {});
       if (advisorPayload.sessionId) {
         setSessionId(advisorPayload.sessionId);
@@ -219,12 +232,6 @@ export function CreditAdvisorChat() {
           /* ignore */
         }
       }
-      setConfidenceScore(
-        typeof advisorPayload.confidenceScore === "number"
-          ? advisorPayload.confidenceScore
-          : 0
-      );
-      setConfidenceReady(true);
       setLastNextQuestion(advisorPayload.nextQuestion ?? null);
 
       if (advisorPayload.recommendations?.length) {
@@ -248,44 +255,20 @@ export function CreditAdvisorChat() {
     }
   };
 
-  const pct = Math.round(Math.min(100, Math.max(0, confidenceScore * 100)));
-
   return (
     <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
       <section className="rounded-[1.75rem] border border-violet-100 bg-white/95 p-4 shadow-lg shadow-violet-900/[0.08] ring-1 ring-white/70 sm:p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h3
-              className="text-lg font-semibold text-zinc-950"
-              title="Your chat updates a structured profile; card order always comes from CredGenie's scoring engine, not from the AI that writes questions."
-            >
-              CredGenie advisor
-            </h3>
-            <p className="mt-1 text-sm text-zinc-600">
-              Describe how you spend in plain language — I&apos;ll narrow it down with one follow-up
-              at a time, then surface card picks matched to that profile.
-            </p>
-          </div>
-          <div className="min-w-[140px] flex-1 rounded-2xl border border-violet-100 bg-violet-50/50 px-3 py-2">
-            <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-violet-800">
-              Profile confidence
-            </p>
-            <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-violet-200/80">
-              <div
-                className={`h-full rounded-full bg-gradient-to-r from-violet-600 to-blue-600 transition-[width] duration-500 ease-out ${
-                  !confidenceReady ? "opacity-40" : ""
-                }`}
-                style={{ width: confidenceReady ? `${pct}%` : "0%" }}
-              />
-            </div>
-            <p className="mt-1 text-xs font-medium text-violet-900">
-              {confidenceReady ? (
-                `${pct}%`
-              ) : (
-                <span className="font-normal text-violet-700/90">Updates after your first reply</span>
-              )}
-            </p>
-          </div>
+        <div>
+          <h3
+            className="text-lg font-semibold text-zinc-950"
+            title="Your chat updates a structured profile; card order always comes from CredGenie's scoring engine, not from the AI that writes questions."
+          >
+            CredGenie advisor
+          </h3>
+          <p className="mt-1 text-sm text-zinc-600">
+            Describe how you spend in plain language — I&apos;ll narrow it down with one follow-up at a
+            time, then surface card picks matched to that profile.
+          </p>
         </div>
 
         {messages.length === 1 ? (
@@ -306,17 +289,6 @@ export function CreditAdvisorChat() {
                 </button>
               ))}
             </div>
-          </div>
-        ) : null}
-
-        {summaryLines.length > 0 ? (
-          <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50/80 px-3 py-2 text-xs text-zinc-700">
-            <p className="font-semibold text-zinc-900">Live profile summary</p>
-            <ul className="mt-1 list-inside list-disc space-y-0.5">
-              {summaryLines.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
           </div>
         ) : null}
 
@@ -417,7 +389,7 @@ export function CreditAdvisorChat() {
 
         {recommendations.length === 0 ? (
           <div className="mt-4 rounded-2xl border border-dashed border-blue-200 bg-blue-50/60 p-4 text-sm text-blue-700">
-            Picks appear once profile confidence crosses the threshold — keep sharing how you spend.
+            Keep chatting — picks appear once we have enough detail about how you spend.
           </div>
         ) : (
           <div className="mt-4 space-y-3">

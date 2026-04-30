@@ -24,6 +24,7 @@ import { mergeCredGenieAdvisorProfile, toRecommendUserProfile } from "./profile"
 import { computeProfileConfidence, confidenceBandFromScore } from "./profileConfidence";
 import { analyzeAdvisorOpportunities } from "./opportunityEngine";
 import {
+  dedupeShoppingDiningTelecomOpportunities,
   filterOpportunitiesAfterAsked,
   nextAskedGapKindsAfterQuestion,
 } from "./opportunityDedup";
@@ -61,7 +62,20 @@ async function mergeProfileNode(state: AdvisorGraphState): Promise<Partial<Advis
 }
 
 async function analyzeGapsNode(state: AdvisorGraphState): Promise<Partial<AdvisorGraphState>> {
-  const { gaps, opportunities } = analyzeAdvisorOpportunities(state.mergedProfile);
+  const { opportunities: rawOpsFromEngine } = analyzeAdvisorOpportunities(state.mergedProfile);
+  const rawOps = rawOpsFromEngine.filter(
+    (o) =>
+      !(
+        o.kind === "telecom_spend_depth" &&
+        state.askedGapKinds.includes("telecom_spend_depth")
+      )
+  );
+  const opportunities = dedupeShoppingDiningTelecomOpportunities(
+    rawOps,
+    state.mergedProfile,
+    state.askedGapKinds
+  );
+  const gaps = [...new Set(opportunities.map((o) => o.kind))];
   return { gaps, opportunities };
 }
 
