@@ -73,13 +73,14 @@ function formatInr(value: number): string {
 }
 
 function assistantTextFromResponse(payload: ChatAdvisorResponseBody): string {
-  const reasoning = payload.reasoningBrief?.trim();
   if (payload.recommendations && payload.recommendations.length > 0) {
+    const reasoning = payload.reasoningBrief?.trim();
     const head = reasoning ? `${reasoning}\n\n` : "";
     return `${head}Here are three picks ranked by CredGenie's deterministic score — explanations may use AI wording.`;
   }
   const q = payload.nextQuestion ?? "Tell me a bit more so I can tune rewards.";
-  return reasoning ? `${reasoning}\n\n${q}` : q;
+  /* Follow-ups: show only the question — reasoningBrief duplicated narrative above it. */
+  return q;
 }
 
 function quickRepliesForQuestion(question: string | null): QuickReply[] {
