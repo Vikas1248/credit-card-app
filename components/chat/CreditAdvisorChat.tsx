@@ -268,10 +268,6 @@ export function CreditAdvisorChat() {
           >
             CredGenie advisor
           </h3>
-          <p className="mt-1 text-sm text-zinc-600">
-            Describe how you spend in plain language — I&apos;ll narrow it down with one follow-up at a
-            time, then surface card picks matched to that profile.
-          </p>
         </div>
 
         {messages.length === 1 ? (
