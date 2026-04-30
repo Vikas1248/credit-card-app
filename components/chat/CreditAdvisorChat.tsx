@@ -170,23 +170,6 @@ export function CreditAdvisorChat() {
     if (stored.length > 0) setAskedGapKinds(stored);
   }, [sessionId]);
 
-  const profilePills = useMemo(() => {
-    const out: string[] = [];
-    if (profile.shopping) out.push(`Shopping: ${profile.shopping}`);
-    if (profile.dining) out.push(`Dining: ${profile.dining}`);
-    if (profile.travel) out.push(`Travel: ${profile.travel}`);
-    if (profile.fuel) out.push(`Fuel: ${profile.fuel}`);
-    if (profile.fees) out.push(`Fee comfort: ${profile.fees}`);
-    if (profile.preferred_rewards) out.push(`Rewards: ${profile.preferred_rewards}`);
-    if (profile.telecomEcosystem && profile.telecomEcosystem !== "none") {
-      out.push(`Telco: ${profile.telecomEcosystem}`);
-    }
-    for (const b of profile.preferredBrands ?? []) {
-      if (out.length < 14) out.push(b);
-    }
-    return out;
-  }, [profile]);
-
   const quickReplies = useMemo(
     () => quickRepliesForQuestion(lastNextQuestion),
     [lastNextQuestion]
@@ -309,19 +292,6 @@ export function CreditAdvisorChat() {
                 </button>
               ))}
             </div>
-          </div>
-        ) : null}
-
-        {profilePills.length > 0 ? (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {profilePills.map((pill) => (
-              <span
-                key={pill}
-                className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700"
-              >
-                {pill}
-              </span>
-            ))}
           </div>
         ) : null}
 

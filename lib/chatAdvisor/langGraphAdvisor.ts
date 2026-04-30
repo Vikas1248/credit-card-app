@@ -54,7 +54,9 @@ const AdvisorState = Annotation.Root({
 type AdvisorGraphState = typeof AdvisorState.State;
 
 async function extractIntentNode(state: AdvisorGraphState): Promise<Partial<AdvisorGraphState>> {
-  const extracted = await extractCredGenieProfile(state.userMessage);
+  const extracted = await extractCredGenieProfile(state.userMessage, {
+    precedingAssistantQuestion: state.precedingAssistantQuestion,
+  });
   return { extracted };
 }
 
