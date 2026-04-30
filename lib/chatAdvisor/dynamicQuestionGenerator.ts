@@ -20,7 +20,8 @@ Question rules:
 
 Logic:
 - Prioritize topOpportunity; gapKind MUST be exactly one string from candidateGapKinds (usually topOpportunity.kind).
-- Respect alreadyAskedGapTopics — don't repeat the same angle (travel cadence, fuel commute, shopping-vs-telecom %).
+- Respect alreadyAskedGapTopics — don't repeat the same angle (travel cadence, fuel commute, telecom bill sizing vs shopping).
+- Never ask for percentages, “share of spend”, or wallet fractions — use plain scales (big/medium/small, low/med/high, rarely/often, rough ₹).
 - CRITICAL: Unless topOpportunity.kind is exactly "lounge_priority", never ask about lounges, Priority Pass, or complimentary lounge access.
 
 reasoningBrief: single short clause, max ${MAX_REASONING_CHARS} characters — why this gap matters now (no card names).
@@ -119,8 +120,9 @@ function deterministicQuestion(
       };
     case "telecom_spend_depth":
       return {
-        question: "Rough share of monthly spend on telecom — broadband / family plans / recharge?",
-        reasoningBrief: "Heavy telecom favors eco-specific cards.",
+        question:
+          "Mobile + broadband / recharge bills — big chunk for you, medium, or small vs other spends?",
+        reasoningBrief: "Heavy telco skew favors eco-specific cards.",
         recordedGapKind,
       };
     case "travel_type":

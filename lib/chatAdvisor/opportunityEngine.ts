@@ -95,7 +95,7 @@ export function analyzeAdvisorOpportunities(
       opportunities,
       "telecom_spend_depth",
       78,
-      `User tied to ${profile.telecomEcosystem}; quantify broadband/recharge share of spend.`
+      `User tied to ${profile.telecomEcosystem}; ask if telco bills feel big/medium/small vs other spends (no %).`
     );
   }
 

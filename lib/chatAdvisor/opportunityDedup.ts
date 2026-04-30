@@ -54,7 +54,7 @@ export function nextAskedGapKindsAfterQuestion(
 const SHOPPING_OR_MERCHANT_SHAPE = new Set<AdvisorGapKind>(["category_mix", "merchant_ecosystem"]);
 
 /**
- * telecom_spend_depth + category_mix often produce the same “shopping vs telecom %” LLM question.
+ * telecom_spend_depth + category_mix often produce overlapping “bill sizing” LLM questions.
  * Also treat category_mix vs merchant_ecosystem as one “shopping-shape” slot per session.
  */
 export function dedupeShoppingDiningTelecomOpportunities(

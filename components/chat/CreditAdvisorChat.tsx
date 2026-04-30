@@ -116,6 +116,16 @@ function quickRepliesForQuestion(question: string | null): QuickReply[] {
       { label: "Mixed", value: "Fairly mixed domestic and international." },
     ];
   }
+  if (
+    /\b(broadband|recharge|mobile)\b/.test(q) &&
+    /\b(big|medium|small|chunk)\b/.test(q)
+  ) {
+    return [
+      { label: "Small", value: "Telco bills are a small part of my card spend." },
+      { label: "Medium", value: "Telco bills are medium — noticeable but not huge." },
+      { label: "Big", value: "Telco bills are a big chunk of my card spend." },
+    ];
+  }
   if (q.includes("monthly") || q.includes("figure") || q.includes("spend")) {
     return [
       { label: "~₹25k/mo", value: "About 25000 per month on cards." },
