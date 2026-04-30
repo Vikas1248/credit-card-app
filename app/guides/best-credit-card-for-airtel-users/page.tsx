@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AxisApplyLink } from "@/components/axis-apply-link";
 import { GuideFaq } from "@/components/guides/GuideFaq";
 import { GuideFinalCta } from "@/components/guides/GuideFinalCta";
 import { GuideHero } from "@/components/guides/GuideHero";
@@ -359,11 +360,64 @@ export default function BestCreditCardAirtelGuidePage() {
             <p className="text-lg leading-relaxed text-zinc-700">
               If you heavily use <strong>Airtel broadband</strong>,{" "}
               <strong>Airtel postpaid</strong>, and the broader{" "}
-              <strong>Airtel ecosystem</strong>, the right cashback card can be
-              among the most rewarding products you carry—especially when you route
-              bills and partner spends through eligible categories and stay inside
-              issuer caps.
+              <strong>Airtel ecosystem</strong>, the{" "}
+              <strong>Airtel Axis Bank Credit Card</strong> is often the first
+              product to evaluate—built for Airtel Thanks spend, utilities, and
+              partner merchants (always confirm current rates and caps with Axis
+              Bank).
             </p>
+          </GuideSection>
+
+          <GuideSection
+            id="airtel-axis"
+            eyebrow="Featured product"
+            title="Airtel Axis Bank Credit Card"
+            description="Co-branded by Airtel and Axis Bank—designed for bill pay via Airtel Thanks, utilities, and everyday spend. Headline benefits change over time; read the latest MITC before you apply."
+          >
+            <div className="rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50/90 via-white to-blue-50/80 p-6 sm:p-8">
+              <p className="text-base leading-relaxed text-zinc-700">
+                For many households that match this guide, the{" "}
+                <strong className="text-zinc-900">
+                  Airtel Axis Bank Credit Card
+                </strong>{" "}
+                lines up with how they already pay—fiber/postpaid through{" "}
+                <strong>Airtel Thanks</strong>, utilities, and partner apps—under
+                Axis Bank&apos;s published category rules and monthly caps.
+              </p>
+              <ul className="mt-5 space-y-2 text-sm text-zinc-600">
+                <li className="flex gap-2">
+                  <span className="font-bold text-violet-600">→</span>
+                  Accelerated cashback on eligible Airtel bills paid via Airtel
+                  Thanks (subject to monthly caps).
+                </li>
+                <li className="flex gap-2">
+                  <span className="font-bold text-violet-600">→</span>
+                  Elevated value on categories such as utilities and select food /
+                  quick commerce partners—verify merchant eligibility on each spend.
+                </li>
+                <li className="flex gap-2">
+                  <span className="font-bold text-violet-600">→</span>
+                  Baseline rewards on other spends; fee waiver thresholds may apply
+                  as per issuer rules.
+                </li>
+              </ul>
+              <p className="mt-5 text-xs leading-relaxed text-zinc-500">
+                CredGenie is not a lender. Offers, fees, and rewards are controlled
+                by Axis Bank; approval is subject to credit policy.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                <AxisApplyLink
+                  fullWidth
+                  className="min-h-12 justify-center px-8 text-sm font-bold sm:w-auto sm:min-w-[12rem]"
+                />
+                <Link
+                  href="/cards?q=Airtel+Axis"
+                  className="inline-flex min-h-12 items-center justify-center rounded-xl border border-zinc-200 bg-white px-6 text-sm font-bold text-zinc-800 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800"
+                >
+                  View in CredGenie catalog
+                </Link>
+              </div>
+            </div>
           </GuideSection>
 
           <GuideSection
